@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+/* Identity tokens: change these (and the fonts in layout.tsx) to re-skin the template. */
+@theme {
+  --color-bg: #f5f7f6;
+  --color-surface: #ffffff;
+  --color-surface-2: #e3efed;
+  --color-ink: #0f2023;
+  --color-muted: #475b5e;
+  --color-accent: #0b6b6f;
+  --color-accent-ink: #ffffff;
+  --color-highlight: #9a4d00;
+  --color-line: #d3e2e0;
+  --color-success: #1f7a4d;
+  --color-danger: #b3261e;
+  --color-whatsapp: #12733a;
+  --font-display: var(--font-display-face), Georgia, serif;
+  --font-body: var(--font-body-face), system-ui, sans-serif;
+  --radius-card: 1rem;
+}
+
+@layer base {
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 6px;
+  }
+  [id] {
+    scroll-margin-top: 6.5rem;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .container-site {
+    width: 100%;
+    max-width: 75rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+  @media (min-width: 640px) {
+    .container-site { padding-inline: 1.5rem; }
+  }
+  .eyebrow {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-accent);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+    padding: 0.75rem 1.4rem;
+    border-radius: 999px;
+    font-weight: 700;
+    transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+  }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary {
+    background: var(--color-accent);
+    color: var(--color-accent-ink);
+  }
+  .btn-primary:hover { background: color-mix(in srgb, var(--color-accent) 85%, white); }
+  .btn-ghost {
+    border: 1px solid color-mix(in srgb, var(--color-ink) 35%, transparent);
+    color: var(--color-ink);
+  }
+  .btn-ghost:hover { border-color: var(--color-ink); }
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+  }
+  .field-input {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--color-line);
+    background: var(--color-bg);
+    color: var(--color-ink);
+  }
+  .field-input:focus { outline: 3px solid var(--color-accent); outline-offset: 1px; border-color: transparent; }
+  .field-input[aria-invalid="true"] { border-color: var(--color-danger); }
+}

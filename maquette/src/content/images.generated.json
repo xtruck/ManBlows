@@ -1,0 +1,57 @@
+{
+ "actu-1.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAADQAQCdASoMAAkAA4BaJYwCdAEPgqiYAAD+6rIADQEdNjnHQOJqV9l+ikApVQAA"
+ },
+ "actu-2.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAAAQAgCdASoMAAkAA4BaJaACdH8AF8cGs6hQAP7Ks7iLN4PG5D7rwwCdFI3cRur0zT6hvo4Rv+PKvP8TwIBEHRLpyRhiqQzBgAA="
+ },
+ "actu-3.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADwAQCdASoMAAkAA4BaJaACdAEQE6qx56AA/ueI9saD2oh6lkdK/dMja4mbEWT7LfVOSSYRyOShwAkQsiGvAAAA"
+ },
+ "formation-assistanat.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRlQAAABXRUJQVlA4IEgAAAAQAgCdASoMAAkAA4BaJagCdH8AFx9aAA5QAP4LUms7ojsZArw5RksT3IgKh+cMWUm9MMgd/2khFpbaK8Tk6lAzb58V9o2t0AA="
+ },
+ "formation-commerce.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADwAQCdASoMAAkAA4BaJYgCdAELVXTyeAAA/rhP22XLfngW9cx4ctDvl9XD0rr1kSB3yLAwsTgWpzgO1aBogAAA"
+ },
+ "formation-finance.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAADQAQCdASoMAAkAA4BaJQBOgCFp06RHRAD+6KuIF3RJ8NIhh5KcwH6ZfgT1IrFeyqBjYZJBNnk208V8AAA="
+ },
+ "formation-informatique.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADQAQCdASoMAAkAA4BaJZQC7AELVYulyAD+yrO4izeDxuQ+6yUamPPuNZU335HgZg1vhuRFVfJGLepMUhIPdoQA"
+ },
+ "formation-licence.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRkwAAABXRUJQVlA4IEAAAADQAQCdASoMAAkAA4BaJagCdADbbTy0QAD+51ZV7DJ67x4AR/nlZ3ZQVdWZWOZajV2hTJmT4rha8uwrO63zEAAA"
+ },
+ "formation-logistique.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAADwAQCdASoMAAkAA4BaJZgCdH8AEY1xcSAA/t8k2G3FbehvWuPsJaQuabYGJisU1mJyPHiRqtI/N9+gAAA="
+ },
+ "formation-rh.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRkgAAABXRUJQVlA4IDwAAACwAQCdASoMAAkAA4BaJQAAYv2KfrdAAP0CHzN7Jz4CuimTL5FrMhYyV8J+ken0QlxL9i4MP0ADfsU6wAA="
+ },
+ "hero.webp": {
+  "width": 1600,
+  "height": 1200,
+  "blurDataURL": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAADQAQCdASoMAAkAA4BaJZgCdAD1P2zwAAD+55N+hfAPs2pXl9EjcgYdD6l+2BZmEbLdn7vCDy1STgAA"
+ }
+}
