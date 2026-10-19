@@ -1,0 +1,52 @@
+{
+ "ambiance-1.webp": {
+  "width": 900,
+  "height": 1200,
+  "blurDataURL": "data:image/webp;base64,UklGRj4AAABXRUJQVlA4IDIAAABQAQCdASoMABAAA4BaJQBOgCgAAP7wAbf/9lU5/DXNlt+DXaP2ZlpGyfQC50UnQECAAA=="
+ },
+ "ambiance-2.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACwAQCdASoMAAkAA4BaJQBOgBujs5hAAP7uobxyF+0x8uuRNebi4TVBhI+qwAAA"
+ },
+ "ambiance-3.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAADQAQCdASoMAAkAA4BaJQBOgCPtxBKiAAD+7tsoUuwLTRcJoLDKZxAAAAA="
+ },
+ "evenement-1.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAACwAQCdASoMAAkAA4BaJZgCdAEOpTaQAP7u0Y5UdbzIYzyBfwofzeT2G7PKkeHd5uJhOhODoAAAAA=="
+ },
+ "evenement-2.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRkYAAABXRUJQVlA4IDoAAACwAQCdASoMAAkAA4BaJaACdAEOy2OAAP7ug2KrtsmdZohfcy2wo1hKZ47+ArdrtMPKly0R8jl7sEAA"
+ },
+ "evenements-hero.webp": {
+  "width": 1600,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRkIAAABXRUJQVlA4IDYAAADQAQCdASoMAAcAA4BaJaACdAEO1DRnAAD+7tQjbMiw1cCLlUSlUVttaR4d3zcJGTPLqYsAAAA="
+ },
+ "hero.webp": {
+  "width": 1920,
+  "height": 1080,
+  "blurDataURL": "data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAACwAQCdASoMAAcAA4BaJQBOgCHZhtDYAP7u07VcH+24ZSYJjtkEvvqsAAA="
+ },
+ "plat-1.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRloAAABXRUJQVlA4IE4AAABQAgCdASoMAAkAA4BaJaACdAYs3yfM0NQauAAA/tKxc10D9xSir79tN7Tucwl9mFUdi2cuwZ1Z1AxPd9ccuQSGbzw4TJc5EuZj6qfRAAA="
+ },
+ "plat-2.webp": {
+  "width": 1200,
+  "height": 900,
+  "blurDataURL": "data:image/webp;base64,UklGRmQAAABXRUJQVlA4IFgAAAAQAgCdASoMAAkAA4BaJagCdAEKr3kEA6GAAP7Spvg9AW1jOp/Cy7l9jx5qaAyy6vuFW02yivZU9YJUYlpWArQ/zPMFAtOm4Gbh10Fk4uL6GCybHL3YIAAA"
+ },
+ "plat-3.webp": {
+  "width": 900,
+  "height": 1200,
+  "blurDataURL": "data:image/webp;base64,UklGRmgAAABXRUJQVlA4IFwAAAAQAgCdASoMABAAA4BaJZgCdAEOzoCm47aAAP7wwxwmhW26XW98+dR5YbAfWn9sOvsq3udvA3W4DhCujt7zy+/JDirATY7muSmdaCKnLSNciMfGUm43juX0Wb7AAA=="
+ }
+}
