@@ -8,7 +8,8 @@ import { isFormKind, validate } from "@/lib/forms";
  */
 
 const WINDOW_MS = 60_000;
-const MAX_PER_WINDOW = 8;
+// Per IP and per minute; raise it for automated tests (see README, "Vérification automatique").
+const MAX_PER_WINDOW = Number(process.env.RATE_LIMIT_PER_MINUTE) || 8;
 const hits = new Map<string, number[]>();
 
 function rateLimited(ip: string) {

@@ -42,7 +42,7 @@ Variables d'environnement (facultatives) : copier `.env.example` en `.env.local`
 ## Vérification automatique
 
 ```bash
-npm run build && npm run start          # terminal 1
+npm run build && RATE_LIMIT_PER_MINUTE=1000 npm run start   # terminal 1 (limite relevée pour les tests)
 npm run verify                          # terminal 2 (BASE_URL=http://localhost:3000 par défaut)
 ```
 
