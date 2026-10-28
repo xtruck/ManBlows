@@ -1,0 +1,101 @@
+@import "tailwindcss";
+@import "lenis/dist/lenis.css";
+
+:root {
+  --paper: #ece8e1; /* the "dark white" */
+  --paper-2: #ded8cd;
+  --ink: #0e0e0e;
+  --graphite: #2a2826;
+  --muted: #6d6a65;
+  --brand: #ffc400; /* Egu Studio yellow, from the logo */
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-graphite: var(--graphite);
+  --color-muted: var(--muted);
+  --color-brand: var(--brand);
+  --font-sans: var(--font-geist-sans);
+  --font-display: var(--font-bricolage);
+  --font-script: var(--font-script-face);
+  --font-logo: var(--font-poppins);
+}
+
+html {
+  background: var(--paper);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+::selection {
+  background: var(--brand);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 3px;
+}
+
+/* Yellow outline disappears on the yellow contact section */
+#contact :focus-visible {
+  outline-color: var(--ink);
+}
+
+/* Frosted glass, used sparingly: nav, filter chips, lightbox UI, contact card */
+.glass {
+  background: color-mix(in srgb, var(--paper) 58%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+.glass-dark {
+  background: color-mix(in srgb, var(--ink) 80%, transparent);
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid color-mix(in srgb, var(--paper) 16%, transparent);
+}
+
+/* Film grain overlay for a photographic texture */
+.grain::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 70;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@keyframes marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee {
+  animation: marquee 40s linear infinite;
+}
+
+@keyframes rec {
+  50% {
+    opacity: 0.2;
+  }
+}
+
+.rec-dot {
+  animation: rec 1.2s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee,
+  .rec-dot {
+    animation: none;
+  }
+}
