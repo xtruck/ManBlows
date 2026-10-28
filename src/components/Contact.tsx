@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useLang } from "./LangProvider";
 import { contact } from "@/content/site";
 
-type Status = "idle" | "sending" | "sent" | "error" | "invalid";
+type Status = "idle" | "opened" | "invalid";
 
 const field =
   "mt-2 w-full rounded-xl border border-ink/15 bg-paper/75 px-4 text-base text-ink placeholder:text-muted focus:border-ink";
@@ -13,30 +13,34 @@ export function Contact() {
   const { t } = useLang();
   const [status, setStatus] = useState<Status>("idle");
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  // Static site (GitHub Pages): no server, so the form hands a prefilled message to WhatsApp or email.
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    const via = (e.nativeEvent as SubmitEvent).submitter?.getAttribute("value") === "email" ? "email" : "whatsapp";
     const data = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
-    if (!data.name?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email ?? "") || !data.message?.trim()) {
+    if (!data.name?.trim() || !data.message?.trim()) {
       setStatus("invalid");
       return;
     }
-    setStatus("sending");
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error(String(res.status));
-      setStatus("sent");
-      e.currentTarget?.reset();
-    } catch {
-      setStatus("error");
-    }
+    const text = [
+      `${t.contact.intro} ${data.name.trim()}.`,
+      `${t.contact.type} : ${data.type}`,
+      data.date ? `${t.contact.date} : ${data.date}` : "",
+      data.email ? `${t.contact.email} : ${data.email}` : "",
+      "",
+      data.message.trim(),
+    ]
+      .filter((line, i) => line || i === 4)
+      .join("\n");
+    const url =
+      via === "email"
+        ? `mailto:${contact.email}?subject=${encodeURIComponent(`${data.type}, ${data.name.trim()}`)}&body=${encodeURIComponent(text)}`
+        : `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    setStatus("opened");
   }
 
-  const message =
-    status === "sent" ? t.contact.sent : status === "error" ? t.contact.error : status === "invalid" ? t.contact.required : "";
+  const message = status === "opened" ? t.contact.opened : status === "invalid" ? t.contact.required : "";
 
   return (
     <section id="contact" className="grid gap-14 bg-brand px-4 py-24 text-ink md:grid-cols-12 md:px-8 md:py-36">
@@ -87,7 +91,7 @@ export function Contact() {
           </label>
           <label className="block text-sm font-medium">
             {t.contact.email}
-            <input name="email" type="email" autoComplete="email" required className={`${field} h-12`} />
+            <input name="email" type="email" autoComplete="email" className={`${field} h-12`} />
           </label>
           <label className="block text-sm font-medium">
             {t.contact.type}
@@ -106,16 +110,21 @@ export function Contact() {
           {t.contact.message}
           <textarea name="message" rows={5} required className={`${field} resize-y py-3`} />
         </label>
-        {/* Honeypot for bots, hidden from people and assistive tech */}
-        <input name="company" tabIndex={-1} autoComplete="off" aria-hidden className="hidden" />
 
         <div className="mt-6 flex flex-wrap items-center gap-4">
           <button
             type="submit"
-            disabled={status === "sending"}
-            className="h-12 cursor-pointer rounded-full bg-ink px-8 text-sm font-medium text-paper transition-transform duration-200 hover:scale-[1.03] disabled:opacity-60"
+            value="whatsapp"
+            className="h-12 cursor-pointer rounded-full bg-ink px-7 text-sm font-medium text-paper transition-transform duration-200 hover:scale-[1.03]"
           >
-            {status === "sending" ? t.contact.sending : t.contact.send}
+            {t.contact.send}
+          </button>
+          <button
+            type="submit"
+            value="email"
+            className="h-12 cursor-pointer rounded-full border border-ink/30 px-7 text-sm font-medium text-ink transition-colors duration-200 hover:bg-ink/5"
+          >
+            {t.contact.sendEmail}
           </button>
           <p aria-live="polite" className="text-sm font-medium">
             {message}

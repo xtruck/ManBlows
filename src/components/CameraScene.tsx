@@ -6,7 +6,7 @@ import { ContactShadows, Environment, Lightformer, useGLTF } from "@react-three/
 import * as THREE from "three";
 import { markSceneReady } from "@/lib/intro";
 
-const MODEL_URL = "/models/camera.glb";
+const MODEL_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/models/camera.glb`;
 
 // Model framing, tuned by eye against the camera model.
 const BODY_SIZE = 2.1; // largest side of the camera body, in scene units

@@ -1,9 +1,12 @@
 import type { NextConfig } from "next";
 
+// GitHub Pages serves the site under /ManBlows; the Pages workflow sets this.
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
 const nextConfig: NextConfig = {
   /* config options here */
-  cacheComponents: true,
-  partialPrefetching: true,
+  output: "export", // static site for GitHub Pages (no server features like cacheComponents)
+  basePath,
   images: {
     // Demo placeholders; swap for the client's own photos in /public later.
     remotePatterns: [new URL("https://picsum.photos/**")],
