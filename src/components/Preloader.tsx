@@ -54,6 +54,10 @@ export function Preloader() {
   const counter = useRef<HTMLSpanElement>(null);
   const fstop = useRef<HTMLSpanElement>(null);
   const bar = useRef<HTMLSpanElement>(null);
+  const ring = useRef<SVGGElement>(null);
+  const needle = useRef<SVGGElement>(null);
+  const sweep = useRef<SVGRectElement>(null);
+  const glint = useRef<SVGEllipseElement>(null);
   const [gone, setGone] = useState(false);
 
   useEffect(() => {
@@ -81,9 +85,17 @@ export function Preloader() {
       const stop = STOPS[Math.round(Math.min(Math.max((open - 0.06) / 0.94, 0), 1) * (STOPS.length - 1))];
       if (fstop.current) fstop.current.textContent = `f/${stop}`;
     };
+    // The brand mark inside the lens starts out of focus and sharpens as loading completes.
+    const logoEl = el.querySelector<HTMLElement>("[data-pre-logo]");
     const setProgress = (p: number) => {
       if (counter.current) counter.current.textContent = String(Math.round(p * 100)).padStart(3, "0");
       if (bar.current) bar.current.style.transform = `scaleX(${p})`;
+      // Everything below follows real progress: focus ring turns, meter needle rises
+      // to the centre mark, and a light sweep crosses the metal top plate.
+      ring.current?.setAttribute("transform", `rotate(${(p * 150).toFixed(1)} 200 150)`);
+      needle.current?.setAttribute("transform", `translate(${(10 + p * 40).toFixed(1)} 0)`);
+      sweep.current?.setAttribute("transform", `translate(${(-70 + p * 480).toFixed(1)} 0) skewX(-22)`);
+      if (logoEl) logoEl.style.filter = p < 1 ? `blur(${((1 - p) * 9).toFixed(2)}px)` : "none";
     };
 
     // Only the home page loads the 3D camera; other pages just wait for fonts.
@@ -99,11 +111,29 @@ export function Preloader() {
 
     // The camera's entrance runs in CSS (see .pre-outline in globals.css); GSAP takes over for the outro.
     const ctx = gsap.context(() => {}, el);
+
+    // Parallax: on a mouse, the camera tilts toward the pointer and the glass glint follows it.
+    let tilting = !reduced && window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const cam = camera.current;
+    if (cam) gsap.set(cam, { transformPerspective: 900 });
+    const tiltY = cam ? gsap.quickTo(cam, "rotationY", { duration: 0.8, ease: "power3.out" }) : null;
+    const tiltX = cam ? gsap.quickTo(cam, "rotationX", { duration: 0.8, ease: "power3.out" }) : null;
+    const onMove = (e: PointerEvent) => {
+      if (!tilting) return;
+      const nx = e.clientX / window.innerWidth - 0.5;
+      const ny = e.clientY / window.innerHeight - 0.5;
+      tiltY?.(nx * 14);
+      tiltX?.(-ny * 10);
+      glint.current?.setAttribute("transform", `translate(${(nx * 22).toFixed(1)} ${(ny * 14).toFixed(1)}) rotate(-35 236 196)`);
+    };
+    if (tilting) window.addEventListener("pointermove", onMove);
     const start = performance.now();
     let shown = 0;
     let outroStarted = false;
 
     const outro = () => {
+      tilting = false;
+      if (cam) gsap.to(cam, { rotationX: 0, rotationY: 0, duration: 0.4, ease: "power2.out" });
       // A finished CSS animation still holds its end value over inline styles, so hand the
       // lens glass back to GSAP before fading it.
       el.querySelectorAll<HTMLElement | SVGElement>(".pre-glass").forEach((g) => {
@@ -118,6 +148,10 @@ export function Preloader() {
           .timeline({ onComplete: finish })
           .to("[data-pre-hud]", { autoAlpha: 0, y: 10, duration: 0.35, ease: "power2.in" }, 0)
           // Shutter press and flash
+          // Autofocus locks onto the lens, then the shutter fires with a small body kick
+          .fromTo("[data-pre-af]", { autoAlpha: 0, scale: 1.35 }, { autoAlpha: 1, scale: 1, duration: 0.3, ease: "power3.out" }, 0)
+          .to("[data-pre-af]", { autoAlpha: 0, duration: 0.25, ease: "power1.in" }, 0.6)
+          .to(camera.current, { rotation: 0.7, y: 2, duration: 0.05, ease: "none", yoyo: true, repeat: 3 }, 0.12)
           .to("[data-pre-shutter]", { y: 3, duration: 0.1, ease: "power2.in", yoyo: true, repeat: 1 }, 0)
           .fromTo("[data-pre-flash]", { autoAlpha: reduced ? 0 : 0.9 }, { autoAlpha: 0, duration: 0.45, ease: "power2.out" }, 0.12)
           .to("[data-lens-glass]", { autoAlpha: 0, duration: 0.4, ease: "power1.in" }, 0.15)
@@ -159,6 +193,7 @@ export function Preloader() {
       offProgress();
       offReady();
       window.clearTimeout(cap);
+      window.removeEventListener("pointermove", onMove);
       ctx.revert();
       document.documentElement.style.overflow = "";
     };
@@ -223,9 +258,28 @@ export function Preloader() {
               <stop offset="45%" stopColor="#ff9a2e" stopOpacity="0.8" />
               <stop offset="100%" stopColor="#ff9a2e" stopOpacity="0" />
             </radialGradient>
+            <filter id="pre-shadow" x="-20%" y="-100%" width="140%" height="300%">
+              <feGaussianBlur stdDeviation="7" />
+            </filter>
+            <clipPath id="pre-plate">
+              <path d="M42 58H358Q382 58 382 82V94H18V82Q18 58 42 58Z" />
+            </clipPath>
+            <linearGradient id="pre-sweep" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#fff" stopOpacity="0" />
+              <stop offset="50%" stopColor="#fff" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#fff" stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="pre-vf" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#0a0b0d" />
+              <stop offset="55%" stopColor="#1d2733" />
+              <stop offset="100%" stopColor="#07080a" />
+            </linearGradient>
+            <path id="pre-ring-path" d="M117 150a83 83 0 1 1 166 0a83 83 0 1 1 -166 0" />
           </defs>
 
           <g className="pre-fill">
+            {/* Soft contact shadow on the table */}
+            <ellipse cx="200" cy="254" rx="158" ry="7" fill="#000" fillOpacity="0.55" filter="url(#pre-shadow)" />
             {/* Strap lugs and hot shoe */}
             <rect x="9" y="74" width="10" height="14" rx="2.5" fill="url(#pre-metal)" />
             <rect x="381" y="74" width="10" height="14" rx="2.5" fill="url(#pre-metal)" />
@@ -240,6 +294,18 @@ export function Preloader() {
             {/* Body: leatherette, with a brushed-metal top plate */}
             <rect x="18" y="58" width="364" height="184" rx="24" fill="url(#pre-leather)" />
             <path d="M42 58H358Q382 58 382 82V94H18V82Q18 58 42 58Z" fill="url(#pre-metal)" />
+            <g clipPath="url(#pre-plate)">
+              <rect ref={sweep} x="0" y="56" width="46" height="40" fill="url(#pre-sweep)" transform="translate(-70 0) skewX(-22)" />
+            </g>
+            {/* Top plate screws and viewfinder windows */}
+            <g fill="#15130f" stroke="#6b6761" strokeWidth="0.5">
+              <circle cx="34" cy="84" r="2.6" />
+              <circle cx="366" cy="84" r="2.6" />
+            </g>
+            <path d="M32.4 84h3.2M364.4 84h3.2" stroke="#8b8680" strokeWidth="0.6" />
+            <rect x="174" y="33" width="20" height="12" rx="2" fill="url(#pre-vf)" stroke="#57534e" strokeWidth="0.5" />
+            <rect x="206" y="33" width="20" height="12" rx="2" fill="url(#pre-vf)" stroke="#57534e" strokeWidth="0.5" />
+            <path d="M177 36L186 36M209 36L218 36" stroke="#fff" strokeOpacity="0.3" strokeWidth="0.8" strokeLinecap="round" />
             <path d="M18 94H382" stroke="#000" strokeOpacity="0.6" strokeWidth="1.2" />
             <path d="M18 95.4H382" stroke="#fff" strokeOpacity="0.07" strokeWidth="0.8" />
             <rect x="18" y="58" width="364" height="184" rx="24" fill="url(#pre-sheen)" />
@@ -247,6 +313,11 @@ export function Preloader() {
             <path d="M18 104Q18 95 30 95H82Q102 98 102 124V214Q102 240 80 242H42Q18 242 18 218Z" fill="url(#pre-leather)" />
             <path d="M18 104Q18 95 30 95H82Q102 98 102 124V214Q102 240 80 242H42Q18 242 18 218Z" fill="url(#pre-grip)" />
             <path d="M96 120V214" stroke="#fff" strokeOpacity="0.08" strokeWidth="1.5" strokeLinecap="round" />
+            {/* Brand plate on the grip */}
+            <rect x="40" y="128" width="34" height="12" rx="2.5" fill="url(#pre-silver)" stroke="#000" strokeOpacity="0.4" strokeWidth="0.5" />
+            <text x="57" y="137" textAnchor="middle" fontSize="7" fontWeight="800" letterSpacing="1" fill="#1a1918">
+              EGC
+            </text>
             {/* Mode dial with knurling */}
             <rect x="46" y="38" width="62" height="20" rx="3" fill="url(#pre-metal)" />
             <path d="M48 42H106M48 46H106M48 50H106M48 54H106" stroke="#fff" strokeOpacity="0.16" strokeDasharray="1 1.6" />
@@ -262,7 +333,15 @@ export function Preloader() {
             {/* Lens mount and barrel */}
             <circle cx="200" cy="150" r="93" fill="url(#pre-silver)" />
             <circle cx="200" cy="150" r="88.5" fill="#0d0c0c" />
-            <circle cx="200" cy="150" r="84" fill="none" stroke="#24221f" strokeWidth="8" strokeDasharray="0.9 1.2" />
+            {/* Focus ring: knurled grip with engraved lettering, turning as the page loads */}
+            <g ref={ring} transform="rotate(0 200 150)">
+              <circle cx="200" cy="150" r="84" fill="none" stroke="#24221f" strokeWidth="8" strokeDasharray="0.9 1.2" />
+              <text fontSize="5" fontWeight="600" letterSpacing="1.2" fill="#fff" fillOpacity="0.55">
+                <textPath href="#pre-ring-path" textLength="515" lengthAdjust="spacing">
+                  EGC STUDIO · 35mm · 1:1.4 · EGC STUDIO · 35mm · 1:1.4 · EGC STUDIO · 35mm · 1:1.4 ·
+                </textPath>
+              </text>
+            </g>
             <circle cx="200" cy="150" r="79" fill="none" stroke="#3e3b37" strokeWidth="1.2" />
             <circle cx="200" cy="150" r="77" fill="none" stroke="#fff" strokeOpacity="0.35" strokeWidth="1.4" strokeDasharray="0.5 7" />
             <rect x="199.2" y="61" width="1.6" height="6" rx="0.8" fill="#ffc400" />
@@ -303,11 +382,21 @@ export function Preloader() {
           <circle cx={C} cy={C} r={R} fill="none" stroke="#3a3733" strokeWidth="3" />
           <circle cx={C} cy={C} r={R + 2.2} fill="none" stroke="rgb(255 196 0 / 0.45)" strokeWidth="0.5" />
         </svg>
+        {/* Autofocus brackets: they lock onto the lens when loading is done */}
+        <span data-pre-af aria-hidden className="af-reticle" style={{ inset: "-5%" }}>
+          <i />
+          <i />
+          <i />
+          <i />
+        </span>
         </div>
 
         {/* Front element: coated glass reflections sitting over the iris */}
         <svg data-lens-glass viewBox="0 0 400 260" className="pre-glass pointer-events-none absolute inset-0 size-full">
           <defs>
+            <filter id="pre-soft" x="-30%" y="-30%" width="160%" height="160%">
+              <feGaussianBlur stdDeviation="1.6" />
+            </filter>
             <radialGradient id="pre-glass" cx="36%" cy="30%" r="75%">
               <stop offset="0%" stopColor="#fff" stopOpacity="0.3" />
               <stop offset="30%" stopColor="#fff" stopOpacity="0.05" />
@@ -321,6 +410,9 @@ export function Preloader() {
           <path d="M238 206A64 64 0 0 0 258 186" stroke="#c9a6ff" strokeOpacity="0.35" strokeWidth="2" strokeLinecap="round" fill="none" />
           <circle cx="170" cy="116" r="4" fill="#fff" fillOpacity="0.6" />
           <circle cx="170" cy="116" r="10" fill="#fff" fillOpacity="0.1" />
+          {/* Feathered half-moon glare and a glint that slides with the pointer */}
+          <path d="M140 128A66 66 0 0 1 196 84A74 74 0 0 0 148 140Z" fill="#fff" fillOpacity="0.26" filter="url(#pre-soft)" />
+          <ellipse ref={glint} cx="236" cy="196" rx="14" ry="6" fill="#fff" fillOpacity="0.2" filter="url(#pre-soft)" transform="translate(0 0) rotate(-35 236 196)" />
         </svg>
       </div>
 
@@ -330,6 +422,17 @@ export function Preloader() {
       {/* Viewfinder HUD */}
       <div data-pre-hud className="pointer-events-none absolute inset-x-5 top-6 flex justify-between text-xs text-paper/70 md:inset-x-10 md:top-8 md:text-sm">
         <span>{t.focus}</span>
+        {/* Exposure meter: the needle climbs to the centre mark as the page gets ready */}
+        <svg viewBox="0 0 100 16" aria-hidden className="h-4 w-24 text-paper/60 md:w-32">
+          <g stroke="currentColor" strokeWidth="1">
+            {[10, 30, 50, 70, 90].map((x) => (
+              <path key={x} d={`M${x} ${x === 50 ? 2 : 5}V12`} stroke={x === 50 ? "#ffc400" : undefined} />
+            ))}
+          </g>
+          <g ref={needle} transform="translate(10 0)">
+            <path d="M-3 0H3L0 6Z" fill="#ffc400" />
+          </g>
+        </svg>
         <span ref={fstop} className="tabular-nums text-brand">
           f/22
         </span>

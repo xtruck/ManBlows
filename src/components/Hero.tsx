@@ -45,22 +45,26 @@ export function Hero() {
   }, []);
 
   // Running timecode at 25 fps, written straight to the DOM to avoid re-renders.
+  // It only runs while the hero is on screen, and only touches the DOM when the frame changes.
   useEffect(() => {
+    if (!active) return;
     const start = performance.now();
     let raf = 0;
+    let last = -1;
     const pad = (n: number) => String(n).padStart(2, "0");
     const loop = () => {
       const ms = performance.now() - start;
-      const s = Math.floor(ms / 1000);
-      const frames = Math.floor((ms % 1000) / 40);
-      if (timecode.current) {
-        timecode.current.textContent = `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}:${pad(frames)}`;
+      const frame = Math.floor(ms / 40);
+      if (frame !== last && timecode.current) {
+        last = frame;
+        const s = Math.floor(ms / 1000);
+        timecode.current.textContent = `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}:${pad(frame % 25)}`;
       }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, []);
+  }, [active]);
 
   useEffect(() => {
     const el = root.current;

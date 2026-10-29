@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { preload } from "react-dom";
 import { Bricolage_Grotesque, Geist, Mrs_Saint_Delafield, Poppins } from "next/font/google";
 import { LangProvider } from "@/components/LangProvider";
 import { SmoothScroll } from "@/components/SmoothScroll";
@@ -42,6 +43,10 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  // Start downloading the 3D camera right away, in parallel with the scripts, instead of
+  // waiting for the hero to mount and ask for it. Saves the preloader a few hundred ms.
+  preload(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/models/camera.glb`, { as: "fetch", crossOrigin: "anonymous" });
+
   return (
     <html
       lang="fr"

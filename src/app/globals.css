@@ -195,11 +195,39 @@ button {
   }
 }
 
+/* Off-screen sections stop animating (toggled by LightLeaks) */
+.leaks[data-paused="true"] .leak {
+  animation-play-state: paused;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .leak {
     animation: none;
   }
 }
+
+/*
+ * "Mise au point": the AF reticle that locks onto a photo as it comes into focus.
+ * Four corner brackets shrink onto the frame, flash brand yellow, then fade out.
+ */
+.af-reticle {
+  position: absolute;
+  inset: 18%;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+}
+.af-reticle i {
+  position: absolute;
+  width: 18%;
+  max-width: 28px;
+  aspect-ratio: 1;
+  border: 0 solid var(--brand);
+}
+.af-reticle i:nth-child(1) { top: 0; left: 0; border-top-width: 2px; border-left-width: 2px; }
+.af-reticle i:nth-child(2) { top: 0; right: 0; border-top-width: 2px; border-right-width: 2px; }
+.af-reticle i:nth-child(3) { bottom: 0; left: 0; border-bottom-width: 2px; border-left-width: 2px; }
+.af-reticle i:nth-child(4) { bottom: 0; right: 0; border-bottom-width: 2px; border-right-width: 2px; }
 
 /* No backdrop blur, or the visitor asked for less transparency: use solid surfaces */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
