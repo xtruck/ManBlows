@@ -57,12 +57,12 @@ export function Disciplines() {
               <div className="mt-24 md:mt-32">
                 <h3 className="font-display text-4xl leading-none font-semibold tracking-[-0.03em] md:text-5xl">{item.name}</h3>
                 <p className={`mt-4 max-w-[34ch] leading-relaxed ${design ? "text-ink" : "text-graphite"}`}>{item.text}</p>
-                {design && (
+                {(design || i === 1) && (
                   <TransitionLink
-                    href="/travaux/"
+                    href={design ? "/travaux/" : "/films/"}
                     className="mt-6 inline-flex h-11 items-center rounded-full bg-ink px-6 text-sm font-medium text-paper transition-transform duration-200 hover:scale-[1.03] active:scale-95"
                   >
-                    {d.cta}
+                    {design ? d.cta : t.home.films}
                   </TransitionLink>
                 )}
               </div>

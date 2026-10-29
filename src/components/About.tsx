@@ -1,9 +1,7 @@
 "use client";
 
-import Image from "next/image";
 import { useLang } from "./LangProvider";
 import { TransitionLink } from "./TransitionProvider";
-import { portrait } from "@/content/site";
 
 /** "page": the full /a-propos introduction. "teaser": a short home-page version linking to it. */
 export function About({ mode = "page" }: { mode?: "page" | "teaser" }) {
@@ -15,18 +13,7 @@ export function About({ mode = "page" }: { mode?: "page" | "teaser" }) {
     <section
       className={`grid gap-12 bg-paper-2 px-4 md:grid-cols-12 md:px-8 ${teaser ? "py-24 md:py-36" : "pt-32 pb-24 md:pt-44 md:pb-36"}`}
     >
-      <figure data-reveal="image" className="overflow-hidden rounded-sm md:col-span-5">
-        <Image
-          src={portrait}
-          alt={t.a11y.demoPortrait}
-          width={900}
-          height={1125}
-          sizes="(min-width: 768px) 40vw, 100vw"
-          className="h-auto w-full grayscale"
-        />
-      </figure>
-
-      <div className="md:col-span-6 md:col-start-7 md:pt-4">
+      <div className="md:col-span-8 md:col-start-3">
         <Heading
           data-reveal
           className="font-display text-[clamp(3rem,7vw,6.5rem)] leading-[0.9] font-semibold tracking-[-0.04em]"

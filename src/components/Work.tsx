@@ -11,11 +11,17 @@ import { TransitionLink } from "./TransitionProvider";
 import { shots, type Category, type Kind } from "@/content/site";
 
 type Filter = "all" | Category;
-const filters: Filter[] = ["all", "ceremonies", "events", "portraits", "films", "design", "studio"];
+// Only offer filters that have something in them: when photos or films are added later,
+// their filter appears on its own.
+const categoryOrder: Category[] = ["ceremonies", "events", "portraits", "films", "design", "studio"];
+const present = new Set(shots.map((s) => s.category));
+const filters: Filter[] = ["all", ...categoryOrder.filter((c) => present.has(c))];
 
 // Client types offered when browsing the design work ("studio" is the founder's own promotion).
 type KindFilter = "all" | Exclude<Kind, "studio">;
-const kindFilters: KindFilter[] = ["all", "church", "business", "school", "event", "personal"];
+const kindOrder = ["church", "business", "school", "event", "personal"] as const;
+const kindsPresent = new Set(shots.filter((s) => s.category === "design").map((s) => s.kind));
+const kindFilters: KindFilter[] = ["all", ...kindOrder.filter((k) => kindsPresent.has(k))];
 
 const frameNo = (id: number) => String(id).padStart(2, "0");
 
@@ -170,7 +176,7 @@ export function Work({ mode = "page" }: WorkProps) {
               >
                 <Image
                   src={shot.src}
-                  alt={`${shot.place}, ${shot.real ? t.a11y.realDesign : t.a11y.demoPhoto}`}
+                  alt={shot.category === "design" || shot.category === "studio" ? `${shot.place}, ${t.a11y.realDesign}` : shot.place}
                   width={shot.w}
                   height={shot.h}
                   sizes="(min-width: 1024px) 33vw, 50vw"
@@ -243,7 +249,7 @@ export function Work({ mode = "page" }: WorkProps) {
               >
                 <Image
                   src={current.src}
-                  alt={`${current.place}, ${current.real ? t.a11y.realDesign : t.a11y.demoPhoto}`}
+                  alt={current.category === "design" || current.category === "studio" ? `${current.place}, ${t.a11y.realDesign}` : current.place}
                   width={current.w}
                   height={current.h}
                   sizes="90vw"

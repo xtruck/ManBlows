@@ -1,7 +1,7 @@
 "use client";
 
 import { useLang } from "./LangProvider";
-import { clients, testimonials } from "@/content/site";
+import { clients } from "@/content/site";
 
 function NameRow({ hidden = false }: { hidden?: boolean }) {
   return (
@@ -20,7 +20,7 @@ function NameRow({ hidden = false }: { hidden?: boolean }) {
 }
 
 export function Clients() {
-  const { t, lang } = useLang();
+  const { t } = useLang();
 
   return (
     <section className="overflow-hidden bg-paper py-24 md:py-36">
@@ -35,19 +35,6 @@ export function Clients() {
         </div>
       </div>
 
-      <div className="mt-20 grid gap-14 px-4 md:grid-cols-2 md:gap-10 md:px-8">
-        {testimonials.map((q) => (
-          <figure key={q.name} data-reveal>
-            <blockquote className="max-w-[34ch] font-display text-2xl leading-snug tracking-tight md:text-3xl">
-              «&nbsp;{q.quote[lang]}&nbsp;»
-            </blockquote>
-            <figcaption className="mt-5 text-sm">
-              <span className="font-medium">{q.name}</span>
-              <span className="block text-muted">{q.role[lang]}</span>
-            </figcaption>
-          </figure>
-        ))}
-      </div>
     </section>
   );
 }

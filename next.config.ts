@@ -9,10 +9,7 @@ const nextConfig: NextConfig = {
   basePath,
   trailingSlash: true, // /travaux/ -> travaux/index.html, which GitHub Pages serves directly
   images: {
-    // Demo placeholders; swap for the client's own photos in /public later.
-    remotePatterns: [new URL("https://picsum.photos/**")],
-    // picsum redirects slowly and makes the optimizer time out (504); the browser
-    // loads placeholders directly. Remove once real photos live in /public.
+    // Static export: images are pre-sized WebP files in /public, so no optimizer is needed.
     unoptimized: true,
   },
   turbopack: {

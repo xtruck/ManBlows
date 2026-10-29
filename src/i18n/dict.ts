@@ -27,7 +27,7 @@ export const dict = {
     },
     work: {
       title: "Travaux",
-      intro: "Mariages, événements, portraits et créations graphiques. Touchez une image pour l'agrandir.",
+      intro: "Affiches, visuels pour les réseaux, bannières et logos créés pour des églises, des entreprises, des écoles et des événements. Touchez une image pour l'agrandir.",
       filters: { all: "Tout", ceremonies: "Cérémonies", events: "Événements", portraits: "Portraits", films: "Films", design: "Design", studio: "Mes offres" },
       clientType: "Type de client",
       kinds: { all: "Tous", church: "Église", business: "Entreprise", school: "École", event: "Événement", personal: "Particulier", studio: "Offre du studio" },
@@ -47,7 +47,7 @@ export const dict = {
       intro: "Mariages, événements et clips, racontés en mouvement.",
       soon: "Vidéo bientôt disponible.",
       play: "Lire",
-      more: "Autres films",
+      more: "Les films",
     },
     about: {
       title: "Derrière l'objectif",
@@ -118,9 +118,7 @@ export const dict = {
     a11y: {
       mainNav: "Navigation principale",
       footerNav: "Pied de page",
-      demoPhoto: "photo de démonstration",
       realDesign: "création graphique EGC Studio",
-      demoPortrait: "Portrait du photographe, image de démonstration",
       loading: "Chargement du site EGC Studio…",
     },
   },
@@ -150,7 +148,7 @@ export const dict = {
     },
     work: {
       title: "Work",
-      intro: "Weddings, events, portraits and graphic work. Tap any image to enlarge it.",
+      intro: "Posters, social media visuals, banners and logos made for churches, businesses, schools and events. Tap any image to enlarge it.",
       filters: { all: "All", ceremonies: "Ceremonies", events: "Events", portraits: "Portraits", films: "Films", design: "Design", studio: "My offers" },
       clientType: "Client type",
       kinds: { all: "All", church: "Church", business: "Business", school: "School", event: "Event", personal: "Individual", studio: "Studio offer" },
@@ -170,7 +168,7 @@ export const dict = {
       intro: "Weddings, events and music videos, told in motion.",
       soon: "Video coming soon.",
       play: "Play",
-      more: "More films",
+      more: "The films",
     },
     about: {
       title: "Behind the lens",
@@ -241,9 +239,7 @@ export const dict = {
     a11y: {
       mainNav: "Main navigation",
       footerNav: "Footer",
-      demoPhoto: "demo photo",
       realDesign: "EGC Studio graphic design",
-      demoPortrait: "Portrait of the photographer, demo image",
       loading: "Loading the EGC Studio site…",
     },
   },
