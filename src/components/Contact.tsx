@@ -43,14 +43,20 @@ export function Contact() {
   const message = status === "opened" ? t.contact.opened : status === "invalid" ? t.contact.required : "";
 
   return (
-    <section id="contact" className="grid gap-14 bg-brand px-4 py-24 text-ink md:grid-cols-12 md:px-8 md:py-36">
+    <section
+      id="contact"
+      data-nav-tone="light"
+      className="grid min-h-[100svh] gap-14 bg-brand px-4 pt-32 pb-24 text-ink md:grid-cols-12 md:px-8 md:pt-44 md:pb-36"
+    >
       <div className="md:col-span-6">
-        <h2 className="font-display text-[clamp(3rem,7.5vw,7rem)] leading-[0.9] font-semibold tracking-[-0.04em]">
+        <h1 data-reveal className="font-display text-[clamp(3rem,7.5vw,7rem)] leading-[0.9] font-semibold tracking-[-0.04em]">
           {t.contact.title}
-        </h2>
-        <p className="mt-6 max-w-[40ch] text-lg leading-relaxed">{t.contact.text}</p>
+        </h1>
+        <p data-reveal className="mt-6 max-w-[40ch] text-lg leading-relaxed">
+          {t.contact.text}
+        </p>
 
-        <ul className="mt-10 space-y-3 font-display text-xl tracking-tight sm:text-2xl md:mt-12 md:text-3xl">
+        <ul data-reveal className="mt-10 space-y-3 font-display text-xl tracking-tight sm:text-2xl md:mt-12 md:text-3xl">
           <li>
             <a
               href={`https://wa.me/${contact.whatsapp}`}
@@ -82,7 +88,8 @@ export function Contact() {
       <form
         noValidate
         onSubmit={onSubmit}
-        className="self-start rounded-3xl border border-ink/10 bg-white/35 p-6 backdrop-blur-xl md:col-span-5 md:col-start-8 md:p-8"
+        data-reveal
+        className="liquid-glass self-start rounded-[2rem] p-6 md:col-span-5 md:col-start-8 md:p-8"
       >
         <div className="grid gap-5 sm:grid-cols-2">
           <label className="block text-sm font-medium">

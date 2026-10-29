@@ -2,9 +2,9 @@
 
 import { Suspense, useEffect, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { ContactShadows, Environment, Lightformer, useGLTF } from "@react-three/drei";
+import { ContactShadows, Environment, Lightformer, useGLTF, useProgress } from "@react-three/drei";
 import * as THREE from "three";
-import { markSceneReady } from "@/lib/intro";
+import { markSceneReady, setSceneProgress } from "@/lib/intro";
 
 const MODEL_URL = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/models/camera.glb`;
 
@@ -23,6 +23,11 @@ type Props = {
   /** Scroll progress through the hero, 0 → 1. */
   progress: React.RefObject<number>;
   compact: boolean;
+};
+
+type SceneProps = Props & {
+  /** False when the hero is off screen: rendering pauses to save battery and CPU. */
+  active: boolean;
 };
 
 function CameraModel({ progress, compact }: Props) {
@@ -65,10 +70,20 @@ function CameraModel({ progress, compact }: Props) {
   useEffect(() => {
     markSceneReady();
     const onMove = (e: PointerEvent) => {
+      if (e.pointerType !== "mouse") return;
       pointer.current.set((e.clientX / window.innerWidth) * 2 - 1, (e.clientY / window.innerHeight) * 2 - 1);
     };
+    // Phones have no cursor: tilting the device steers the camera instead (where allowed without a prompt).
+    const onTilt = (e: DeviceOrientationEvent) => {
+      if (e.gamma == null || e.beta == null) return;
+      pointer.current.set(clamp(e.gamma / 25, -1, 1), clamp((e.beta - 45) / 25, -1, 1));
+    };
     window.addEventListener("pointermove", onMove);
-    return () => window.removeEventListener("pointermove", onMove);
+    window.addEventListener("deviceorientation", onTilt);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("deviceorientation", onTilt);
+    };
   }, []);
 
   useFrame((state, delta) => {
@@ -80,7 +95,9 @@ function CameraModel({ progress, compact }: Props) {
     const dive = smooth(0.35, 1, p); // then fly into the lens
     const free = 1 - turn; // idle and pointer motion fade out as the scroll takes over
 
-    const yaw = lerp(START_YAW, FACE_YAW, turn) + free * (pointer.current.x * 0.3 + Math.sin(t * 0.35) * 0.06);
+    // Without a mouse or tilt the camera still turns slowly, so it never looks frozen on a phone.
+    const sway = compact ? Math.sin(t * 0.45) * 0.22 : Math.sin(t * 0.35) * 0.06;
+    const yaw = lerp(START_YAW, FACE_YAW, turn) + free * (pointer.current.x * 0.3 + sway);
     r.rotation.y = damp(r.rotation.y, yaw, 5, delta);
     r.rotation.x = damp(r.rotation.x, free * pointer.current.y * 0.08, 5, delta);
     r.position.x = lerp(compact ? 0 : 1.35, 0, turn);
@@ -102,10 +119,15 @@ function CameraModel({ progress, compact }: Props) {
   );
 }
 
-export default function CameraScene({ progress, compact }: Props) {
+export default function CameraScene({ progress, compact, active }: SceneProps) {
+  // Forward real asset loading progress to the preloader.
+  const loaded = useProgress((s) => s.progress);
+  useEffect(() => setSceneProgress(loaded / 100), [loaded]);
+
   return (
     <Canvas
-      dpr={[1, compact ? 1.5 : 2]}
+      frameloop={active ? "always" : "never"}
+      dpr={[1, compact ? 1.25 : 2]}
       shadows={!compact}
       camera={{ position: [0, 0.25, 8.5], fov: 30, near: 0.01, far: 50 }}
       gl={{ antialias: true, alpha: true }}

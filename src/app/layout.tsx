@@ -3,6 +3,11 @@ import { Bricolage_Grotesque, Geist, Mrs_Saint_Delafield, Poppins } from "next/f
 import { LangProvider } from "@/components/LangProvider";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { Preloader } from "@/components/Preloader";
+import { TransitionProvider } from "@/components/TransitionProvider";
+import { Nav } from "@/components/Nav";
+import { Footer } from "@/components/Footer";
+import { Reveals } from "@/components/Reveals";
+import { Interactions } from "@/components/Interactions";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,7 +35,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "Egu Studio | Photo et vidéo",
+  title: { default: "Egu Studio | Photo et vidéo", template: "%s | Egu Studio" },
   description: "Egu Studio, photographe et vidéaste : cérémonies, événements, portraits et films.",
 };
 
@@ -43,8 +48,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="grain min-h-full font-sans">
         <LangProvider>
           <SmoothScroll />
-          <Preloader />
-          {children}
+          <TransitionProvider>
+            <Preloader />
+            <Nav />
+            <main>{children}</main>
+            <Footer />
+            <Reveals />
+            <Interactions />
+          </TransitionProvider>
         </LangProvider>
       </body>
     </html>

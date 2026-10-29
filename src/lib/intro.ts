@@ -31,3 +31,15 @@ export const onIntroDone = intro.on;
 const scene = signal();
 export const markSceneReady = scene.fire;
 export const onSceneReady = scene.on;
+
+/** Loading progress of the 3D assets, 0 → 1, so the preloader shows real progress. */
+const progressListeners = new Set<(value: number) => void>();
+export function setSceneProgress(value: number) {
+  progressListeners.forEach((fn) => fn(value));
+}
+export function onSceneProgress(fn: (value: number) => void) {
+  progressListeners.add(fn);
+  return () => {
+    progressListeners.delete(fn);
+  };
+}

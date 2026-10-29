@@ -33,6 +33,37 @@ export const shots: Shot[] = [
   { id: 12, category: "ceremonies", src: img("egu-w4", 1200, 800), w: 1200, h: 800, place: "Réception" },
 ];
 
+export const films = [
+  {
+    id: 1,
+    title: { fr: "Aïcha & Koffi, le film", en: "Aïcha & Koffi, the film" },
+    kind: { fr: "Mariage", en: "Wedding" },
+    duration: "04:12",
+    poster: img("egu-film-1", 1200, 675),
+  },
+  {
+    id: 2,
+    title: { fr: "Nuit des Talents 2026", en: "Nuit des Talents 2026" },
+    kind: { fr: "Événement", en: "Event" },
+    duration: "02:48",
+    poster: img("egu-film-2", 1200, 675),
+  },
+  {
+    id: 3,
+    title: { fr: "Lagune, clip officiel", en: "Lagune, official video" },
+    kind: { fr: "Clip musical", en: "Music video" },
+    duration: "03:35",
+    poster: img("egu-film-3", 1200, 675),
+  },
+  {
+    id: 4,
+    title: { fr: "Groupe Kora, lancement", en: "Groupe Kora, launch" },
+    kind: { fr: "Entreprise", en: "Corporate" },
+    duration: "01:56",
+    poster: img("egu-film-4", 1200, 675),
+  },
+];
+
 export const clients = [
   "Maison Adjoua",
   "Groupe Kora",

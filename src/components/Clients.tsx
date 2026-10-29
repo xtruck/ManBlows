@@ -23,10 +23,12 @@ export function Clients() {
   const { t, lang } = useLang();
 
   return (
-    <section className="overflow-hidden bg-paper py-24 md:py-36">
-      <h2 className="px-4 font-display text-3xl font-semibold tracking-tight md:px-8">{t.clients.title}</h2>
+    <section data-nav-tone="light" className="overflow-hidden bg-paper py-24 md:py-36">
+      <h2 data-reveal className="px-4 font-display text-3xl font-semibold tracking-tight md:px-8">
+        {t.clients.title}
+      </h2>
 
-      <div className="mt-10 border-y border-ink/15 py-6">
+      <div data-reveal className="mt-10 border-y border-ink/15 py-6">
         <div className="marquee flex w-max">
           <NameRow />
           <NameRow hidden />
@@ -35,7 +37,7 @@ export function Clients() {
 
       <div className="mt-20 grid gap-14 px-4 md:grid-cols-2 md:gap-10 md:px-8">
         {testimonials.map((q) => (
-          <figure key={q.name}>
+          <figure key={q.name} data-reveal>
             <blockquote className="max-w-[34ch] font-display text-2xl leading-snug tracking-tight md:text-3xl">
               «&nbsp;{q.quote[lang]}&nbsp;»
             </blockquote>

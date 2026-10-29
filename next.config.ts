@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   /* config options here */
   output: "export", // static site for GitHub Pages (no server features like cacheComponents)
   basePath,
+  trailingSlash: true, // /travaux/ -> travaux/index.html, which GitHub Pages serves directly
   images: {
     // Demo placeholders; swap for the client's own photos in /public later.
     remotePatterns: [new URL("https://picsum.photos/**")],

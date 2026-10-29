@@ -6,6 +6,8 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(ScrollTrigger);
+// Mobile address bars resize the viewport while scrolling; don't recalc triggers for that.
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 let instance: Lenis | null = null;
 
@@ -16,7 +18,7 @@ export function SmoothScroll() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const lenis = new Lenis({ lerp: 0.1, anchors: { offset: -72 } });
+    const lenis = new Lenis({ lerp: 0.1 });
     instance = lenis;
 
     // Keep ScrollTrigger in step with Lenis and drive both from GSAP's ticker.

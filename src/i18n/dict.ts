@@ -2,20 +2,36 @@ export type Lang = "fr" | "en";
 
 export const dict = {
   fr: {
-    nav: { work: "Travaux", reel: "Films", about: "À propos", contact: "Contact", book: "Réserver une date", menu: "Menu", close: "Fermer" },
+    nav: {
+      home: "Accueil",
+      work: "Travaux",
+      reel: "Films",
+      about: "À propos",
+      contact: "Contact",
+      book: "Réserver une date",
+      menu: "Menu",
+      close: "Fermer",
+    },
     hero: {
       line: "Photo et vidéo de cérémonies, d'événements et de portraits.",
       status: "Réservations ouvertes",
       cta: "Voir les travaux",
       lens: "Chaque image commence ici.",
     },
+    home: {
+      selection: "Sélection",
+      selectionIntro: "Quelques images récentes. Le reste vous attend dans les travaux.",
+      allWork: "Voir tous les travaux",
+      films: "Voir les films",
+      more: "En savoir plus",
+    },
     work: {
-      title: "Travaux récents",
-      intro: "Une sélection de mariages, d'événements et de portraits. Cliquez sur une image pour l'agrandir.",
+      title: "Travaux",
+      intro: "Mariages, événements et portraits. Touchez une image pour l'agrandir.",
       filters: { all: "Tout", ceremonies: "Cérémonies", events: "Événements", portraits: "Portraits", films: "Films" },
       frame: "Image",
-      prev: "Image précédente",
-      next: "Image suivante",
+      prev: "Précédente",
+      next: "Suivante",
       close: "Fermer",
     },
     reel: {
@@ -23,6 +39,13 @@ export const dict = {
       text: "Deux minutes pour voir comment je filme : les regards, les mains, la lumière et le rythme d'une journée.",
       play: "Lire le showreel",
       pending: "Le showreel sera ajouté ici dès réception des vidéos.",
+    },
+    films: {
+      title: "Films",
+      intro: "Mariages, événements et clips, racontés en mouvement.",
+      soon: "Vidéo bientôt disponible.",
+      play: "Lire",
+      more: "Autres films",
     },
     about: {
       title: "Derrière l'objectif",
@@ -33,7 +56,22 @@ export const dict = {
       servicesTitle: "Ce que je fais",
       services: ["Photo de cérémonie", "Film de mariage", "Couverture d'événement", "Portrait et éditorial", "Contenu pour les réseaux"],
     },
+    process: {
+      title: "Comment je travaille",
+      steps: [
+        { title: "On échange", text: "Un appel ou un message pour comprendre votre projet, la date, le lieu et l'ambiance voulue." },
+        { title: "Je prépare", text: "Repérage, déroulé de la journée et liste des moments à ne pas manquer." },
+        { title: "Je capture", text: "Photo et vidéo le jour J, avec discrétion, du premier regard au dernier verre." },
+        { title: "Je monte et retouche", text: "Sélection, étalonnage, retouche et montage dans un style cohérent." },
+        { title: "Vous recevez", text: "Une galerie en ligne et vos films, prêts à partager, dans les délais annoncés." },
+      ],
+    },
     clients: { title: "Ils m'ont fait confiance" },
+    cta: {
+      title: "Une date en tête ?",
+      text: "Mariage, événement ou portrait : dites-moi ce que vous préparez.",
+      button: "Réserver une date",
+    },
     contact: {
       title: "Racontez-moi votre date.",
       text: "Dites-moi le type de projet, la date et le lieu. Je réponds sous 24 heures.",
@@ -52,22 +90,39 @@ export const dict = {
     },
     footer: { rights: "Tous droits réservés.", top: "Retour en haut" },
     preloader: "Chargement",
+    focus: "Mise au point",
   },
   en: {
-    nav: { work: "Work", reel: "Films", about: "About", contact: "Contact", book: "Book a date", menu: "Menu", close: "Close" },
+    nav: {
+      home: "Home",
+      work: "Work",
+      reel: "Films",
+      about: "About",
+      contact: "Contact",
+      book: "Book a date",
+      menu: "Menu",
+      close: "Close",
+    },
     hero: {
       line: "Photo and video for ceremonies, events and portraits.",
       status: "Now booking",
       cta: "See the work",
       lens: "Every frame starts here.",
     },
+    home: {
+      selection: "Selection",
+      selectionIntro: "A few recent frames. The rest is waiting in the work.",
+      allWork: "See all the work",
+      films: "See the films",
+      more: "Read more",
+    },
     work: {
-      title: "Recent work",
-      intro: "A selection of weddings, events and portraits. Click any image to enlarge it.",
+      title: "Work",
+      intro: "Weddings, events and portraits. Tap any image to enlarge it.",
       filters: { all: "All", ceremonies: "Ceremonies", events: "Events", portraits: "Portraits", films: "Films" },
       frame: "Frame",
-      prev: "Previous image",
-      next: "Next image",
+      prev: "Previous",
+      next: "Next",
       close: "Close",
     },
     reel: {
@@ -75,6 +130,13 @@ export const dict = {
       text: "Two minutes to see how I shoot: the glances, the hands, the light and the rhythm of a day.",
       play: "Play showreel",
       pending: "The showreel will be added here once the videos arrive.",
+    },
+    films: {
+      title: "Films",
+      intro: "Weddings, events and music videos, told in motion.",
+      soon: "Video coming soon.",
+      play: "Play",
+      more: "More films",
     },
     about: {
       title: "Behind the lens",
@@ -85,7 +147,22 @@ export const dict = {
       servicesTitle: "What I do",
       services: ["Ceremony photography", "Wedding films", "Event coverage", "Portrait and editorial", "Social media content"],
     },
+    process: {
+      title: "How I work",
+      steps: [
+        { title: "We talk", text: "A call or a message to understand your project, the date, the place and the mood you want." },
+        { title: "I prepare", text: "Scouting, a running order for the day and a list of moments not to miss." },
+        { title: "I capture", text: "Photo and video on the day, discreetly, from the first look to the last glass." },
+        { title: "I edit", text: "Selection, colour grading, retouching and editing in one consistent style." },
+        { title: "You receive", text: "An online gallery and your films, ready to share, on the agreed timeline." },
+      ],
+    },
     clients: { title: "Trusted by" },
+    cta: {
+      title: "Got a date in mind?",
+      text: "Wedding, event or portrait: tell me what you're planning.",
+      button: "Book a date",
+    },
     contact: {
       title: "Tell me about your date.",
       text: "Share the type of project, the date and the place. I reply within 24 hours.",
@@ -104,6 +181,7 @@ export const dict = {
     },
     footer: { rights: "All rights reserved.", top: "Back to top" },
     preloader: "Loading",
+    focus: "Focusing",
   },
 } as const;
 

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Logo } from "./Logo";
 import { useLang } from "./LangProvider";
+import { TransitionLink } from "./TransitionProvider";
 import { onIntroDone, onSceneReady } from "@/lib/intro";
 import { useMedia } from "@/lib/useMedia";
 
@@ -31,6 +32,16 @@ export function Hero() {
   const progress = useRef(0);
   const compact = useMedia("(max-width: 767px)");
   const reduced = useMedia("(prefers-reduced-motion: reduce)");
+  const [active, setActive] = useState(true);
+
+  // Pause the 3D render once the hero has scrolled away.
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([entry]) => setActive(entry.isIntersecting), { rootMargin: "200px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   // Running timecode at 25 fps, written straight to the DOM to avoid re-renders.
   useEffect(() => {
@@ -113,13 +124,13 @@ export function Hero() {
   }, [reduced]);
 
   return (
-    <section ref={root} id="top" className={`relative bg-ink ${reduced ? "h-[100svh]" : "h-[280svh]"}`}>
+    <section ref={root} id="top" data-nav-tone="dark" className={`relative bg-ink ${reduced ? "h-[100svh]" : "h-[230svh] md:h-[280svh]"}`}>
       <div className="sticky top-0 h-[100svh] min-h-[620px] overflow-hidden text-paper">
         {/* Studio backdrop */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_62%_45%,#2e2b28_0%,#0e0e0e_70%)] max-md:bg-[radial-gradient(ellipse_90%_50%_at_50%_38%,#2e2b28_0%,#0e0e0e_75%)]" />
 
         <div data-hero-3d className="absolute inset-0">
-          <CameraScene progress={progress} compact={compact} />
+          <CameraScene progress={progress} compact={compact} active={active} />
         </div>
 
         {/* Viewfinder frame */}
@@ -156,12 +167,13 @@ export function Hero() {
               {t.hero.line}
             </p>
             <div data-hero-fade className="mt-6 flex items-center gap-5">
-              <a
-                href="#work"
-                className="flex h-12 items-center rounded-full bg-paper px-6 text-sm font-medium text-ink transition-transform duration-200 hover:scale-[1.03]"
+              <TransitionLink
+                href="/travaux/"
+                data-magnetic
+                className="flex h-12 items-center rounded-full bg-paper px-6 text-sm font-medium text-ink transition-transform duration-200 hover:scale-[1.03] active:scale-95"
               >
                 {t.hero.cta}
-              </a>
+              </TransitionLink>
               <span className="flex items-center gap-2 text-sm text-paper/75">
                 <span className="size-1.5 rounded-full bg-brand" />
                 {t.hero.status}
