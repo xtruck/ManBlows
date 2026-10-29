@@ -71,13 +71,8 @@ export function Preloader() {
     document.documentElement.style.overflow = "hidden";
 
     // The intro plays on every full page load (refresh included); page-to-page navigation
-    // keeps the layout mounted, so it never replays there. Reduced motion gets a short fade.
-    if (reduced) {
-      const tween = gsap.to(el, { autoAlpha: 0, duration: 0.35, delay: 0.05, onComplete: finish });
-      return () => {
-        tween.kill();
-      };
-    }
+    // keeps the layout mounted, so it never replays there. It also plays with reduced motion
+    // on (battery savers turn that on, and phones were skipping the intro), minus the flash.
 
     const setAperture = (open: number) => {
       const d = iris(open);
@@ -102,20 +97,19 @@ export function Preloader() {
     const cap = window.setTimeout(() => (sceneDone = true), MAX_WAIT_MS);
     (document.fonts?.ready ?? Promise.resolve()).then(() => (fontsDone = true));
 
-    // The camera body draws itself in, line by line, while the lens starts to open.
-    const ctx = gsap.context(() => {
-      gsap
-        .timeline()
-        .fromTo("[data-draw]", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.1, ease: "power2.inOut", stagger: 0.06 })
-        .fromTo("[data-body-fill]", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.7, ease: "power1.out" }, 0.55)
-        .fromTo("[data-lens-glass]", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.7, ease: "power1.out" }, 0.8)
-        .fromTo(stage.current, { scale: 0.6, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.9, ease: "expo.out" }, 0.3);
-    }, el);
+    // The camera's entrance runs in CSS (see .pre-outline in globals.css); GSAP takes over for the outro.
+    const ctx = gsap.context(() => {}, el);
     const start = performance.now();
     let shown = 0;
     let outroStarted = false;
 
     const outro = () => {
+      // A finished CSS animation still holds its end value over inline styles, so hand the
+      // lens glass back to GSAP before fading it.
+      el.querySelectorAll<HTMLElement | SVGElement>(".pre-glass").forEach((g) => {
+        g.style.animation = "none";
+        g.style.opacity = "1";
+      });
       ctx.add(() => {
         const o = { open: 0.5 };
         // Zoom the whole camera into its lens until the yellow fills the screen.
@@ -125,7 +119,7 @@ export function Preloader() {
           .to("[data-pre-hud]", { autoAlpha: 0, y: 10, duration: 0.35, ease: "power2.in" }, 0)
           // Shutter press and flash
           .to("[data-pre-shutter]", { y: 3, duration: 0.1, ease: "power2.in", yoyo: true, repeat: 1 }, 0)
-          .fromTo("[data-pre-flash]", { autoAlpha: 0.9 }, { autoAlpha: 0, duration: 0.45, ease: "power2.out" }, 0.12)
+          .fromTo("[data-pre-flash]", { autoAlpha: reduced ? 0 : 0.9 }, { autoAlpha: 0, duration: 0.45, ease: "power2.out" }, 0.12)
           .to("[data-lens-glass]", { autoAlpha: 0, duration: 0.4, ease: "power1.in" }, 0.15)
           .to(o, { open: 1.2, duration: 0.75, ease: "power3.inOut", onUpdate: () => setAperture(o.open) }, 0.15)
           .to("[data-logo-script]", { clipPath: "inset(-20% 0% -20% 0)", duration: 0.9, ease: "power2.inOut" }, 0.35)
@@ -226,7 +220,7 @@ export function Preloader() {
             </radialGradient>
           </defs>
 
-          <g data-body-fill opacity={0}>
+          <g className="pre-fill">
             {/* Strap lugs and hot shoe */}
             <rect x="9" y="74" width="10" height="14" rx="2.5" fill="url(#pre-metal)" />
             <rect x="381" y="74" width="10" height="14" rx="2.5" fill="url(#pre-metal)" />
@@ -269,19 +263,19 @@ export function Preloader() {
             <rect x="199.2" y="61" width="1.6" height="6" rx="0.8" fill="#ffc400" />
           </g>
 
-          <g stroke="rgb(236 232 225 / 0.7)" strokeWidth="1.2" strokeLinecap="round" strokeDashoffset={1}>
-            <rect data-draw pathLength={1} strokeDasharray="1" x="18" y="58" width="364" height="184" rx="24" />
-            <path data-draw pathLength={1} strokeDasharray="1" d="M136 62L153 31Q157 22 168 22H232Q243 22 247 31L264 62" />
-            <path data-draw pathLength={1} strokeDasharray="1" d="M82 95Q102 98 102 124V214Q102 240 80 242" />
-            <rect data-draw pathLength={1} strokeDasharray="1" x="46" y="38" width="62" height="20" rx="3" />
-            <rect data-draw pathLength={1} strokeDasharray="1" x="298" y="46" width="44" height="13" rx="6.5" />
-            <circle data-draw pathLength={1} strokeDasharray="1" cx="200" cy="150" r="93" />
-            <circle data-draw pathLength={1} strokeDasharray="1" cx="200" cy="150" r="79" stroke="rgb(255 196 0 / 0.55)" />
+          <g className="pre-outline" stroke="rgb(236 232 225 / 0.7)" strokeWidth="1.2" strokeLinecap="round">
+            <rect pathLength={1} x="18" y="58" width="364" height="184" rx="24" />
+            <path pathLength={1} d="M136 62L153 31Q157 22 168 22H232Q243 22 247 31L264 62" />
+            <path pathLength={1} d="M82 95Q102 98 102 124V214Q102 240 80 242" />
+            <rect pathLength={1} x="46" y="38" width="62" height="20" rx="3" />
+            <rect pathLength={1} x="298" y="46" width="44" height="13" rx="6.5" />
+            <circle pathLength={1} cx="200" cy="150" r="93" />
+            <circle pathLength={1} cx="200" cy="150" r="79" stroke="rgb(255 196 0 / 0.55)" />
           </g>
         </svg>
 
         {/* The lens: brand yellow behind an iris diaphragm */}
-        <div ref={stage} className="@container absolute top-[29.2%] left-[31.5%] aspect-square w-[37%] opacity-0">
+        <div ref={stage} className="@container pre-stage absolute top-[29.2%] left-[31.5%] aspect-square w-[37%]">
           <div className="absolute inset-[1.5%] flex items-center justify-center overflow-hidden rounded-full bg-brand">
             <div data-pre-logo className="pt-[0.55em] text-[15cqw]">
               <Logo scriptClassName="[clip-path:inset(-20%_100%_-20%_0)]" />
@@ -307,7 +301,7 @@ export function Preloader() {
         </div>
 
         {/* Front element: coated glass reflections sitting over the iris */}
-        <svg data-lens-glass viewBox="0 0 400 260" className="pointer-events-none absolute inset-0 size-full opacity-0">
+        <svg data-lens-glass viewBox="0 0 400 260" className="pre-glass pointer-events-none absolute inset-0 size-full">
           <defs>
             <radialGradient id="pre-glass" cx="36%" cy="30%" r="75%">
               <stop offset="0%" stopColor="#fff" stopOpacity="0.3" />
