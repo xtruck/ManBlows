@@ -167,6 +167,11 @@ export function Preloader() {
   if (gone) return null;
 
   return (
+    <>
+    {/* The animation itself is decorative; this tells screen readers the site is loading. */}
+    <p role="status" className="sr-only">
+      {t.a11y.loading}
+    </p>
     <div
       ref={root}
       aria-hidden
@@ -341,5 +346,6 @@ export function Preloader() {
         </span>
       </div>
     </div>
+    </>
   );
 }

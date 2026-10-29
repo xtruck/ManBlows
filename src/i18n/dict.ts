@@ -91,6 +91,13 @@ export const dict = {
     footer: { rights: "Tous droits réservés.", top: "Retour en haut" },
     preloader: "Chargement",
     focus: "Mise au point",
+    a11y: {
+      mainNav: "Navigation principale",
+      footerNav: "Pied de page",
+      demoPhoto: "photo de démonstration",
+      demoPortrait: "Portrait du photographe, image de démonstration",
+      loading: "Chargement du site EGC Studio…",
+    },
   },
   en: {
     nav: {
@@ -182,6 +189,13 @@ export const dict = {
     footer: { rights: "All rights reserved.", top: "Back to top" },
     preloader: "Loading",
     focus: "Focusing",
+    a11y: {
+      mainNav: "Main navigation",
+      footerNav: "Footer",
+      demoPhoto: "demo photo",
+      demoPortrait: "Portrait of the photographer, demo image",
+      loading: "Loading the EGC Studio site…",
+    },
   },
 } as const;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
 import { Logo } from "./Logo";
@@ -8,6 +8,7 @@ import { useLang } from "./LangProvider";
 import { getLenis } from "./SmoothScroll";
 import { TransitionLink } from "./TransitionProvider";
 import { normalize, routes } from "@/lib/routes";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 import type { Lang } from "@/i18n/dict";
 
 function LangToggle({ className = "" }: { className?: string }) {
@@ -38,11 +39,18 @@ export function Nav() {
   const { t } = useLang();
   const pathname = normalize(usePathname());
   const [open, setOpen] = useState(false);
+  const menu = useRef<HTMLDivElement>(null);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+  useFocusTrap(menu, open);
 
   useEffect(() => {
     const lenis = getLenis();
     if (open) lenis?.stop();
     else lenis?.start();
+    // Give focus back to the Menu button when the dialog closes.
+    if (!open && wasOpen.current) menuButton.current?.focus();
+    wasOpen.current = open;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -55,7 +63,7 @@ export function Nav() {
           <Logo tone="paper" className="text-[22px]" />
         </TransitionLink>
 
-        <nav aria-label="Principal" className="hidden items-center gap-1 text-sm lg:flex">
+        <nav aria-label={t.a11y.mainNav} className="hidden items-center gap-1 text-sm lg:flex">
           {pages.map((p) => {
             const active = pathname === p.href;
             return (
@@ -84,6 +92,7 @@ export function Nav() {
             {t.nav.book}
           </TransitionLink>
           <button
+            ref={menuButton}
             type="button"
             onClick={() => setOpen(true)}
             aria-expanded={open}
@@ -102,6 +111,7 @@ export function Nav() {
       <AnimatePresence>
         {open && (
           <motion.div
+            ref={menu}
             id="mobile-menu"
             role="dialog"
             aria-modal="true"
@@ -125,7 +135,7 @@ export function Nav() {
                 {t.nav.close}
               </button>
             </div>
-            <nav aria-label="Mobile" className="relative mt-auto flex flex-col">
+            <nav aria-label={t.a11y.mainNav} className="relative mt-auto flex flex-col">
               {routes.map((r, i) => (
                 <motion.div
                   key={r.href}

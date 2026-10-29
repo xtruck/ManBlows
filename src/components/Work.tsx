@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 import { useLang } from "./LangProvider";
 import { getLenis } from "./SmoothScroll";
 import { TransitionLink } from "./TransitionProvider";
@@ -26,6 +28,20 @@ export function Work({ mode = "page" }: WorkProps) {
   const [index, setIndex] = useState<number | null>(null);
   const lastTrigger = useRef<HTMLElement | null>(null);
   const touchX = useRef<number | null>(null);
+  const dialog = useRef<HTMLDivElement>(null);
+  useFocusTrap(dialog, index !== null);
+
+  // Filtering moves the remaining images up; re-measure scroll reveals once the
+  // exit animation is done, or images still waiting to reveal stay hidden.
+  const firstFilter = useRef(true);
+  useEffect(() => {
+    if (firstFilter.current) {
+      firstFilter.current = false;
+      return;
+    }
+    const id = window.setTimeout(() => ScrollTrigger.refresh(), 450);
+    return () => window.clearTimeout(id);
+  }, [filter]);
 
   const visible = useMemo(() => {
     if (teaser) return shots.slice(0, 6);
@@ -123,7 +139,7 @@ export function Work({ mode = "page" }: WorkProps) {
               >
                 <Image
                   src={shot.src}
-                  alt={`${shot.place}, photo de démonstration`}
+                  alt={`${shot.place}, ${t.a11y.demoPhoto}`}
                   width={shot.w}
                   height={shot.h}
                   sizes="(min-width: 1024px) 33vw, 50vw"
@@ -155,6 +171,7 @@ export function Work({ mode = "page" }: WorkProps) {
       <AnimatePresence>
         {current && index !== null && (
           <motion.div
+            ref={dialog}
             role="dialog"
             aria-modal="true"
             aria-label={`${t.work.frame} ${frameNo(current.id)}`}
@@ -184,7 +201,7 @@ export function Work({ mode = "page" }: WorkProps) {
               >
                 <Image
                   src={current.src}
-                  alt={`${current.place}, photo de démonstration`}
+                  alt={`${current.place}, ${t.a11y.demoPhoto}`}
                   width={current.w}
                   height={current.h}
                   sizes="90vw"

@@ -22,7 +22,7 @@ export function Footer() {
       <LightLeaks className="opacity-40" />
       <div className="flex flex-col gap-12 md:flex-row md:items-end md:justify-between">
         <Logo tone="paper" className="text-[20vw] md:text-[11vw]" />
-        <nav aria-label="Pied de page" className="grid grid-cols-2 gap-x-10 gap-y-3 text-lg md:pb-[1.5vw]">
+        <nav aria-label={t.a11y.footerNav} className="grid grid-cols-2 gap-x-10 gap-y-3 text-lg md:pb-[1.5vw]">
           {routes.map((r) => (
             <TransitionLink key={r.href} href={r.href} className="py-2 text-paper/75 hover:text-paper active:opacity-60">
               {t.nav[r.key]}

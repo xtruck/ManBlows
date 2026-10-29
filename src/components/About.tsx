@@ -18,7 +18,7 @@ export function About({ mode = "page" }: { mode?: "page" | "teaser" }) {
       <figure data-reveal="image" className="overflow-hidden rounded-sm md:col-span-5">
         <Image
           src={portrait}
-          alt="Portrait du photographe, image de démonstration"
+          alt={t.a11y.demoPortrait}
           width={900}
           height={1125}
           sizes="(min-width: 768px) 40vw, 100vw"
