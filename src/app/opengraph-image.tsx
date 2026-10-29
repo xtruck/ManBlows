@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const dynamic = "force-static"; // generated once at build time for the static export
-export const alt = "EGC Studio, photo et vidéo";
+export const alt = "EGC Studio, photo, vidéo et design";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -26,8 +26,8 @@ export default function Image() {
           <div style={{ fontSize: 200, fontWeight: 800, letterSpacing: -8 }}>studio.</div>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 34 }}>
-          <span>Photo et vidéo</span>
-          <span>Cérémonies, événements, portraits</span>
+          <span>Photo, vidéo et design</span>
+          <span>Cérémonies, événements, visuels</span>
         </div>
       </div>
     ),

@@ -38,8 +38,8 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   // Absolute base for share previews (WhatsApp, Facebook); otherwise they point at localhost.
   metadataBase: new URL(`https://xtruck.github.io${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/`),
-  title: { default: "EGC Studio | Photo et vidéo", template: "%s | EGC Studio" },
-  description: "EGC Studio, photographe et vidéaste : cérémonies, événements, portraits et films.",
+  title: { default: "EGC Studio | Photo, vidéo et design", template: "%s | EGC Studio" },
+  description: "EGC Studio, photographe, vidéaste et infographiste : cérémonies, événements, portraits, films et design graphique.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

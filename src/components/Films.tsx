@@ -18,11 +18,27 @@ export function Films() {
       <div className="mt-10 grid gap-x-4 gap-y-10 md:mt-14 md:grid-cols-2">
         {films.map((f) => (
           <article key={f.id}>
+            {f.video && opened === f.id ? (
+              // Real footage: play it right in the card. Vertical phone videos stay uncropped.
+              <div className={`w-full overflow-hidden rounded-sm bg-black ${f.vertical ? "mx-auto aspect-[9/16] max-w-[22rem]" : "aspect-video"}`}>
+                <video
+                  src={f.video}
+                  poster={f.poster}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="h-full w-full object-contain"
+                  aria-label={f.title[lang]}
+                />
+              </div>
+            ) : (
             <button
               type="button"
               data-reveal="image"
               onClick={() => setOpened(f.id)}
-              className="group relative block aspect-video w-full cursor-pointer overflow-hidden rounded-sm bg-graphite active:scale-[0.98]"
+              className={`group relative block w-full cursor-pointer overflow-hidden rounded-sm bg-graphite active:scale-[0.98] ${
+                f.vertical ? "mx-auto aspect-[9/16] max-w-[22rem]" : "aspect-video"
+              }`}
               aria-label={`${t.films.play} : ${f.title[lang]}`}
             >
               <Image
@@ -48,6 +64,7 @@ export function Films() {
                 </span>
               )}
             </button>
+            )}
             <div data-reveal className="mt-3 flex items-baseline justify-between gap-4">
               <h3 className="font-display text-xl tracking-tight md:text-2xl">{f.title[lang]}</h3>
               <span className="shrink-0 text-sm text-muted">{f.kind[lang]}</span>

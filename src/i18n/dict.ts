@@ -13,7 +13,7 @@ export const dict = {
       close: "Fermer",
     },
     hero: {
-      line: "Photo et vidéo de cérémonies, d'événements et de portraits.",
+      line: "Photo, vidéo et design graphique : cérémonies, événements, portraits et visuels de marque.",
       status: "Réservations ouvertes",
       cta: "Voir les travaux",
       lens: "Chaque image commence ici.",
@@ -27,8 +27,10 @@ export const dict = {
     },
     work: {
       title: "Travaux",
-      intro: "Mariages, événements et portraits. Touchez une image pour l'agrandir.",
-      filters: { all: "Tout", ceremonies: "Cérémonies", events: "Événements", portraits: "Portraits", films: "Films" },
+      intro: "Mariages, événements, portraits et créations graphiques. Touchez une image pour l'agrandir.",
+      filters: { all: "Tout", ceremonies: "Cérémonies", events: "Événements", portraits: "Portraits", films: "Films", design: "Design", studio: "Mes offres" },
+      clientType: "Type de client",
+      kinds: { all: "Tous", church: "Église", business: "Entreprise", school: "École", event: "Événement", personal: "Particulier", studio: "Offre du studio" },
       frame: "Image",
       prev: "Précédente",
       next: "Suivante",
@@ -50,11 +52,19 @@ export const dict = {
     about: {
       title: "Derrière l'objectif",
       bio: [
-        "Egu a commencé par l'affiche, sur Canva, avant de prendre la caméra. De cette époque il garde l'œil du cadre et de la composition.",
+        "Egu a commencé comme infographiste, avec des affiches et des visuels créés sur Canva, avant de prendre la caméra. De cette époque il garde l'œil du cadre et de la composition.",
         "Aujourd'hui il photographie et filme mariages, baptêmes, lancements et portraits, en freelance, pour des familles comme pour des marques.",
+        "Il reste infographiste : affiches, visuels pour les réseaux et identités de marque, sur Canva d'abord, et au-delà de Canva quand le projet l'exige.",
       ],
       servicesTitle: "Ce que je fais",
-      services: ["Photo de cérémonie", "Film de mariage", "Couverture d'événement", "Portrait et éditorial", "Contenu pour les réseaux"],
+      services: [
+        "Photo de cérémonie",
+        "Film de mariage",
+        "Couverture d'événement",
+        "Portrait et éditorial",
+        "Design graphique et infographie",
+        "Contenu pour les réseaux",
+      ],
     },
     process: {
       title: "Comment je travaille",
@@ -66,10 +76,24 @@ export const dict = {
         { title: "Vous recevez", text: "Une galerie en ligne et vos films, prêts à partager, dans les délais annoncés." },
       ],
     },
+    disciplines: {
+      title: "Trois métiers, un seul regard.",
+      intro: "Photographe, vidéaste et infographiste : le même œil pour l'image fixe, l'image en mouvement et le graphisme.",
+      items: [
+        { name: "Photo", text: "Cérémonies, événements et portraits, photographiés avec discrétion." },
+        { name: "Vidéo", text: "Films de mariage, clips et reportages, montés dans un style cohérent." },
+        {
+          name: "Design graphique",
+          text: "Affiches, visuels pour les réseaux, infographies et identités de marque. Créés sur Canva, et au-delà quand le projet l'exige.",
+        },
+      ],
+      since: "Là où tout a commencé",
+      cta: "Voir les créations",
+    },
     clients: { title: "Ils m'ont fait confiance" },
     cta: {
       title: "Une date en tête ?",
-      text: "Mariage, événement ou portrait : dites-moi ce que vous préparez.",
+      text: "Mariage, événement, portrait ou visuel graphique : dites-moi ce que vous préparez.",
       button: "Réserver une date",
     },
     contact: {
@@ -78,7 +102,7 @@ export const dict = {
       name: "Nom",
       email: "Email",
       type: "Type de projet",
-      types: ["Mariage ou cérémonie", "Événement", "Portrait", "Film ou clip", "Autre"],
+      types: ["Mariage ou cérémonie", "Événement", "Portrait", "Film ou clip", "Design graphique", "Autre"],
       date: "Date prévue",
       message: "Message",
       send: "Envoyer sur WhatsApp",
@@ -95,6 +119,7 @@ export const dict = {
       mainNav: "Navigation principale",
       footerNav: "Pied de page",
       demoPhoto: "photo de démonstration",
+      realDesign: "création graphique EGC Studio",
       demoPortrait: "Portrait du photographe, image de démonstration",
       loading: "Chargement du site EGC Studio…",
     },
@@ -111,7 +136,7 @@ export const dict = {
       close: "Close",
     },
     hero: {
-      line: "Photo and video for ceremonies, events and portraits.",
+      line: "Photo, video and graphic design: ceremonies, events, portraits and brand visuals.",
       status: "Now booking",
       cta: "See the work",
       lens: "Every frame starts here.",
@@ -125,8 +150,10 @@ export const dict = {
     },
     work: {
       title: "Work",
-      intro: "Weddings, events and portraits. Tap any image to enlarge it.",
-      filters: { all: "All", ceremonies: "Ceremonies", events: "Events", portraits: "Portraits", films: "Films" },
+      intro: "Weddings, events, portraits and graphic work. Tap any image to enlarge it.",
+      filters: { all: "All", ceremonies: "Ceremonies", events: "Events", portraits: "Portraits", films: "Films", design: "Design", studio: "My offers" },
+      clientType: "Client type",
+      kinds: { all: "All", church: "Church", business: "Business", school: "School", event: "Event", personal: "Individual", studio: "Studio offer" },
       frame: "Frame",
       prev: "Previous",
       next: "Next",
@@ -148,11 +175,19 @@ export const dict = {
     about: {
       title: "Behind the lens",
       bio: [
-        "Egu started with posters in Canva before picking up a camera. From those days he kept an eye for framing and composition.",
+        "Egu started out as a graphic designer, making posters and visuals in Canva, before picking up a camera. From those days he kept an eye for framing and composition.",
         "Today he shoots photo and video for weddings, christenings, launches and portraits, freelance, for families and brands alike.",
+        "He is still a graphic designer: posters, social media visuals and brand identities, in Canva first, and beyond Canva when a project calls for it.",
       ],
       servicesTitle: "What I do",
-      services: ["Ceremony photography", "Wedding films", "Event coverage", "Portrait and editorial", "Social media content"],
+      services: [
+        "Ceremony photography",
+        "Wedding films",
+        "Event coverage",
+        "Portrait and editorial",
+        "Graphic design and infographics",
+        "Social media content",
+      ],
     },
     process: {
       title: "How I work",
@@ -164,10 +199,24 @@ export const dict = {
         { title: "You receive", text: "An online gallery and your films, ready to share, on the agreed timeline." },
       ],
     },
+    disciplines: {
+      title: "Three crafts, one eye.",
+      intro: "Photographer, videographer and graphic designer: the same eye for the still image, the moving image and the layout.",
+      items: [
+        { name: "Photo", text: "Ceremonies, events and portraits, shot with discretion." },
+        { name: "Video", text: "Wedding films, music videos and reportage, edited in one consistent style." },
+        {
+          name: "Graphic design",
+          text: "Posters, social media visuals, infographics and brand identities. Made in Canva, and beyond when the project needs it.",
+        },
+      ],
+      since: "Where it all started",
+      cta: "See the designs",
+    },
     clients: { title: "Trusted by" },
     cta: {
       title: "Got a date in mind?",
-      text: "Wedding, event or portrait: tell me what you're planning.",
+      text: "Wedding, event, portrait or graphic visual: tell me what you're planning.",
       button: "Book a date",
     },
     contact: {
@@ -176,7 +225,7 @@ export const dict = {
       name: "Name",
       email: "Email",
       type: "Project type",
-      types: ["Wedding or ceremony", "Event", "Portrait", "Film or music video", "Other"],
+      types: ["Wedding or ceremony", "Event", "Portrait", "Film or music video", "Graphic design", "Other"],
       date: "Planned date",
       message: "Message",
       send: "Send on WhatsApp",
@@ -193,6 +242,7 @@ export const dict = {
       mainNav: "Main navigation",
       footerNav: "Footer",
       demoPhoto: "demo photo",
+      realDesign: "EGC Studio graphic design",
       demoPortrait: "Portrait of the photographer, demo image",
       loading: "Loading the EGC Studio site…",
     },

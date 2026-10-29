@@ -8,10 +8,14 @@ import { useFocusTrap } from "@/lib/useFocusTrap";
 import { useLang } from "./LangProvider";
 import { getLenis } from "./SmoothScroll";
 import { TransitionLink } from "./TransitionProvider";
-import { shots, type Category } from "@/content/site";
+import { shots, type Category, type Kind } from "@/content/site";
 
 type Filter = "all" | Category;
-const filters: Filter[] = ["all", "ceremonies", "events", "portraits", "films"];
+const filters: Filter[] = ["all", "ceremonies", "events", "portraits", "films", "design", "studio"];
+
+// Client types offered when browsing the design work ("studio" is the founder's own promotion).
+type KindFilter = "all" | Exclude<Kind, "studio">;
+const kindFilters: KindFilter[] = ["all", "church", "business", "school", "event", "personal"];
 
 const frameNo = (id: number) => String(id).padStart(2, "0");
 
@@ -25,6 +29,7 @@ export function Work({ mode = "page" }: WorkProps) {
   const { t } = useLang();
   const teaser = mode === "teaser";
   const [filter, setFilter] = useState<Filter>("all");
+  const [kind, setKind] = useState<KindFilter>("all");
   const [index, setIndex] = useState<number | null>(null);
   const lastTrigger = useRef<HTMLElement | null>(null);
   const touchX = useRef<number | null>(null);
@@ -41,12 +46,13 @@ export function Work({ mode = "page" }: WorkProps) {
     }
     const id = window.setTimeout(() => ScrollTrigger.refresh(), 450);
     return () => window.clearTimeout(id);
-  }, [filter]);
+  }, [filter, kind]);
 
   const visible = useMemo(() => {
-    if (teaser) return shots.slice(0, 6);
-    return filter === "all" ? shots : shots.filter((s) => s.category === filter);
-  }, [filter, teaser]);
+    if (teaser) return shots.filter((s) => s.featured);
+    const byCategory = filter === "all" ? shots : shots.filter((s) => s.category === filter);
+    return filter === "design" && kind !== "all" ? byCategory.filter((s) => s.kind === kind) : byCategory;
+  }, [filter, kind, teaser]);
   const current = index === null ? null : visible[index];
 
   const close = useCallback(() => {
@@ -103,12 +109,37 @@ export function Work({ mode = "page" }: WorkProps) {
                   key={f}
                   type="button"
                   aria-pressed={filter === f}
-                  onClick={() => setFilter(f)}
+                  onClick={() => {
+                    setFilter(f);
+                    setKind("all");
+                  }}
                   className={`h-10 shrink-0 cursor-pointer rounded-full px-4 text-sm transition-all duration-300 active:scale-95 ${
                     filter === f ? "bg-ink text-paper shadow-lg shadow-ink/20" : "liquid-glass text-ink"
                   }`}
                 >
                   {t.work.filters[f]}
+                </button>
+              ))}
+            </div>
+          )}
+          {!teaser && filter === "design" && (
+            // Second row: who the designs were made for (churches, businesses, schools, events).
+            <div
+              role="group"
+              aria-label={t.work.clientType}
+              className="-mx-4 mt-2 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
+            >
+              {kindFilters.map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  aria-pressed={kind === k}
+                  onClick={() => setKind(k)}
+                  className={`h-8 shrink-0 cursor-pointer rounded-full px-3 text-xs transition-all duration-300 active:scale-95 ${
+                    kind === k ? "bg-brand text-ink" : "border border-ink/20 text-ink hover:bg-ink/5"
+                  }`}
+                >
+                  {t.work.kinds[k]}
                 </button>
               ))}
             </div>
@@ -139,19 +170,30 @@ export function Work({ mode = "page" }: WorkProps) {
               >
                 <Image
                   src={shot.src}
-                  alt={`${shot.place}, ${t.a11y.demoPhoto}`}
+                  alt={`${shot.place}, ${shot.real ? t.a11y.realDesign : t.a11y.demoPhoto}`}
                   width={shot.w}
                   height={shot.h}
                   sizes="(min-width: 1024px) 33vw, 50vw"
                   className="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                 />
               </button>
-              <figcaption className="flex flex-col pt-2 text-xs sm:flex-row sm:justify-between md:text-sm">
-                <span className="text-muted tabular-nums">
-                  {t.work.frame} {frameNo(shot.id)}
-                </span>
-                <span className="truncate">{shot.place}</span>
-              </figcaption>
+              {shot.real ? (
+                // Real work: say who it was made for, and what kind of client it is.
+                <figcaption className="flex flex-col gap-0.5 pt-2 text-xs md:text-sm">
+                  <span className="truncate font-medium">{shot.client ?? shot.place}</span>
+                  <span className="truncate text-muted">
+                    {shot.kind ? t.work.kinds[shot.kind] : ""}
+                    {shot.client ? ` · ${shot.place}` : ""}
+                  </span>
+                </figcaption>
+              ) : (
+                <figcaption className="flex flex-col pt-2 text-xs sm:flex-row sm:justify-between md:text-sm">
+                  <span className="text-muted tabular-nums">
+                    {t.work.frame} {frameNo(shot.id)}
+                  </span>
+                  <span className="truncate">{shot.place}</span>
+                </figcaption>
+              )}
             </motion.figure>
           ))}
         </AnimatePresence>
@@ -201,12 +243,21 @@ export function Work({ mode = "page" }: WorkProps) {
               >
                 <Image
                   src={current.src}
-                  alt={`${current.place}, ${t.a11y.demoPhoto}`}
+                  alt={`${current.place}, ${current.real ? t.a11y.realDesign : t.a11y.demoPhoto}`}
                   width={current.w}
                   height={current.h}
                   sizes="90vw"
-                  className="h-auto max-h-[74svh] w-auto max-w-full rounded-sm shadow-2xl"
+                  className="h-auto max-h-[68svh] w-auto max-w-full rounded-sm shadow-2xl"
                 />
+                {current.real && (
+                  <p className="mt-3 text-center text-sm text-paper/85">
+                    <span className="font-medium">{current.client ?? current.place}</span>
+                    <span className="text-paper/60">
+                      {current.kind ? ` · ${t.work.kinds[current.kind]}` : ""}
+                      {current.client ? ` · ${current.place}` : ""}
+                    </span>
+                  </p>
+                )}
               </motion.div>
             </AnimatePresence>
 

@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# media prepared by scripts/ingest-watch.mjs, reviewed before it goes into public/
+/inbox
