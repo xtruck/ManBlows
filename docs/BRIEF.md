@@ -39,3 +39,15 @@ restent dans son dossier.
 `node scripts/ingest-watch.mjs` surveille `D:\OneDrive\Desktop\MAN BLOWS`, convertit les nouvelles
 photos (WebP 1400 px) et vidéos (H.264, 1280 px sur le grand côté) dans `inbox/ready/` et les liste
 dans `inbox/queue.json`. Rien n'est publié tant qu'on ne les a pas copiés dans `public/`.
+
+## Showreel
+Section « Le showreel » (accueil + page Films) : montage de l'événement Archibat
+(`public/films/showreel.mp4`). C'est un choix à confirmer : remplacer le fichier et
+`showreel` dans `src/content/site.ts` pour changer de vidéo.
+
+## Continuer sur un autre ordinateur
+`git clone https://github.com/xtruck/ManBlows.git`, `npm install`, puis `npm run dev`.
+Les photos/vidéos non publiées (converties, pas encore triées) sont sur la branche `inbox-media` :
+`git fetch && git checkout inbox-media -- inbox`. Deux photos HEIC (IMG_3480, IMG_3489) n'ont pas pu
+être converties (OneDrive ne les avait pas téléchargées) : relancer `node scripts/ingest-watch.mjs`.
+Les fichiers vidéo bruts de plus de 100 Mo restent dans le dossier OneDrive, pas sur GitHub.

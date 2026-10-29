@@ -1,6 +1,7 @@
 import { Hero } from "@/components/Hero";
 import { Work } from "@/components/Work";
 import { Disciplines } from "@/components/Disciplines";
+import { Showreel } from "@/components/Showreel";
 import { About } from "@/components/About";
 import { Clients } from "@/components/Clients";
 import { CtaBand } from "@/components/CtaBand";
@@ -11,6 +12,7 @@ export default function Home() {
       <Hero />
       <Work mode="teaser" />
       <Disciplines />
+      <Showreel cta />
       <About mode="teaser" />
       <Clients />
       <CtaBand />

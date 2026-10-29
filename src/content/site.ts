@@ -30,6 +30,12 @@ export const shots: Shot[] = [...designShots];
 // GitHub Pages serves the site under a sub-path, so local files need the base path.
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
+// The showreel: an event montage from the owner's folder (848x480 H.264).
+export const showreel = {
+  video: `${base}/films/showreel.mp4`,
+  poster: `${base}/films/showreel-poster.webp`,
+};
+
 // Vertical videos from the owner's folder, converted to 720x1280 H.264.
 export const films = [
   {
