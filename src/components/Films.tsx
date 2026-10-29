@@ -11,7 +11,7 @@ export function Films() {
   const [opened, setOpened] = useState<number | null>(null);
 
   return (
-    <section data-nav-tone="light" className="bg-paper px-4 py-24 md:px-8 md:py-32">
+    <section className="bg-paper px-4 py-24 md:px-8 md:py-32">
       <h2 data-reveal className="font-display text-4xl font-semibold tracking-tight md:text-5xl">
         {t.films.more}
       </h2>

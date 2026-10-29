@@ -1,12 +1,14 @@
 "use client";
 
 import { useLang } from "./LangProvider";
+import { LightLeaks } from "./LightLeaks";
 
 /** The five steps of working together; numbered because they happen in order. */
 export function Process() {
   const { t } = useLang();
   return (
-    <section data-nav-tone="dark" className="bg-ink px-4 py-24 text-paper md:px-8 md:py-36">
+    <section className="relative isolate bg-ink px-4 py-24 text-paper md:px-8 md:py-36">
+      <LightLeaks className="opacity-40" />
       <h2 data-reveal className="font-display text-[clamp(3rem,8vw,7rem)] leading-[0.9] font-semibold tracking-[-0.04em]">
         {t.process.title}
       </h2>

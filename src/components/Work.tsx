@@ -61,7 +61,6 @@ export function Work({ mode = "page" }: WorkProps) {
 
   return (
     <section
-      data-nav-tone="light"
       className={`bg-paper px-4 md:px-8 ${teaser ? "py-24 md:py-36" : "pt-32 pb-24 md:pt-44 md:pb-36"}`}
     >
       <div className="grid gap-8 md:grid-cols-12 md:items-end">
@@ -71,7 +70,8 @@ export function Work({ mode = "page" }: WorkProps) {
         >
           {teaser ? t.home.selection : t.work.title}
         </Heading>
-        <div className="md:col-span-5">
+        {/* min-w-0 lets the scrollable filter row shrink instead of widening the page */}
+        <div className="min-w-0 md:col-span-5">
           <p data-reveal className="max-w-[44ch] text-lg leading-relaxed text-muted">
             {teaser ? t.home.selectionIntro : t.work.intro}
           </p>

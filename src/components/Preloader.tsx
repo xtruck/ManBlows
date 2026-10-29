@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { Logo } from "./Logo";
+import { LightLeaks } from "./LightLeaks";
 import { useLang } from "./LangProvider";
 import { markIntroDone, onSceneProgress, onSceneReady } from "@/lib/intro";
 
@@ -41,7 +42,7 @@ const CLOSED = iris(0.06);
 /**
  * First visit: a lens aperture whose opening follows real loading progress, with a live
  * f-stop readout. When everything is ready it opens wide, we fly through it into the brand
- * yellow, "egu" is written in, and the shutter opens onto the site.
+ * yellow, "egc" is written in, and the shutter opens onto the site.
  */
 export function Preloader() {
   const { t } = useLang();
@@ -59,17 +60,9 @@ export function Preloader() {
     const el = root.current;
     if (!el) return;
 
-    let seen = false;
-    try {
-      seen = sessionStorage.getItem("egu-intro") === "1";
-    } catch {}
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    // Mark the intro as seen only once it has played, so a re-run effect doesn't skip it.
     const finish = () => {
-      try {
-        sessionStorage.setItem("egu-intro", "1");
-      } catch {}
       document.documentElement.style.overflow = "";
       setGone(true);
       markIntroDone();
@@ -77,8 +70,9 @@ export function Preloader() {
 
     document.documentElement.style.overflow = "hidden";
 
-    // Returning visitors and reduced motion get a short fade, not the full intro.
-    if (seen || reduced) {
+    // The intro plays on every full page load (refresh included); page-to-page navigation
+    // keeps the layout mounted, so it never replays there. Reduced motion gets a short fade.
+    if (reduced) {
       const tween = gsap.to(el, { autoAlpha: 0, duration: 0.35, delay: 0.05, onComplete: finish });
       return () => {
         tween.kill();
@@ -113,7 +107,8 @@ export function Preloader() {
       gsap
         .timeline()
         .fromTo("[data-draw]", { strokeDashoffset: 1 }, { strokeDashoffset: 0, duration: 1.1, ease: "power2.inOut", stagger: 0.06 })
-        .fromTo("[data-body-fill]", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.6, ease: "power1.out" }, 0.6)
+        .fromTo("[data-body-fill]", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.7, ease: "power1.out" }, 0.55)
+        .fromTo("[data-lens-glass]", { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.7, ease: "power1.out" }, 0.8)
         .fromTo(stage.current, { scale: 0.6, autoAlpha: 0 }, { scale: 1, autoAlpha: 1, duration: 0.9, ease: "expo.out" }, 0.3);
     }, el);
     const start = performance.now();
@@ -131,6 +126,7 @@ export function Preloader() {
           // Shutter press and flash
           .to("[data-pre-shutter]", { y: 3, duration: 0.1, ease: "power2.in", yoyo: true, repeat: 1 }, 0)
           .fromTo("[data-pre-flash]", { autoAlpha: 0.9 }, { autoAlpha: 0, duration: 0.45, ease: "power2.out" }, 0.12)
+          .to("[data-lens-glass]", { autoAlpha: 0, duration: 0.4, ease: "power1.in" }, 0.15)
           .to(o, { open: 1.2, duration: 0.75, ease: "power3.inOut", onUpdate: () => setAperture(o.open) }, 0.15)
           .to("[data-logo-script]", { clipPath: "inset(-20% 0% -20% 0)", duration: 0.9, ease: "power2.inOut" }, 0.35)
           .to(camera.current, { scale: cover, duration: 1.1, ease: "expo.inOut" }, 0.95)
@@ -146,10 +142,15 @@ export function Preloader() {
       const ready = sceneDone && fontsDone;
       const fake = 1 - Math.exp(-elapsed * 0.9);
       const goal = ready ? 1 : Math.min(0.9, Math.max(fake * 0.85, real * 0.9));
-      shown = Math.max(shown, shown + (goal - shown) * (ready ? 0.12 : 0.06));
+      // Ease toward the goal, scaled by frame time so slow devices aren't slower; once ready,
+      // a minimum step makes it land exactly on 100.
+      const ratio = gsap.ticker.deltaRatio(60);
+      const k = 1 - Math.pow(1 - (ready ? 0.12 : 0.06), ratio);
+      const step = (goal - shown) * k;
+      shown = Math.min(goal, shown + (ready ? Math.max(step, 0.015 * ratio) : Math.max(step, 0)));
       setProgress(shown);
       setAperture(0.06 + shown * 0.44);
-      if (!outroStarted && ready && shown > 0.995 && elapsed > 1.2) {
+      if (!outroStarted && ready && shown >= 1 && elapsed > 1.2) {
         outroStarted = true;
         setProgress(1);
         gsap.ticker.remove(tick);
@@ -175,37 +176,107 @@ export function Preloader() {
     <div
       ref={root}
       aria-hidden
-      className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-ink text-paper"
+      className="fixed inset-0 isolate z-[100] flex items-center justify-center overflow-hidden bg-ink text-paper"
       style={{ clipPath: "inset(0% 0% 0% 0%)" }}
     >
-      {/* A modern camera, front view, drawn in line by line. Its lens is the iris below. */}
+      <LightLeaks className="opacity-50" />
+
+      {/*
+        A mirrorless camera, front view: outlines draw in first, then the materials
+        (leatherette, brushed metal, lens rings) fade in. Its lens is the iris below.
+      */}
       <div
         ref={camera}
-        className="relative aspect-[400/260] w-[min(94vw,640px,105svh)] origin-[50%_57.7%] will-change-transform"
+        className="relative aspect-[400/260] w-[min(94vw,660px,108svh)] origin-[50%_57.7%] will-change-transform"
       >
         <svg data-body viewBox="0 0 400 260" fill="none" className="absolute inset-0 size-full overflow-visible">
           <defs>
-            <linearGradient id="pre-body" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#2a2826" />
-              <stop offset="100%" stopColor="#141312" />
+            <pattern id="pre-leather" width="4" height="4" patternUnits="userSpaceOnUse">
+              <rect width="4" height="4" fill="#1a1918" />
+              <circle cx="1" cy="1" r="0.75" fill="#232120" />
+              <circle cx="3" cy="2.6" r="0.6" fill="#121110" />
+              <circle cx="1.9" cy="3.4" r="0.45" fill="#262422" />
+            </pattern>
+            <linearGradient id="pre-metal" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#66625d" />
+              <stop offset="30%" stopColor="#3c3936" />
+              <stop offset="65%" stopColor="#262422" />
+              <stop offset="100%" stopColor="#3a3734" />
             </linearGradient>
+            <linearGradient id="pre-silver" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stopColor="#e4dfd6" />
+              <stop offset="35%" stopColor="#7d7872" />
+              <stop offset="60%" stopColor="#c9c3ba" />
+              <stop offset="100%" stopColor="#4a4642" />
+            </linearGradient>
+            <linearGradient id="pre-sheen" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#fff" stopOpacity="0.1" />
+              <stop offset="40%" stopColor="#fff" stopOpacity="0" />
+              <stop offset="100%" stopColor="#000" stopOpacity="0.35" />
+            </linearGradient>
+            <linearGradient id="pre-grip" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0%" stopColor="#000" stopOpacity="0.5" />
+              <stop offset="60%" stopColor="#000" stopOpacity="0" />
+              <stop offset="100%" stopColor="#fff" stopOpacity="0.07" />
+            </linearGradient>
+            <radialGradient id="pre-af" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#ffd27a" />
+              <stop offset="45%" stopColor="#ff9a2e" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#ff9a2e" stopOpacity="0" />
+            </radialGradient>
           </defs>
+
           <g data-body-fill opacity={0}>
-            <path d="M140 60L158 28Q162 22 170 22H230Q238 22 242 28L260 60Z" fill="url(#pre-body)" />
-            <rect x="20" y="60" width="360" height="180" rx="26" fill="url(#pre-body)" />
+            {/* Strap lugs and hot shoe */}
+            <rect x="9" y="74" width="10" height="14" rx="2.5" fill="url(#pre-metal)" />
+            <rect x="381" y="74" width="10" height="14" rx="2.5" fill="url(#pre-metal)" />
+            <rect x="168" y="13" width="64" height="11" rx="2" fill="#2b2927" stroke="#57534e" strokeWidth="0.6" />
+            <path d="M172 17H228M172 20H228" stroke="#141312" strokeWidth="1" />
+            {/* Viewfinder hump in brushed metal, engraved with the brand */}
+            <path d="M136 62L153 31Q157 22 168 22H232Q243 22 247 31L264 62Z" fill="url(#pre-metal)" />
+            <path d="M156 30H244" stroke="#fff" strokeOpacity="0.22" strokeWidth="0.8" />
+            <text x="200" y="52" textAnchor="middle" fontSize="9" letterSpacing="3.5" fill="#fff" fillOpacity="0.42" fontWeight="600">
+              EGC
+            </text>
+            {/* Body: leatherette, with a brushed-metal top plate */}
+            <rect x="18" y="58" width="364" height="184" rx="24" fill="url(#pre-leather)" />
+            <path d="M42 58H358Q382 58 382 82V94H18V82Q18 58 42 58Z" fill="url(#pre-metal)" />
+            <path d="M18 94H382" stroke="#000" strokeOpacity="0.6" strokeWidth="1.2" />
+            <path d="M18 95.4H382" stroke="#fff" strokeOpacity="0.07" strokeWidth="0.8" />
+            <rect x="18" y="58" width="364" height="184" rx="24" fill="url(#pre-sheen)" />
+            {/* Grip */}
+            <path d="M18 104Q18 95 30 95H82Q102 98 102 124V214Q102 240 80 242H42Q18 242 18 218Z" fill="url(#pre-leather)" />
+            <path d="M18 104Q18 95 30 95H82Q102 98 102 124V214Q102 240 80 242H42Q18 242 18 218Z" fill="url(#pre-grip)" />
+            <path d="M96 120V214" stroke="#fff" strokeOpacity="0.08" strokeWidth="1.5" strokeLinecap="round" />
+            {/* Mode dial with knurling */}
+            <rect x="46" y="38" width="62" height="20" rx="3" fill="url(#pre-metal)" />
+            <path d="M48 42H106M48 46H106M48 50H106M48 54H106" stroke="#fff" strokeOpacity="0.16" strokeDasharray="1 1.6" />
+            {/* Shutter button: silver collar, brand-yellow release */}
+            <rect x="298" y="46" width="44" height="13" rx="6.5" fill="url(#pre-silver)" />
+            <rect data-pre-shutter x="305" y="40" width="30" height="9" rx="4.5" fill="#ffc400" stroke="#b88a00" strokeWidth="0.6" />
+            {/* AF assist lamp, mic holes, lens release */}
+            <circle cx="332" cy="112" r="8" fill="url(#pre-af)" className="rec-dot" />
+            <circle cx="332" cy="112" r="2.6" fill="#ffd27a" />
+            <path d="M318 78h0.01M324 78h0.01M330 78h0.01" stroke="#050505" strokeWidth="2.2" strokeLinecap="round" />
+            <circle cx="306" cy="200" r="8" fill="url(#pre-silver)" />
+            <circle cx="306" cy="200" r="5" fill="#1c1b1a" />
+            {/* Lens mount and barrel */}
+            <circle cx="200" cy="150" r="93" fill="url(#pre-silver)" />
+            <circle cx="200" cy="150" r="88.5" fill="#0d0c0c" />
+            <circle cx="200" cy="150" r="84" fill="none" stroke="#24221f" strokeWidth="8" strokeDasharray="0.9 1.2" />
+            <circle cx="200" cy="150" r="79" fill="none" stroke="#3e3b37" strokeWidth="1.2" />
+            <circle cx="200" cy="150" r="77" fill="none" stroke="#fff" strokeOpacity="0.35" strokeWidth="1.4" strokeDasharray="0.5 7" />
+            <rect x="199.2" y="61" width="1.6" height="6" rx="0.8" fill="#ffc400" />
           </g>
-          <g stroke="rgb(236 232 225 / 0.75)" strokeWidth="1.4" strokeLinecap="round" strokeDashoffset={1}>
-            <rect data-draw pathLength={1} strokeDasharray="1" x="20" y="60" width="360" height="180" rx="26" />
-            <path data-draw pathLength={1} strokeDasharray="1" d="M140 60L158 28Q162 22 170 22H230Q238 22 242 28L260 60" />
-            <path data-draw pathLength={1} strokeDasharray="1" d="M84 64Q50 72 50 114V194Q50 230 84 236" />
-            <rect data-draw pathLength={1} strokeDasharray="1" x="64" y="46" width="48" height="14" rx="4" />
-            <circle data-draw pathLength={1} strokeDasharray="1" cx="200" cy="150" r="88" />
-            <circle data-draw pathLength={1} strokeDasharray="1" cx="200" cy="150" r="80" stroke="rgb(255 196 0 / 0.6)" />
-            <path data-draw pathLength={1} strokeDasharray="1" d="M30 90H120M280 90H370" stroke="rgb(236 232 225 / 0.25)" />
-          </g>
-          <g data-body-fill opacity={0}>
-            <rect data-pre-shutter x="290" y="44" width="36" height="16" rx="5" fill="#ffc400" />
-            <circle cx="336" cy="88" r="4" fill="#ff3b30" className="rec-dot" />
+
+          <g stroke="rgb(236 232 225 / 0.7)" strokeWidth="1.2" strokeLinecap="round" strokeDashoffset={1}>
+            <rect data-draw pathLength={1} strokeDasharray="1" x="18" y="58" width="364" height="184" rx="24" />
+            <path data-draw pathLength={1} strokeDasharray="1" d="M136 62L153 31Q157 22 168 22H232Q243 22 247 31L264 62" />
+            <path data-draw pathLength={1} strokeDasharray="1" d="M82 95Q102 98 102 124V214Q102 240 80 242" />
+            <rect data-draw pathLength={1} strokeDasharray="1" x="46" y="38" width="62" height="20" rx="3" />
+            <rect data-draw pathLength={1} strokeDasharray="1" x="298" y="46" width="44" height="13" rx="6.5" />
+            <circle data-draw pathLength={1} strokeDasharray="1" cx="200" cy="150" r="93" />
+            <circle data-draw pathLength={1} strokeDasharray="1" cx="200" cy="150" r="79" stroke="rgb(255 196 0 / 0.55)" />
           </g>
         </svg>
 
@@ -234,6 +305,24 @@ export function Preloader() {
           <circle cx={C} cy={C} r={R + 2.2} fill="none" stroke="rgb(255 196 0 / 0.45)" strokeWidth="0.5" />
         </svg>
         </div>
+
+        {/* Front element: coated glass reflections sitting over the iris */}
+        <svg data-lens-glass viewBox="0 0 400 260" className="pointer-events-none absolute inset-0 size-full opacity-0">
+          <defs>
+            <radialGradient id="pre-glass" cx="36%" cy="30%" r="75%">
+              <stop offset="0%" stopColor="#fff" stopOpacity="0.3" />
+              <stop offset="30%" stopColor="#fff" stopOpacity="0.05" />
+              <stop offset="70%" stopColor="#6f4bff" stopOpacity="0.12" />
+              <stop offset="100%" stopColor="#1fa37a" stopOpacity="0.18" />
+            </radialGradient>
+          </defs>
+          <circle cx="200" cy="150" r="73" fill="url(#pre-glass)" />
+          <circle cx="200" cy="150" r="70" fill="none" stroke="#fff" strokeOpacity="0.08" />
+          <path d="M146 118A64 64 0 0 1 182 90" stroke="#fff" strokeOpacity="0.45" strokeWidth="3" strokeLinecap="round" fill="none" />
+          <path d="M238 206A64 64 0 0 0 258 186" stroke="#c9a6ff" strokeOpacity="0.35" strokeWidth="2" strokeLinecap="round" fill="none" />
+          <circle cx="170" cy="116" r="4" fill="#fff" fillOpacity="0.6" />
+          <circle cx="170" cy="116" r="10" fill="#fff" fillOpacity="0.1" />
+        </svg>
       </div>
 
       {/* Flash when the shutter fires */}

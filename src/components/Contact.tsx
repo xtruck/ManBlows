@@ -45,7 +45,6 @@ export function Contact() {
   return (
     <section
       id="contact"
-      data-nav-tone="light"
       className="grid min-h-[100svh] gap-14 bg-brand px-4 pt-32 pb-24 text-ink md:grid-cols-12 md:px-8 md:pt-44 md:pb-36"
     >
       <div className="md:col-span-6">

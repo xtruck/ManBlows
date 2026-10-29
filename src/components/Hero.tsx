@@ -7,6 +7,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Logo } from "./Logo";
 import { useLang } from "./LangProvider";
 import { TransitionLink } from "./TransitionProvider";
+import { LightLeaks } from "./LightLeaks";
 import { onIntroDone, onSceneReady } from "@/lib/intro";
 import { useMedia } from "@/lib/useMedia";
 
@@ -124,10 +125,11 @@ export function Hero() {
   }, [reduced]);
 
   return (
-    <section ref={root} id="top" data-nav-tone="dark" className={`relative bg-ink ${reduced ? "h-[100svh]" : "h-[230svh] md:h-[280svh]"}`}>
-      <div className="sticky top-0 h-[100svh] min-h-[620px] overflow-hidden text-paper">
-        {/* Studio backdrop */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_62%_45%,#2e2b28_0%,#0e0e0e_70%)] max-md:bg-[radial-gradient(ellipse_90%_50%_at_50%_38%,#2e2b28_0%,#0e0e0e_75%)]" />
+    <section ref={root} id="top" className={`relative bg-ink ${reduced ? "h-[100svh]" : "h-[230svh] md:h-[280svh]"}`}>
+      <div className="sticky top-0 isolate h-[100svh] min-h-[620px] overflow-hidden text-paper">
+        {/* Studio backdrop with warm light leaks */}
+        <div className="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_70%_60%_at_62%_45%,#2e2b28_0%,#0e0e0e_70%)] max-md:bg-[radial-gradient(ellipse_90%_50%_at_50%_38%,#2e2b28_0%,#0e0e0e_75%)]" />
+        <LightLeaks className="opacity-60" />
 
         <div data-hero-3d className="absolute inset-0">
           <CameraScene progress={progress} compact={compact} active={active} />

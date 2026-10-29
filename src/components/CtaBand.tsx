@@ -8,7 +8,7 @@ import { contact } from "@/content/site";
 export function CtaBand() {
   const { t } = useLang();
   return (
-    <section data-nav-tone="light" className="bg-brand px-4 py-24 text-ink md:px-8 md:py-32">
+    <section className="on-brand bg-brand px-4 py-24 text-ink md:px-8 md:py-32">
       <h2 data-reveal className="font-display text-[clamp(3.2rem,10vw,9rem)] leading-[0.86] font-semibold tracking-[-0.045em]">
         {t.cta.title}
       </h2>

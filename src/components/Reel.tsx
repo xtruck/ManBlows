@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { useLang } from "./LangProvider";
 import { TransitionLink } from "./TransitionProvider";
+import { LightLeaks } from "./LightLeaks";
 import { reelPoster } from "@/content/site";
 
 /** The showreel frame. On the home page it also links to the films page. */
@@ -12,7 +13,8 @@ export function Reel({ cta = false }: { cta?: boolean }) {
   const [playing, setPlaying] = useState(false);
 
   return (
-    <section data-nav-tone="dark" className="bg-ink px-4 py-24 text-paper md:px-8 md:py-36">
+    <section className="relative isolate bg-ink px-4 py-24 text-paper md:px-8 md:py-36">
+      <LightLeaks className="opacity-45" />
       <div className="grid gap-6 md:grid-cols-12 md:items-end">
         <h2
           data-reveal

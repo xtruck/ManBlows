@@ -13,7 +13,6 @@ export function About({ mode = "page" }: { mode?: "page" | "teaser" }) {
 
   return (
     <section
-      data-nav-tone="light"
       className={`grid gap-12 bg-paper-2 px-4 md:grid-cols-12 md:px-8 ${teaser ? "py-24 md:py-36" : "pt-32 pb-24 md:pt-44 md:pb-36"}`}
     >
       <figure data-reveal="image" className="overflow-hidden rounded-sm md:col-span-5">

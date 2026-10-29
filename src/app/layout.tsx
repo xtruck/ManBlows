@@ -20,7 +20,7 @@ const bricolage = Bricolage_Grotesque({
   subsets: ["latin"],
 });
 
-// The two faces below only rebuild the logo: script "egu" and bold italic "studio.".
+// The two faces below only rebuild the logo: script "egc" and bold italic "studio.".
 const script = Mrs_Saint_Delafield({
   variable: "--font-script-face",
   weight: "400",
@@ -35,8 +35,10 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Egu Studio | Photo et vidéo", template: "%s | Egu Studio" },
-  description: "Egu Studio, photographe et vidéaste : cérémonies, événements, portraits et films.",
+  // Absolute base for share previews (WhatsApp, Facebook); otherwise they point at localhost.
+  metadataBase: new URL(`https://xtruck.github.io${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/`),
+  title: { default: "EGC Studio | Photo et vidéo", template: "%s | EGC Studio" },
+  description: "EGC Studio, photographe et vidéaste : cérémonies, événements, portraits et films.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

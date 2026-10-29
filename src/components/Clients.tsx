@@ -23,7 +23,7 @@ export function Clients() {
   const { t, lang } = useLang();
 
   return (
-    <section data-nav-tone="light" className="overflow-hidden bg-paper py-24 md:py-36">
+    <section className="overflow-hidden bg-paper py-24 md:py-36">
       <h2 data-reveal className="px-4 font-display text-3xl font-semibold tracking-tight md:px-8">
         {t.clients.title}
       </h2>
