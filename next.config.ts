@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   output: "export", // static site for GitHub Pages (no server features like cacheComponents)
   basePath,
   trailingSlash: true, // /travaux/ -> travaux/index.html, which GitHub Pages serves directly
+  devIndicators: false, // hide the Next.js "N" badge shown over the page in development
   images: {
     // Static export: images are pre-sized WebP files in /public, so no optimizer is needed.
     unoptimized: true,

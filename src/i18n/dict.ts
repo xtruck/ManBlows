@@ -38,7 +38,7 @@ export const dict = {
     },
     reel: {
       title: "Le showreel",
-      text: "Deux minutes pour voir comment je filme : les regards, les mains, la lumière et le rythme d'une journée.",
+      text: "Trente secondes pour voir comment je filme : les regards, les mains, la lumière et le rythme d'une journée.",
       play: "Lire le showreel",
       pending: "Le showreel sera ajouté ici dès réception des vidéos.",
     },
@@ -159,7 +159,7 @@ export const dict = {
     },
     reel: {
       title: "The showreel",
-      text: "Two minutes to see how I shoot: the glances, the hands, the light and the rhythm of a day.",
+      text: "Thirty seconds to see how I shoot: the glances, the hands, the light and the rhythm of a day.",
       play: "Play showreel",
       pending: "The showreel will be added here once the videos arrive.",
     },

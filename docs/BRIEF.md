@@ -51,3 +51,12 @@ Les photos/vidéos non publiées (converties, pas encore triées) sont sur la br
 `git fetch && git checkout inbox-media -- inbox`. Deux photos HEIC (IMG_3480, IMG_3489) n'ont pas pu
 être converties (OneDrive ne les avait pas téléchargées) : relancer `node scripts/ingest-watch.mjs`.
 Les fichiers vidéo bruts de plus de 100 Mo restent dans le dossier OneDrive, pas sur GitHub.
+
+## À reprendre (audit de la page Travaux)
+- **Bug trouvé, pas encore corrigé** : sur la page Travaux, 2 images sur 32 (la 16e et la 32e de la
+  liste « Tout ») ne se chargent pas toutes seules au défilement (chargement différé du navigateur,
+  `loading="lazy"` dans la mise en page en colonnes). Elles s'affichent si on force `loading="eager"`.
+  Piste : charger les images en `eager` avec `fetchPriority="low"`, ou remplacer les colonnes CSS par
+  des colonnes calculées. À tester sur téléphone et ordinateur.
+- Le reste de l'audit (images bloquées, débordement horizontal, chevauchements) est propre.
+- Showreel refait en 1080×1920 (14 Mo) à partir des vidéos 4K ; logo EGC Studio en icône d'onglet.
