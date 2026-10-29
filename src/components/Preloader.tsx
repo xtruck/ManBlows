@@ -66,7 +66,14 @@ export function Preloader() {
 
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    // The intro replays on every full load, so always start at the top. Phones restore the
+    // previous scroll position on reload or when a tab is reopened, which used to drop the
+    // visitor at the very bottom of the page once the intro ended.
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    window.scrollTo(0, 0);
+
     const finish = () => {
+      window.scrollTo(0, 0);
       document.documentElement.style.overflow = "";
       setGone(true);
       markIntroDone();
