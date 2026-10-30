@@ -135,6 +135,6 @@ export const contact = {
   whatsapp: "2250160668682", // digits only, for wa.me
   whatsappLabel: "+225 01 60 66 86 82",
   email: "vegcstudio@gmail.com",
-  instagram: "egc_studio",
+  instagram: "egc_studio225", // from the studio's Instagram profile link
   tiktok: "egc_studio225", // from the studio's TikTok profile link
 };

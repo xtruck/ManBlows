@@ -26,8 +26,9 @@
 - Clients identifiés : Église Mesev, Assemblée Internationale Royaume de Lumière, Mission Évangélique
   Source d'Eau Vive, Vitall Institut, Les Bols du Bonheur, KMK Collection, Salon International de
   l'Investissement (SII), SGS Consulting, AGEF, Eliah Home Déco, Skinnys, Javelot Bar Resto.
-- Coordonnées lues sur ses affiches : WhatsApp +225 01 60 66 86 82, e-mail vegcstudio@gmail.com,
-  Instagram egc_studio (dans `src/content/site.ts`).
+- Coordonnées (dans `src/content/site.ts`) : WhatsApp +225 01 60 66 86 82 et e-mail vegcstudio@gmail.com,
+  lus sur ses affiches ; Instagram `egc_studio225` et TikTok `egc_studio225`, confirmés par les liens
+  de ses profils (les affiches indiquaient `egc_studio`, sans le 225).
 
 ## Mis à l'écart volontairement (contenu personnel)
 Le programme d'obsèques d'une famille et les cartes d'anniversaire de personnes (Duncan-Williams,
