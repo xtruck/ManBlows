@@ -16,8 +16,7 @@
   (forfaits réseaux sociaux, création de design, services, grille tarifaire) sont **à part** du travail
   client, dans un carrousel avec agrandissement. Elles sont dans `design.ts` (catégorie `studio`,
   exportées en `offerShots`) et ne s'affichent pas dans la galerie.
-- **Films** (`/films/`) : 5 vidéos (2 mariages en vertical, une vidéo AGEF, un reportage Archibat, un
-  reportage Maracana) dans `public/films/`, plus le **showreel**.
+- **Films** (`/films/`) : 8 vidéos (3 mariages en vertical, un montage Les Bols du Bonheur, un plan serré au clavier, une vidéo AGEF, un reportage Archibat, un reportage Maracana) dans `public/films/`, plus le **showreel**.
 - **Showreel** : sa vidéo de reportage d'événement de 25 s, en 1080×1920 (`public/films/showreel.mp4`).
 - **Trois métiers** (accueil, `components/Disciplines.tsx` + `Deck.tsx`) : la sélection du début de
   l'accueil est fusionnée ici. Chaque carte montre un paquet de ses vraies images qui défilent
@@ -77,3 +76,8 @@ dossier OneDrive, pas sur GitHub.
   propose « Activer les animations » en un geste, et un interrupteur reste dans le pied de page.
   Le choix est mémorisé sur l'appareil (`localStorage`, clé `egc-motion`).
 - Avant ce changement, un téléphone avec ce réglage perdait presque toutes les animations.
+
+## Nouvelles vidéos (30/10)
+- Trois courts plans de préparation de fruits (IMG_1445, 1447, 1448) montés en un seul film avec des fondus : « Les Bols du Bonheur, en cuisine ».
+- IMG_2001 (mains au clavier) et IMG_2144 (détail de mariage, filigrane SM Production) ajoutées telles quelles.
+- Aucune nouvelle photo n'était arrivée dans le dossier à ce moment-là.
