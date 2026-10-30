@@ -14,10 +14,10 @@ export type DeckItem = {
 
 /**
  * A stack of preview images. The front one moves to the back every few seconds while the
- * stack is on screen; hovering fans it out. A count and an arrow invite the visitor to click
+ * stack is on screen; hovering fans it out. An arrow button invites the visitor to click
  * through to the full set. Decorative: the card's own link carries the accessible name.
  */
-export function Deck({ items, count, hint, delay = 0 }: { items: DeckItem[]; count: string; hint: string; delay?: number }) {
+export function Deck({ items, hint, delay = 0 }: { items: DeckItem[]; hint: string; delay?: number }) {
   const mode = useMotionMode();
   const root = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
@@ -75,9 +75,6 @@ export function Deck({ items, count, hint, delay = 0 }: { items: DeckItem[]; cou
         );
       })}
 
-      <span className="absolute -top-3 -right-3 z-40 rounded-full bg-paper px-3 py-1 text-xs font-medium text-ink shadow-md ring-1 ring-ink/15">
-        {count}
-      </span>
       <span className="absolute -bottom-4 left-1/2 z-40 flex -translate-x-1/2 items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-xs font-medium whitespace-nowrap text-paper shadow-lg">
         {hint}
         <span className="deck-arrow">→</span>

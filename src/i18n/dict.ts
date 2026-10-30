@@ -93,7 +93,6 @@ export const dict = {
       cta: "Voir les créations",
       photosCta: "Voir les photos",
       videosCta: "Voir les vidéos",
-      counts: { photos: "photos", videos: "vidéos", designs: "créations" },
       offersCta: "Voir les tarifs",
     },
     offers: {
@@ -233,7 +232,6 @@ export const dict = {
       cta: "See the designs",
       photosCta: "See the photos",
       videosCta: "Watch the videos",
-      counts: { photos: "photos", videos: "videos", designs: "designs" },
       offersCta: "See the rates",
     },
     offers: {

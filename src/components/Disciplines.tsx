@@ -26,22 +26,19 @@ export function Disciplines() {
   const { t, lang } = useLang();
   const d = t.disciplines;
 
-  const decks: { items: DeckItem[]; count: string; hint: string; href: string }[] = [
+  const decks: { items: DeckItem[]; hint: string; href: string }[] = [
     {
       items: photoPicks.map((s) => ({ src: s.src, caption: s.client ?? s.place })),
-      count: `${photos.length} ${d.counts.photos}`,
       hint: d.photosCta,
       href: "/travaux/#photos",
     },
     {
       items: filmPicks.map((f) => ({ src: f.poster, caption: f.title[lang], play: true })),
-      count: `${films.length} ${d.counts.videos}`,
       hint: d.videosCta,
       href: "/films/",
     },
     {
       items: designPicks.map((s) => ({ src: s.src, caption: s.client ?? s.place })),
-      count: `${designs.length} ${d.counts.designs}`,
       hint: d.cta,
       href: "/travaux/#design",
     },
@@ -93,7 +90,7 @@ export function Disciplines() {
 
               {/* The stack is also a link to the full set; the buttons below carry the accessible name */}
               <TransitionLink href={deck.href} tabIndex={-1} aria-hidden className="mt-8 block">
-                <Deck items={deck.items} count={deck.count} hint={deck.hint} delay={i * 900} />
+                <Deck items={deck.items} hint={deck.hint} delay={i * 900} />
               </TransitionLink>
 
               <div className="mt-auto pt-6">
