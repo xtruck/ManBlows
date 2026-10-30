@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { gsap } from "gsap";
+import { useMotionMode } from "@/lib/motion";
 
 /**
  * Small premium touches, one per input type:
@@ -11,10 +12,11 @@ import { gsap } from "gsap";
  */
 export function Interactions() {
   const pathname = usePathname();
+  const mode = useMotionMode();
 
   useEffect(() => {
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = mode === "gentle";
     const cleanups: (() => void)[] = [];
 
     if (fine && !reduced) {
@@ -48,7 +50,7 @@ export function Interactions() {
     }
 
     return () => cleanups.forEach((fn) => fn());
-  }, [pathname]);
+  }, [pathname, mode]);
 
   return null;
 }

@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { onIntroDone } from "@/lib/intro";
+import { useMotionMode } from "@/lib/motion";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -40,9 +41,10 @@ function focusPull(el: HTMLElement, delay: number, scrollTrigger: ScrollTrigger.
  */
 export function Reveals() {
   const pathname = usePathname();
+  const mode = useMotionMode();
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const gentle = mode === "gentle";
     let ctx: gsap.Context | null = null;
     let raf = 0;
 
@@ -53,7 +55,10 @@ export function Reveals() {
             // Things already on screen wait for the page curtain to lift.
             const delay = ScrollTrigger.isInViewport(el) ? 0.35 : 0;
             const scrollTrigger = { trigger: el, start: "top 92%", once: true };
-            if (el.dataset.reveal === "image") {
+            if (gentle) {
+              // Soft mode: a plain fade, with no movement, clipping or blur.
+              gsap.from(el, { autoAlpha: 0, duration: 0.6, ease: "power1.out", delay, scrollTrigger });
+            } else if (el.dataset.reveal === "image") {
               focusPull(el, delay, scrollTrigger);
             } else {
               gsap.from(el, { y: 36, autoAlpha: 0, duration: 0.9, ease: "power3.out", delay, scrollTrigger });
@@ -69,7 +74,7 @@ export function Reveals() {
       cancelAnimationFrame(raf);
       ctx?.revert();
     };
-  }, [pathname]);
+  }, [pathname, mode]);
 
   return null;
 }

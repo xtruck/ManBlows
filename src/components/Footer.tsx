@@ -7,9 +7,11 @@ import { TransitionLink } from "./TransitionProvider";
 import { LightLeaks } from "./LightLeaks";
 import { contact } from "@/content/site";
 import { routes } from "@/lib/routes";
+import { setMotion, useMotionMode } from "@/lib/motion";
 
 export function Footer() {
   const { t } = useLang();
+  const mode = useMotionMode();
 
   const toTop = () => {
     const lenis = getLenis();
@@ -32,7 +34,16 @@ export function Footer() {
       </div>
       <div className="mt-14 flex flex-col gap-6 border-t border-paper/15 pt-6 text-sm text-paper/70 md:flex-row md:items-center md:justify-between">
         <span>© 2026 EGC Studio. {t.footer.rights}</span>
-        <div className="flex gap-6">
+        <div className="flex flex-wrap gap-x-6 gap-y-3">
+          {/* Visitors can turn the full animations on or off on this device (see lib/motion.ts) */}
+          <button
+            type="button"
+            aria-pressed={mode === "full"}
+            onClick={() => setMotion(mode !== "full")}
+            className="cursor-pointer hover:text-paper"
+          >
+            {mode === "full" ? t.motion.on : t.motion.off}
+          </button>
           <a href={`https://instagram.com/${contact.instagram}`} target="_blank" rel="noopener noreferrer" className="hover:text-paper">
             Instagram
           </a>

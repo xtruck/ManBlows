@@ -10,6 +10,7 @@ import { TransitionLink } from "./TransitionProvider";
 import { LightLeaks } from "./LightLeaks";
 import { onIntroDone, onSceneReady } from "@/lib/intro";
 import { useMedia } from "@/lib/useMedia";
+import { useMotionMode } from "@/lib/motion";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -32,7 +33,7 @@ export function Hero() {
   const timecode = useRef<HTMLSpanElement>(null);
   const progress = useRef(0);
   const compact = useMedia("(max-width: 767px)");
-  const reduced = useMedia("(prefers-reduced-motion: reduce)");
+  const reduced = useMotionMode() === "gentle";
   const [active, setActive] = useState(true);
 
   // Pause the 3D render once the hero has scrolled away.

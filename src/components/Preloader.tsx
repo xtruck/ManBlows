@@ -6,6 +6,7 @@ import { Logo } from "./Logo";
 import { LightLeaks } from "./LightLeaks";
 import { useLang } from "./LangProvider";
 import { markIntroDone, onSceneProgress, onSceneReady } from "@/lib/intro";
+import { motionMode } from "@/lib/motion";
 
 // Aperture geometry, in a 200 × 200 viewBox.
 const C = 100;
@@ -64,7 +65,7 @@ export function Preloader() {
     const el = root.current;
     if (!el) return;
 
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const reduced = motionMode() === "gentle";
 
     // The intro replays on every full load, so always start at the top. Phones restore the
     // previous scroll position on reload or when a tab is reopened, which used to drop the

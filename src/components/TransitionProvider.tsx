@@ -8,6 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { getLenis } from "./SmoothScroll";
 import { useLang } from "./LangProvider";
 import { normalize, routes } from "@/lib/routes";
+import { motionMode } from "@/lib/motion";
 
 type TransitionContext = { navigate: (href: string) => void };
 
@@ -35,7 +36,7 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
       }
       if (pending.current) return;
       const el = curtain.current;
-      if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (!el || motionMode() === "gentle") {
         router.push(href);
         return;
       }

@@ -64,3 +64,13 @@ dossier OneDrive, pas sur GitHub.
   calculées (2 sur téléphone, 3 sur ordinateur) dans `Work.tsx`.
 - Testé : toutes les images se chargent au défilement rapide (téléphone et ordinateur), aucun
   chevauchement ni débordement, visionneuse correcte, filtres corrects.
+
+## Animations : deux modes (`src/lib/motion.ts`)
+- **Complet** : tout joue (caméra 3D qui s'envole au défilement, apparitions, rideau entre les pages,
+  lueurs, défilement fluide).
+- **Doux** : uniquement des fondus (accueil statique, pas de rideau ni de défilement fluide).
+- Le réglage « moins d'animations » de l'appareil choisit le mode par défaut. Beaucoup de téléphones
+  l'ont activé uniquement pour aller plus vite (Android « Supprimer les animations »), donc : un message
+  propose « Activer les animations » en un geste, et un interrupteur reste dans le pied de page.
+  Le choix est mémorisé sur l'appareil (`localStorage`, clé `egc-motion`).
+- Avant ce changement, un téléphone avec ce réglage perdait presque toutes les animations.

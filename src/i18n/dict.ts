@@ -120,6 +120,13 @@ export const dict = {
       whatsapp: "WhatsApp",
     },
     footer: { rights: "Tous droits réservés.", top: "Retour en haut" },
+    motion: {
+      notice: "Votre appareil demande moins d'animations, le site est donc plus calme. Vous pouvez les activer.",
+      enable: "Activer les animations",
+      keep: "Garder réduites",
+      on: "Animations activées",
+      off: "Animations réduites",
+    },
     preloader: "Chargement",
     focus: "Mise au point",
     a11y: {
@@ -248,6 +255,13 @@ export const dict = {
       whatsapp: "WhatsApp",
     },
     footer: { rights: "All rights reserved.", top: "Back to top" },
+    motion: {
+      notice: "Your device asks for fewer animations, so the site is calmer. You can turn them on.",
+      enable: "Turn animations on",
+      keep: "Keep reduced",
+      on: "Animations on",
+      off: "Animations reduced",
+    },
     preloader: "Loading",
     focus: "Focusing",
     a11y: {

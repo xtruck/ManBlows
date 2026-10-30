@@ -200,10 +200,9 @@ button {
   animation-play-state: paused;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .leak {
-    animation: none;
-  }
+/* Soft animation mode (see lib/motion.ts): the lights stop drifting */
+html[data-motion="gentle"] .leak {
+  animation: none;
 }
 
 /*
@@ -327,14 +326,12 @@ button {
 }
 
 /*
- * Battery savers often switch on "reduce motion", which used to freeze the client
- * names on phones. They now keep scrolling, just slower.
+ * Soft animation mode: the client names keep scrolling, just slower, and the blinking
+ * REC dot stops.
  */
-@media (prefers-reduced-motion: reduce) {
-  .marquee {
-    animation-duration: 70s;
-  }
-  .rec-dot {
-    animation: none;
-  }
+html[data-motion="gentle"] .marquee {
+  animation-duration: 70s;
+}
+html[data-motion="gentle"] .rec-dot {
+  animation: none;
 }

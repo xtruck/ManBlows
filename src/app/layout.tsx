@@ -9,6 +9,7 @@ import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
 import { Reveals } from "@/components/Reveals";
 import { Interactions } from "@/components/Interactions";
+import { MotionControl } from "@/components/MotionControl";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -62,6 +63,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Footer />
             <Reveals />
             <Interactions />
+            <MotionControl />
           </TransitionProvider>
         </LangProvider>
       </body>
