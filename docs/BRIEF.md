@@ -52,11 +52,12 @@ Les photos/vidéos non publiées (converties, pas encore triées) sont sur la br
 être converties (OneDrive ne les avait pas téléchargées) : relancer `node scripts/ingest-watch.mjs`.
 Les fichiers vidéo bruts de plus de 100 Mo restent dans le dossier OneDrive, pas sur GitHub.
 
-## À reprendre (audit de la page Travaux)
-- **Bug trouvé, pas encore corrigé** : sur la page Travaux, 2 images sur 32 (la 16e et la 32e de la
-  liste « Tout ») ne se chargent pas toutes seules au défilement (chargement différé du navigateur,
-  `loading="lazy"` dans la mise en page en colonnes). Elles s'affichent si on force `loading="eager"`.
-  Piste : charger les images en `eager` avec `fetchPriority="low"`, ou remplacer les colonnes CSS par
-  des colonnes calculées. À tester sur téléphone et ordinateur.
-- Le reste de l'audit (images bloquées, débordement horizontal, chevauchements) est propre.
+## Page Travaux : audit fait
+- **Corrigé** : 2 images sur 32 pouvaient ne pas se charger au défilement rapide (chargement différé
+  du navigateur dans la mise en page en colonnes CSS). La galerie utilise maintenant des colonnes
+  calculées (2 sur téléphone, 3 sur ordinateur) : `Work.tsx`.
+- Testé : 32 images chargées au défilement rapide (téléphone et ordinateur), aucun chevauchement ni
+  débordement, visionneuse correcte pour les 32 images, tous les filtres (Tout, Design, par type de
+  client, Mes offres).
+- Les étiquettes pour lecteurs d'écran donnent le client et le titre (plus « Image 101 »).
 - Showreel refait en 1080×1920 (14 Mo) à partir des vidéos 4K ; logo EGC Studio en icône d'onglet.

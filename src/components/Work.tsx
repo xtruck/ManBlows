@@ -8,7 +8,8 @@ import { useFocusTrap } from "@/lib/useFocusTrap";
 import { useLang } from "./LangProvider";
 import { getLenis } from "./SmoothScroll";
 import { TransitionLink } from "./TransitionProvider";
-import { shots, type Category, type Kind } from "@/content/site";
+import { useMedia } from "@/lib/useMedia";
+import { shots, type Category, type Kind, type Shot } from "@/content/site";
 
 type Filter = "all" | Category;
 // Only offer filters that have something in them: when photos or films are added later,
@@ -59,6 +60,23 @@ export function Work({ mode = "page" }: WorkProps) {
     const byCategory = filter === "all" ? shots : shots.filter((s) => s.category === filter);
     return filter === "design" && kind !== "all" ? byCategory.filter((s) => s.kind === kind) : byCategory;
   }, [filter, kind, teaser]);
+  // Masonry without CSS multi-column (which fights with lazy loading and exit animations):
+  // each image goes into the currently shortest column, so the first images sit side by side.
+  const wide = useMedia("(min-width: 1024px)");
+  const colCount = wide ? 3 : 2;
+  const columns = useMemo(() => {
+    const cols: { shot: Shot; i: number }[][] = Array.from({ length: colCount }, () => []);
+    const heights = new Array<number>(colCount).fill(0);
+    visible.forEach((shot, i) => {
+      const c = heights.indexOf(Math.min(...heights));
+      cols[c].push({ shot, i });
+      heights[c] += shot.h / shot.w + 0.14; // image ratio plus the caption
+    });
+    return cols;
+  }, [visible, colCount]);
+  // Accessible name of an image: who it was made for and what it is (frame number for photos).
+  const label = (s: Shot) =>
+    s.real ? `${s.client ? `${s.client}, ` : ""}${s.place}` : `${t.work.frame} ${frameNo(s.id)}, ${s.place}`;
   const current = index === null ? null : visible[index];
 
   const close = useCallback(() => {
@@ -153,16 +171,18 @@ export function Work({ mode = "page" }: WorkProps) {
         </div>
       </div>
 
-      <div className="mt-12 columns-2 gap-3 md:mt-20 md:gap-4 lg:columns-3">
+      <div className="mt-12 flex items-start gap-3 md:mt-20 md:gap-4">
+        {columns.map((col, c) => (
+        <div key={c} className="relative flex min-w-0 flex-1 flex-col gap-3 md:gap-4">
         <AnimatePresence mode="popLayout" initial={false}>
-          {visible.map((shot, i) => (
+          {col.map(({ shot, i }) => (
             <motion.figure
               key={shot.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="mb-3 break-inside-avoid md:mb-4"
+              className="min-w-0"
             >
               <button
                 type="button"
@@ -172,7 +192,7 @@ export function Work({ mode = "page" }: WorkProps) {
                   setIndex(i);
                 }}
                 className="group block w-full cursor-zoom-in overflow-hidden rounded-sm bg-paper-2 transition-transform duration-200 active:scale-[0.98]"
-                aria-label={`${t.work.frame} ${frameNo(shot.id)}, ${shot.place}`}
+                aria-label={label(shot)}
               >
                 <Image
                   src={shot.src}
@@ -203,6 +223,8 @@ export function Work({ mode = "page" }: WorkProps) {
             </motion.figure>
           ))}
         </AnimatePresence>
+        </div>
+        ))}
       </div>
 
       {teaser && (
@@ -222,7 +244,7 @@ export function Work({ mode = "page" }: WorkProps) {
             ref={dialog}
             role="dialog"
             aria-modal="true"
-            aria-label={`${t.work.frame} ${frameNo(current.id)}`}
+            aria-label={label(current)}
             initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
             animate={{ opacity: 1, backdropFilter: "blur(24px)" }}
             exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
