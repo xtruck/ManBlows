@@ -33,7 +33,15 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
       const target = normalize(path || pathname);
       if (target === pathname) {
         if (hash) {
-          window.location.hash = hash; // same page: the page reacts to the hash itself
+          const section = document.getElementById(hash);
+          if (section) {
+            // A section of this page (e.g. #offres): scroll to it smoothly
+            const lenis = getLenis();
+            if (lenis) lenis.scrollTo(section, { offset: -90 });
+            else section.scrollIntoView({ behavior: "smooth", block: "start" });
+          } else {
+            window.location.hash = hash; // a page filter (e.g. #photos): the page reacts to the hash itself
+          }
           return;
         }
         const lenis = getLenis();
@@ -67,9 +75,25 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
     pending.current = false;
     const el = curtain.current;
     if (!el) return;
-    window.scrollTo(0, 0);
+    // Start at the top, or at the section named in the link (e.g. /#offres). The sections settle
+    // a moment after the route changes, so the position is re-checked a few times (and we stop
+    // as soon as the visitor scrolls on their own).
     const lenis = getLenis();
-    lenis?.scrollTo(0, { immediate: true, force: true });
+    const hashId = window.location.hash.slice(1);
+    const timers: number[] = [];
+    let last = -1;
+    const align = (attempt: number) => {
+      const anchor = hashId ? document.getElementById(hashId) : null;
+      const top = anchor ? Math.max(0, anchor.getBoundingClientRect().top + window.scrollY - 90) : 0;
+      if (last !== -1 && Math.abs(window.scrollY - last) > 40) return; // the visitor took over
+      // Lenis still knows the previous page's height and would clamp the target to it
+      lenis?.resize();
+      window.scrollTo(0, top);
+      lenis?.scrollTo(top, { immediate: true, force: true });
+      last = top;
+      if (anchor && attempt < 6) timers.push(window.setTimeout(() => align(attempt + 1), 350));
+    };
+    align(0);
     lenis?.start();
     requestAnimationFrame(() => ScrollTrigger.refresh());
     gsap
@@ -77,6 +101,7 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
       .to(label.current, { yPercent: -110, duration: 0.35, ease: "power2.in" })
       .to(el, { yPercent: -100, duration: 0.75, ease: "expo.inOut" }, "-=0.15")
       .set(el, { visibility: "hidden", yPercent: 100 });
+    return () => timers.forEach((id) => window.clearTimeout(id));
   }, [pathname]);
 
   return (
