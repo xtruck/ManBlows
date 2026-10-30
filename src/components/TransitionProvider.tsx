@@ -28,7 +28,14 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
 
   const navigate = useCallback(
     (href: string) => {
-      if (normalize(href) === pathname) {
+      // A link may carry a hash (/travaux/#photos): compare the page only, keep the hash for the target
+      const [path, hash] = href.split("#");
+      const target = normalize(path || pathname);
+      if (target === pathname) {
+        if (hash) {
+          window.location.hash = hash; // same page: the page reacts to the hash itself
+          return;
+        }
         const lenis = getLenis();
         if (lenis) lenis.scrollTo(0);
         else window.scrollTo({ top: 0, behavior: "smooth" });
@@ -41,7 +48,7 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
         return;
       }
       pending.current = true;
-      const route = routes.find((r) => r.href === normalize(href));
+      const route = routes.find((r) => r.href === target);
       if (label.current) label.current.textContent = route ? t.nav[route.key] : "";
       getLenis()?.stop();
       gsap

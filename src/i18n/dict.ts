@@ -28,7 +28,7 @@ export const dict = {
     work: {
       title: "Travaux",
       intro: "Affiches, visuels pour les réseaux, bannières et logos créés pour des églises, des entreprises, des écoles et des événements. Touchez une image pour l'agrandir.",
-      filters: { all: "Tout", ceremonies: "Cérémonies", events: "Événements", portraits: "Portraits", films: "Films", design: "Design", studio: "Mes offres", products: "Produits" },
+      filters: { all: "Tout", ceremonies: "Cérémonies", events: "Événements", portraits: "Portraits", films: "Films", design: "Design", studio: "Mes offres", products: "Produits", photos: "Photos" },
       clientType: "Type de client",
       kinds: { all: "Tous", church: "Église", business: "Entreprise", school: "École", event: "Événement", personal: "Particulier", studio: "Offre du studio" },
       frame: "Image",
@@ -89,6 +89,9 @@ export const dict = {
       ],
       since: "Là où tout a commencé",
       cta: "Voir les créations",
+      photosCta: "Voir les photos",
+      videosCta: "Voir les vidéos",
+      counts: { photos: "photos", videos: "vidéos", designs: "créations" },
       offersCta: "Voir les tarifs",
     },
     offers: {
@@ -163,7 +166,7 @@ export const dict = {
     work: {
       title: "Work",
       intro: "Posters, social media visuals, banners and logos made for churches, businesses, schools and events. Tap any image to enlarge it.",
-      filters: { all: "All", ceremonies: "Ceremonies", events: "Events", portraits: "Portraits", films: "Films", design: "Design", studio: "My offers", products: "Products" },
+      filters: { all: "All", ceremonies: "Ceremonies", events: "Events", portraits: "Portraits", films: "Films", design: "Design", studio: "My offers", products: "Products", photos: "Photos" },
       clientType: "Client type",
       kinds: { all: "All", church: "Church", business: "Business", school: "School", event: "Event", personal: "Individual", studio: "Studio offer" },
       frame: "Frame",
@@ -224,6 +227,9 @@ export const dict = {
       ],
       since: "Where it all started",
       cta: "See the designs",
+      photosCta: "See the photos",
+      videosCta: "Watch the videos",
+      counts: { photos: "photos", videos: "videos", designs: "designs" },
       offersCta: "See the rates",
     },
     offers: {

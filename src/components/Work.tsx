@@ -11,12 +11,18 @@ import { TransitionLink } from "./TransitionProvider";
 import { useMedia } from "@/lib/useMedia";
 import { shots, type Category, type Kind, type Shot } from "@/content/site";
 
-type Filter = "all" | Category;
+type Filter = "all" | "photos" | Category;
 // Only offer filters that have something in them: when photos or films are added later,
 // their filter appears on its own.
 const categoryOrder: Category[] = ["design", "products", "events", "ceremonies", "portraits", "films"];
 const present = new Set(shots.map((s) => s.category));
-const filters: Filter[] = ["all", ...categoryOrder.filter((c) => present.has(c))];
+const isPhoto = (s: Shot) => s.category !== "design" && s.category !== "studio";
+// "Photos" gathers every photo category (products, events, ceremonies, portraits...) in one chip.
+const filters: Filter[] = [
+  "all",
+  ...(shots.some(isPhoto) ? (["photos"] as Filter[]) : []),
+  ...categoryOrder.filter((c) => present.has(c)),
+];
 
 // Client types offered when browsing the design work ("studio" is the founder's own promotion).
 type KindFilter = "all" | Exclude<Kind, "studio">;
@@ -43,6 +49,21 @@ export function Work({ mode = "page" }: WorkProps) {
   const dialog = useRef<HTMLDivElement>(null);
   useFocusTrap(dialog, index !== null);
 
+  // Deep links from the home page: /travaux/#photos, /travaux/#design...
+  useEffect(() => {
+    if (teaser) return;
+    const apply = () => {
+      const wanted = window.location.hash.slice(1);
+      if ((filters as string[]).includes(wanted)) {
+        setFilter(wanted as Filter);
+        setKind("all");
+      }
+    };
+    apply();
+    window.addEventListener("hashchange", apply);
+    return () => window.removeEventListener("hashchange", apply);
+  }, [teaser]);
+
   // Filtering moves the remaining images up; re-measure scroll reveals once the
   // exit animation is done, or images still waiting to reveal stay hidden.
   const firstFilter = useRef(true);
@@ -57,7 +78,8 @@ export function Work({ mode = "page" }: WorkProps) {
 
   const visible = useMemo(() => {
     if (teaser) return shots.filter((s) => s.featured);
-    const byCategory = filter === "all" ? shots : shots.filter((s) => s.category === filter);
+    const byCategory =
+      filter === "all" ? shots : filter === "photos" ? shots.filter(isPhoto) : shots.filter((s) => s.category === filter);
     return filter === "design" && kind !== "all" ? byCategory.filter((s) => s.kind === kind) : byCategory;
   }, [filter, kind, teaser]);
   // Masonry without CSS multi-column (which fights with lazy loading and exit animations):

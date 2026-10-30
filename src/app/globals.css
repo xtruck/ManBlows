@@ -335,3 +335,64 @@ html[data-motion="gentle"] .marquee {
 html[data-motion="gentle"] .rec-dot {
   animation: none;
 }
+
+/*
+ * "Deck": a stack of preview images for each craft on the home page. The front image comes
+ * forward in turn (state in Deck.tsx sets data-depth); hovering fans the stack out.
+ */
+.deck-item {
+  transform-origin: 50% 85%;
+  transition:
+    transform 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.6s ease;
+  will-change: transform;
+}
+.deck-item[data-depth="0"] {
+  transform: rotate(-2deg);
+  z-index: 30;
+}
+.deck-item[data-depth="1"] {
+  transform: translate(17%, 3%) rotate(6deg) scale(0.93);
+  z-index: 20;
+}
+.deck-item[data-depth="2"] {
+  transform: translate(-16%, 5%) rotate(-8deg) scale(0.88);
+  z-index: 10;
+}
+.deck-item[data-depth="3"] {
+  transform: translate(0, 9%) scale(0.8);
+  opacity: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.deck:hover .deck-item[data-depth="0"] {
+  transform: translateY(-3%) rotate(-1deg) scale(1.03);
+}
+.deck:hover .deck-item[data-depth="1"] {
+  transform: translate(31%, 2%) rotate(10deg) scale(0.95);
+}
+.deck:hover .deck-item[data-depth="2"] {
+  transform: translate(-30%, 4%) rotate(-11deg) scale(0.9);
+}
+.deck-cap {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.deck-item[data-depth="0"] .deck-cap {
+  opacity: 1;
+}
+@keyframes nudge {
+  50% {
+    transform: translateX(5px);
+  }
+}
+.deck-arrow {
+  display: inline-block;
+  animation: nudge 1.6s ease-in-out infinite;
+}
+html[data-motion="gentle"] .deck-item {
+  transition: none;
+}
+html[data-motion="gentle"] .deck-arrow {
+  animation: none;
+}

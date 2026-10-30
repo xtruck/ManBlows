@@ -19,8 +19,11 @@
 - **Films** (`/films/`) : 5 vidéos (2 mariages en vertical, une vidéo AGEF, un reportage Archibat, un
   reportage Maracana) dans `public/films/`, plus le **showreel**.
 - **Showreel** : sa vidéo de reportage d'événement de 25 s, en 1080×1920 (`public/films/showreel.mp4`).
-- **Trois métiers** (accueil) : trois cartes illustrées ; la carte Design renvoie vers les créations et
-  vers les tarifs.
+- **Trois métiers** (accueil, `components/Disciplines.tsx` + `Deck.tsx`) : la sélection du début de
+  l'accueil est fusionnée ici. Chaque carte montre un paquet de ses vraies images qui défilent
+  (compteur « 11 photos », « 5 vidéos », « 35 créations ») et mène directement à `/travaux/#photos`,
+  `/films/` ou `/travaux/#design` (le filtre est choisi par le lien). La carte Design a aussi
+  « Voir les tarifs ». Les images de chaque paquet se choisissent par numéro dans `Disciplines.tsx`.
 - Clients identifiés : Église Mesev, Assemblée Internationale Royaume de Lumière, Mission Évangélique
   Source d'Eau Vive, Vitall Institut, Les Bols du Bonheur, KMK Collection, Salon International de
   l'Investissement (SII), SGS Consulting, AGEF, Eliah Home Déco, Skinnys, Javelot Bar Resto.

@@ -61,7 +61,7 @@ export function Offers() {
   const current = open === null ? null : offers[open];
 
   return (
-    <section id="offres" className="overflow-hidden bg-paper py-24 md:py-36">
+    <section id="offres" className="overflow-hidden bg-paper-2 py-24 md:py-36">
       <div className="grid gap-6 px-4 md:grid-cols-12 md:items-end md:px-8">
         <h2
           data-reveal
