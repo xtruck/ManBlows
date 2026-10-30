@@ -89,3 +89,9 @@ page bloquée. Un indicateur « Faites défiler » avec trois chevrons jaunes en
 propriétaire) reste visible pendant toute la séquence, avec le texte « Continuez » une fois la caméra en
 mouvement, et disparaît quand l'écran s'ouvre sur le site. En mode d'animations réduites, il disparaît
 dès le premier défilement.
+
+## Référencement et nettoyage (30/10)
+- `robots.txt` et `sitemap.xml` générés au build (`src/app/robots.ts`, `src/app/sitemap.ts`) : les 5 pages sont listées pour les moteurs de recherche.
+- Code et textes devenus inutiles retirés (ancien mode « sélection » de la galerie, options `featured`, textes de l'ancienne section).
+- `Maracana.mp4` allégée (18,7 → 14,2 Mo, 30 images/s).
+- Pas fait : les titres d'onglet restent en français quand le site est en anglais.

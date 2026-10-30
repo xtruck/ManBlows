@@ -21,9 +21,6 @@ export const dict = {
       keepScrolling: "Continuez",
     },
     home: {
-      selection: "Sélection",
-      selectionIntro: "Quelques images récentes. Le reste vous attend dans les travaux.",
-      allWork: "Voir tous les travaux",
       films: "Voir les films",
       more: "En savoir plus",
     },
@@ -144,7 +141,6 @@ export const dict = {
     focus: "Mise au point",
     a11y: {
       mainNav: "Navigation principale",
-      footerNav: "Pied de page",
       realDesign: "création graphique EGC Studio",
       loading: "Chargement du site EGC Studio…",
     },
@@ -169,9 +165,6 @@ export const dict = {
       keepScrolling: "Keep going",
     },
     home: {
-      selection: "Selection",
-      selectionIntro: "A few recent frames. The rest is waiting in the work.",
-      allWork: "See all the work",
       films: "See the films",
       more: "Read more",
     },
@@ -292,7 +285,6 @@ export const dict = {
     focus: "Focusing",
     a11y: {
       mainNav: "Main navigation",
-      footerNav: "Footer",
       realDesign: "EGC Studio graphic design",
       loading: "Loading the EGC Studio site…",
     },

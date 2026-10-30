@@ -17,8 +17,6 @@ export type Shot = {
   w: number;
   h: number;
   place: string;
-  /** Shown in the home-page selection. */
-  featured?: boolean;
   /** True for the founder's own work. */
   real?: boolean;
   /** The client a piece was made for, when it could be identified. */

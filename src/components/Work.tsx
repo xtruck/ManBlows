@@ -7,7 +7,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useFocusTrap } from "@/lib/useFocusTrap";
 import { useLang } from "./LangProvider";
 import { getLenis } from "./SmoothScroll";
-import { TransitionLink } from "./TransitionProvider";
 import { useMedia } from "@/lib/useMedia";
 import { shots, type Category, type Kind, type Shot } from "@/content/site";
 
@@ -32,15 +31,9 @@ const kindFilters: KindFilter[] = ["all", ...kindOrder.filter((k) => kindsPresen
 
 const frameNo = (id: number) => String(id).padStart(2, "0");
 
-type WorkProps = {
-  /** "page": the full /travaux page with filters. "teaser": a home-page selection. */
-  mode?: "page" | "teaser";
-};
-
-/** Contact-sheet grid: frame numbers under each image, filter chips, keyboard and swipe lightbox. */
-export function Work({ mode = "page" }: WorkProps) {
+/** The founder's work: filter chips, a balanced masonry grid and a keyboard / swipe lightbox. */
+export function Work() {
   const { t } = useLang();
-  const teaser = mode === "teaser";
   const [filter, setFilter] = useState<Filter>("all");
   const [kind, setKind] = useState<KindFilter>("all");
   const [index, setIndex] = useState<number | null>(null);
@@ -51,7 +44,6 @@ export function Work({ mode = "page" }: WorkProps) {
 
   // Deep links from the home page: /travaux/#photos, /travaux/#design...
   useEffect(() => {
-    if (teaser) return;
     const apply = () => {
       const wanted = window.location.hash.slice(1);
       if ((filters as string[]).includes(wanted)) {
@@ -62,7 +54,7 @@ export function Work({ mode = "page" }: WorkProps) {
     apply();
     window.addEventListener("hashchange", apply);
     return () => window.removeEventListener("hashchange", apply);
-  }, [teaser]);
+  }, []);
 
   // Filtering moves the remaining images up; re-measure scroll reveals once the
   // exit animation is done, or images still waiting to reveal stay hidden.
@@ -77,11 +69,10 @@ export function Work({ mode = "page" }: WorkProps) {
   }, [filter, kind]);
 
   const visible = useMemo(() => {
-    if (teaser) return shots.filter((s) => s.featured);
     const byCategory =
       filter === "all" ? shots : filter === "photos" ? shots.filter(isPhoto) : shots.filter((s) => s.category === filter);
     return filter === "design" && kind !== "all" ? byCategory.filter((s) => s.kind === kind) : byCategory;
-  }, [filter, kind, teaser]);
+  }, [filter, kind]);
   // Masonry without CSS multi-column (which fights with lazy loading and exit animations):
   // each image goes into the currently shortest column, so the first images sit side by side.
   const wide = useMedia("(min-width: 1024px)");
@@ -127,26 +118,21 @@ export function Work({ mode = "page" }: WorkProps) {
     };
   }, [index, close, step]);
 
-  const Heading = teaser ? "h2" : "h1";
-
   return (
-    <section
-      className={`bg-paper px-4 md:px-8 ${teaser ? "py-24 md:py-36" : "pt-32 pb-24 md:pt-44 md:pb-36"}`}
-    >
+    <section className="bg-paper px-4 pt-32 pb-24 md:px-8 md:pt-44 md:pb-36">
       <div className="grid gap-8 md:grid-cols-12 md:items-end">
-        <Heading
+        <h1
           data-reveal
           className="font-display text-[clamp(3.4rem,10vw,9rem)] leading-[0.86] font-semibold tracking-[-0.045em] md:col-span-7"
         >
-          {teaser ? t.home.selection : t.work.title}
-        </Heading>
+          {t.work.title}
+        </h1>
         {/* min-w-0 lets the scrollable filter row shrink instead of widening the page */}
         <div className="min-w-0 md:col-span-5">
           <p data-reveal className="max-w-[44ch] text-lg leading-relaxed text-muted">
-            {teaser ? t.home.selectionIntro : t.work.intro}
+            {t.work.intro}
           </p>
-          {!teaser && (
-            <div
+          <div
               data-reveal
               role="group"
               aria-label={t.work.title}
@@ -169,8 +155,7 @@ export function Work({ mode = "page" }: WorkProps) {
                 </button>
               ))}
             </div>
-          )}
-          {!teaser && filter === "design" && (
+          {filter === "design" && (
             // Second row: who the designs were made for (churches, businesses, schools, events).
             <div
               role="group"
@@ -250,17 +235,6 @@ export function Work({ mode = "page" }: WorkProps) {
         </div>
         ))}
       </div>
-
-      {teaser && (
-        <div data-reveal className="mt-12 flex justify-center md:mt-16">
-          <TransitionLink
-            href="/travaux/"
-            className="flex h-14 items-center rounded-full bg-ink px-8 text-sm font-medium text-paper transition-transform duration-200 hover:scale-[1.03] active:scale-95"
-          >
-            {t.home.allWork}
-          </TransitionLink>
-        </div>
-      )}
 
       <AnimatePresence>
         {current && index !== null && (

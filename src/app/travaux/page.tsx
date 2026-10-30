@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Travaux" };
 export default function WorkPage() {
   return (
     <>
-      <Work mode="page" />
+      <Work />
       <CtaBand />
     </>
   );
