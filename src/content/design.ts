@@ -30,7 +30,7 @@ const d = (
   featured,
 });
 
-export const designShots: Shot[] = [
+const allDesigns: Shot[] = [
   d(1, 1400, 1341, "design", "business", "Invitation d'anniversaire", "Javelot Bar Resto"),
   d(2, 1120, 1400, "design", "church", "Opération rentrée scolaire", "Église Mesev", true),
   d(3, 1080, 1080, "design", "church", "Prophetic Release", "Assemblée Internationale Royaume de Lumière"),
@@ -59,8 +59,21 @@ export const designShots: Shot[] = [
   d(33, 1080, 1080, "design", "church", "Semaine de la jeunesse, programme", "Église Mesev"),
   d(34, 1080, 1080, "design", "church", "Conférence jeunesse", "Église Mesev"),
   d(35, 1400, 1050, "design", "business", "Panneau installé, photo de terrain", "AGEF, Agence de Gestion Foncière"),
+  d(36, 1400, 603, "design", "business", "Bannière de bienvenue", "AGEF, Agence de Gestion Foncière"),
+  d(37, 1120, 1400, "design", "business", "Visuel de marque", "Skinnys"),
+  d(38, 1200, 675, "design", "business", "Affiche Salad complète", "Les Bols du Bonheur"),
+  d(39, 1400, 788, "design", "church", "La Traversée, ma saison du vin nouveau", "Mission Évangélique Source d'Eau Vive"),
+  d(40, 1400, 788, "design", "church", "Soirées couples Epanouis Talk", "Mission Évangélique Source d'Eau Vive"),
+  d(41, 1400, 933, "design", "business", "Bannière fruits et légumes", "Les Bols du Bonheur"),
+  d(42, 1400, 1050, "design", "business", "Panneau installé, vue de la route", "AGEF, Agence de Gestion Foncière"),
   d(22, 1120, 1400, "studio", "studio", "Forfaits réseaux sociaux", "EGC Studio"),
   d(23, 1120, 1400, "studio", "studio", "Création de design", "EGC Studio"),
   d(24, 1120, 1400, "studio", "studio", "Services de design", "EGC Studio"),
   d(31, 1120, 1400, "studio", "studio", "Offres et tarifs", "EGC Studio"),
 ];
+
+/** Work made for clients: shown in the Travaux gallery. */
+export const designShots = allDesigns.filter((s) => s.category !== "studio");
+
+/** EGC Studio's own posters (packages, services, price list): shown apart, in the "Offres et tarifs" section. */
+export const offerShots = allDesigns.filter((s) => s.category === "studio");

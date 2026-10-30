@@ -8,56 +8,59 @@
 - Puis photographe et vidéaste : mariages, baptêmes, événements, portraits.
 
 ## Contenu du site (tout est de lui, plus aucune maquette)
-- 32 créations graphiques, classées par client et par type (église, entreprise, école, événement)
-  dans `src/content/design.ts`. Images optimisées dans `public/work/`.
-- 4 visuels sont **ses propres offres** (forfaits réseaux sociaux, services, tarifs) :
-  catégorie « studio », affichée dans « Mes offres », pas du travail client.
-- 3 vidéos verticales (2 mariages, 1 reportage d'événement) dans `public/films/`.
-- Clients identifiés sur les affiches : Église Mesev, Assemblée Internationale Royaume de Lumière,
-  Mission Évangélique Source d'Eau Vive, Vitall Institut, Les Bols du Bonheur, KMK Collection,
-  Salon International de l'Investissement (SII), SGS Consulting, AGEF, Eliah Home Déco, Javelot Bar Resto.
+- **Travaux** (`/travaux/`) : 35 créations graphiques (`src/content/design.ts`) et 11 photos
+  (`src/content/photos.ts`), chacune avec le client et le type (église, entreprise, école, événement).
+  Filtres : Tout, Design (avec un sous-filtre par type de client), Produits, Événements.
+  Images optimisées dans `public/work/`.
+- **Offres et tarifs** (section sur l'accueil, `components/Offers.tsx`) : ses 4 affiches rouges
+  (forfaits réseaux sociaux, création de design, services, grille tarifaire) sont **à part** du travail
+  client, dans un carrousel avec agrandissement. Elles sont dans `design.ts` (catégorie `studio`,
+  exportées en `offerShots`) et ne s'affichent pas dans la galerie.
+- **Films** (`/films/`) : 5 vidéos (2 mariages en vertical, une vidéo AGEF, un reportage Archibat, un
+  reportage Maracana) dans `public/films/`, plus le **showreel**.
+- **Showreel** : sa vidéo de reportage d'événement de 25 s, en 1080×1920 (`public/films/showreel.mp4`).
+- **Trois métiers** (accueil) : trois cartes illustrées ; la carte Design renvoie vers les créations et
+  vers les tarifs.
+- Clients identifiés : Église Mesev, Assemblée Internationale Royaume de Lumière, Mission Évangélique
+  Source d'Eau Vive, Vitall Institut, Les Bols du Bonheur, KMK Collection, Salon International de
+  l'Investissement (SII), SGS Consulting, AGEF, Eliah Home Déco, Skinnys, Javelot Bar Resto.
 - Coordonnées lues sur ses affiches : WhatsApp +225 01 60 66 86 82, e-mail vegcstudio@gmail.com,
   Instagram egc_studio (dans `src/content/site.ts`).
 
 ## Mis à l'écart volontairement (contenu personnel)
-Le programme d'obsèques d'une famille et les cartes d'anniversaire de deux personnes ne sont plus
-sur le site. Les fichiers sont dans `inbox/private/` (non publié, ignoré par git). Les originaux
-restent dans son dossier.
+Le programme d'obsèques d'une famille et les cartes d'anniversaire de personnes (Duncan-Williams,
+Adebo, Roland Amuzu sans logo d'église) ne sont pas sur le site. Les fichiers sont dans
+`inbox/private/` (non publié, ignoré par git). Les originaux restent dans son dossier.
+Aussi laissée de côté : une vidéo de 3 secondes (`5D40DC1D-….mov`), trop courte.
 
 ## Pas encore sur le site (il n'a pas envoyé de photos)
-- Photos de cérémonies, événements, portraits, et son portrait pour la page À propos.
+- Photos de cérémonies, de portraits, et son portrait pour la page À propos.
 - Témoignages de clients (les faux ont été retirés).
-- Les filtres Cérémonies, Événements, Portraits et Films apparaîtront tout seuls dès que des photos
-  de ces catégories seront ajoutées dans `src/content/site.ts`.
+- Les filtres Cérémonies, Portraits et Films apparaîtront tout seuls dès que des photos de ces
+  catégories seront ajoutées (`photos.ts`).
 
 ## À confirmer avec lui
-- Accord des clients pour montrer leurs affiches.
+- Accord des clients pour montrer leurs affiches et leurs photos (visages sur les photos de salon).
+- Les photos de stand et de dégustation sont attribuées aux Bols du Bonheur d'après les barquettes
+  étiquetées visibles : à vérifier. Les photos de marche en équipe sont attribuées à AGEF d'après les
+  tenues orange et blanc.
 - Les outils exacts qu'il utilise en dehors de Canva.
-- Les vidéos portent un filigrane « SM Production » en plus de « egc studio » : à vérifier.
+- Les vidéos de mariage portent un filigrane « SM Production » en plus de « egc studio ».
 
 ## Ajouter de nouveaux fichiers
 `node scripts/ingest-watch.mjs` surveille `D:\OneDrive\Desktop\MAN BLOWS`, convertit les nouvelles
-photos (WebP 1400 px) et vidéos (H.264, 1280 px sur le grand côté) dans `inbox/ready/` et les liste
-dans `inbox/queue.json`. Rien n'est publié tant qu'on ne les a pas copiés dans `public/`.
-
-## Showreel
-Section « Le showreel » (accueil + page Films) : montage de l'événement Archibat
-(`public/films/showreel.mp4`). C'est un choix à confirmer : remplacer le fichier et
-`showreel` dans `src/content/site.ts` pour changer de vidéo.
+photos (WebP 1400 px ; les HEIC passent par ffmpeg) et vidéos (H.264, 1280 px sur le grand côté) dans
+`inbox/ready/` et les liste dans `inbox/queue.json`. Rien n'est publié tant qu'on ne les a pas copiés
+dans `public/` et ajoutés dans `design.ts`, `photos.ts` ou `site.ts` (films).
 
 ## Continuer sur un autre ordinateur
 `git clone https://github.com/xtruck/ManBlows.git`, `npm install`, puis `npm run dev`.
-Les photos/vidéos non publiées (converties, pas encore triées) sont sur la branche `inbox-media` :
-`git fetch && git checkout inbox-media -- inbox`. Deux photos HEIC (IMG_3480, IMG_3489) n'ont pas pu
-être converties (OneDrive ne les avait pas téléchargées) : relancer `node scripts/ingest-watch.mjs`.
-Les fichiers vidéo bruts de plus de 100 Mo restent dans le dossier OneDrive, pas sur GitHub.
+Les fichiers convertis mais pas triés sont sur la branche `inbox-media` :
+`git fetch && git checkout inbox-media -- inbox`. Les vidéos brutes (jusqu'à 140 Mo) restent dans le
+dossier OneDrive, pas sur GitHub.
 
 ## Page Travaux : audit fait
-- **Corrigé** : 2 images sur 32 pouvaient ne pas se charger au défilement rapide (chargement différé
-  du navigateur dans la mise en page en colonnes CSS). La galerie utilise maintenant des colonnes
-  calculées (2 sur téléphone, 3 sur ordinateur) : `Work.tsx`.
-- Testé : 32 images chargées au défilement rapide (téléphone et ordinateur), aucun chevauchement ni
-  débordement, visionneuse correcte pour les 32 images, tous les filtres (Tout, Design, par type de
-  client, Mes offres).
-- Les étiquettes pour lecteurs d'écran donnent le client et le titre (plus « Image 101 »).
-- Showreel refait en 1080×1920 (14 Mo) à partir des vidéos 4K ; logo EGC Studio en icône d'onglet.
+- Les colonnes CSS posaient un problème de chargement des images : la galerie utilise des colonnes
+  calculées (2 sur téléphone, 3 sur ordinateur) dans `Work.tsx`.
+- Testé : toutes les images se chargent au défilement rapide (téléphone et ordinateur), aucun
+  chevauchement ni débordement, visionneuse correcte, filtres corrects.

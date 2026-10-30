@@ -28,7 +28,7 @@ export const dict = {
     work: {
       title: "Travaux",
       intro: "Affiches, visuels pour les réseaux, bannières et logos créés pour des églises, des entreprises, des écoles et des événements. Touchez une image pour l'agrandir.",
-      filters: { all: "Tout", ceremonies: "Cérémonies", events: "Événements", portraits: "Portraits", films: "Films", design: "Design", studio: "Mes offres" },
+      filters: { all: "Tout", ceremonies: "Cérémonies", events: "Événements", portraits: "Portraits", films: "Films", design: "Design", studio: "Mes offres", products: "Produits" },
       clientType: "Type de client",
       kinds: { all: "Tous", church: "Église", business: "Entreprise", school: "École", event: "Événement", personal: "Particulier", studio: "Offre du studio" },
       frame: "Image",
@@ -89,6 +89,13 @@ export const dict = {
       ],
       since: "Là où tout a commencé",
       cta: "Voir les créations",
+      offersCta: "Voir les tarifs",
+    },
+    offers: {
+      title: "Mes offres et tarifs.",
+      intro: "Forfaits réseaux sociaux, création graphique et grille tarifaire : le détail de mes prestations et de leurs prix.",
+      hint: "Touchez une affiche pour la lire en grand.",
+      cta: "Demander un devis",
     },
     clients: { title: "Ils m'ont fait confiance" },
     cta: {
@@ -149,7 +156,7 @@ export const dict = {
     work: {
       title: "Work",
       intro: "Posters, social media visuals, banners and logos made for churches, businesses, schools and events. Tap any image to enlarge it.",
-      filters: { all: "All", ceremonies: "Ceremonies", events: "Events", portraits: "Portraits", films: "Films", design: "Design", studio: "My offers" },
+      filters: { all: "All", ceremonies: "Ceremonies", events: "Events", portraits: "Portraits", films: "Films", design: "Design", studio: "My offers", products: "Products" },
       clientType: "Client type",
       kinds: { all: "All", church: "Church", business: "Business", school: "School", event: "Event", personal: "Individual", studio: "Studio offer" },
       frame: "Frame",
@@ -210,6 +217,13 @@ export const dict = {
       ],
       since: "Where it all started",
       cta: "See the designs",
+      offersCta: "See the rates",
+    },
+    offers: {
+      title: "My offers and rates.",
+      intro: "Social media packages, graphic design and a price list: what I offer and what it costs.",
+      hint: "Tap a poster to read it full size.",
+      cta: "Ask for a quote",
     },
     clients: { title: "Trusted by" },
     cta: {

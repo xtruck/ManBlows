@@ -69,8 +69,21 @@ const slug = (s) =>
 
 async function convertImage(src, base) {
   const out = path.join(readyDir, `${base}.webp`);
-  const meta = await sharp(src).metadata();
-  const info = await sharp(src)
+  // Read the whole file first: files that OneDrive keeps "online only" fail with "bad seek"
+  // when sharp reads them directly, but read fine as a buffer (this also downloads them).
+  let input = fs.readFileSync(src);
+  try {
+    await sharp(input).metadata();
+    await sharp(input).resize(8).raw().toBuffer(); // force a real decode, not just the header
+  } catch {
+    // Truncated or unusual files (some iPhone HEIC photos): ffmpeg is more forgiving.
+    const tmp = path.join(readyDir, `${base}-tmp.jpg`);
+    await run("ffmpeg", ["-y", "-loglevel", "error", "-i", src, "-q:v", "2", tmp], { timeout: 120000 });
+    input = fs.readFileSync(tmp);
+    fs.rmSync(tmp, { force: true });
+  }
+  const meta = await sharp(input).metadata();
+  const info = await sharp(input)
     .rotate()
     .resize({ width: 1400, height: 1400, fit: "inside", withoutEnlargement: true })
     .webp({ quality: meta.hasAlpha ? 85 : 82 })

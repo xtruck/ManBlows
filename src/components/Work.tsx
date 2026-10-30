@@ -14,7 +14,7 @@ import { shots, type Category, type Kind, type Shot } from "@/content/site";
 type Filter = "all" | Category;
 // Only offer filters that have something in them: when photos or films are added later,
 // their filter appears on its own.
-const categoryOrder: Category[] = ["ceremonies", "events", "portraits", "films", "design", "studio"];
+const categoryOrder: Category[] = ["design", "products", "events", "ceremonies", "portraits", "films"];
 const present = new Set(shots.map((s) => s.category));
 const filters: Filter[] = ["all", ...categoryOrder.filter((c) => present.has(c))];
 
@@ -77,6 +77,8 @@ export function Work({ mode = "page" }: WorkProps) {
   // Accessible name of an image: who it was made for and what it is (frame number for photos).
   const label = (s: Shot) =>
     s.real ? `${s.client ? `${s.client}, ` : ""}${s.place}` : `${t.work.frame} ${frameNo(s.id)}, ${s.place}`;
+  const altOf = (s: Shot) =>
+    s.category === "design" ? `${s.place}, ${t.a11y.realDesign}` : s.client ? `${s.place}, ${s.client}` : s.place;
   const current = index === null ? null : visible[index];
 
   const close = useCallback(() => {
@@ -196,7 +198,7 @@ export function Work({ mode = "page" }: WorkProps) {
               >
                 <Image
                   src={shot.src}
-                  alt={shot.category === "design" || shot.category === "studio" ? `${shot.place}, ${t.a11y.realDesign}` : shot.place}
+                  alt={altOf(shot)}
                   width={shot.w}
                   height={shot.h}
                   sizes="(min-width: 1024px) 33vw, 50vw"
@@ -271,7 +273,7 @@ export function Work({ mode = "page" }: WorkProps) {
               >
                 <Image
                   src={current.src}
-                  alt={current.category === "design" || current.category === "studio" ? `${current.place}, ${t.a11y.realDesign}` : current.place}
+                  alt={altOf(current)}
                   width={current.w}
                   height={current.h}
                   sizes="90vw"
