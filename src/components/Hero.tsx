@@ -11,6 +11,7 @@ import { LightLeaks } from "./LightLeaks";
 import { onIntroDone, onSceneReady } from "@/lib/intro";
 import { useMedia } from "@/lib/useMedia";
 import { useMotionMode } from "@/lib/motion";
+import { getLenis } from "./SmoothScroll";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -35,6 +36,36 @@ export function Hero() {
   const compact = useMedia("(max-width: 767px)");
   const reduced = useMotionMode() === "gentle";
   const [active, setActive] = useState(true);
+  const cue = useRef<HTMLButtonElement>(null);
+
+  // Tapping the cue scrolls about one screen further, which also continues the camera sequence.
+  const nudge = () => {
+    const to = window.scrollY + window.innerHeight * 0.9;
+    const lenis = getLenis();
+    if (lenis) lenis.scrollTo(to);
+    else window.scrollTo({ top: to, behavior: "smooth" });
+  };
+
+  // The scroll cue: "idle" (label and bouncing arrow), "going" (progress ring while the camera
+  // sequence plays) and "gone" (once the aperture has opened, or in calm mode after a first scroll).
+  useEffect(() => {
+    const el = root.current;
+    const c = cue.current;
+    if (!el || !c) return;
+    const update = () => {
+      const y = window.scrollY;
+      const p = Math.min(1, Math.max(0, y / Math.max(1, el.offsetHeight - window.innerHeight)));
+      // The cue stays on screen for the whole camera sequence, so the page never looks stuck.
+      c.dataset.state = reduced ? (y > 40 ? "gone" : "idle") : p < 0.02 ? "idle" : p < 0.82 ? "going" : "gone";
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    return () => {
+      window.removeEventListener("scroll", update);
+      window.removeEventListener("resize", update);
+    };
+  }, [reduced]);
 
   // Pause the 3D render once the hero has scrolled away.
   useEffect(() => {
@@ -164,7 +195,7 @@ export function Hero() {
 
         <div
           data-hero-ui
-          className="absolute inset-x-5 bottom-8 flex flex-col gap-7 md:inset-x-14 md:bottom-14 lg:flex-row lg:items-end lg:justify-between"
+          className="absolute inset-x-5 bottom-[6rem] flex flex-col gap-7 md:inset-x-14 md:bottom-[6rem] lg:flex-row lg:items-end lg:justify-between"
         >
           <h1 className="pt-[0.6em]">
             <Logo tone="paper" className="text-[23vw] md:text-[15vw] lg:text-[11vw]" />
@@ -187,6 +218,34 @@ export function Hero() {
               </span>
             </div>
           </div>
+        </div>
+
+        {/*
+          Scroll cue: the hero stays pinned while the camera turns, so visitors could think the page
+          is stuck. A bouncing arrow says "scroll", then becomes a progress ring for the whole
+          sequence, and disappears when the aperture opens onto the work.
+        */}
+        <div data-hero-fade className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center">
+          <button
+            ref={cue}
+            type="button"
+            data-state="idle"
+            onClick={nudge}
+            aria-label={t.hero.scroll}
+            className="scroll-cue pointer-events-auto relative z-10 flex cursor-pointer flex-col items-center gap-2 px-6 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] text-paper"
+          >
+            <span className="cue-labels text-[10px] font-medium tracking-[0.3em] text-paper/85 uppercase md:text-[11px]">
+              <span className="cue-l-idle">{t.hero.scroll}</span>
+              <span className="cue-l-going">{t.hero.keepScrolling}</span>
+            </span>
+            <span aria-hidden className="cue-chev">
+              <b />
+              <b />
+              <b />
+            </span>
+          </button>
+          {/* A soft shade under the cue keeps it readable; it goes away with the cue (see globals.css) */}
+          <span aria-hidden className="cue-shade absolute inset-x-0 bottom-0 z-0 h-28 bg-gradient-to-t from-ink/70 to-transparent" />
         </div>
 
         <p

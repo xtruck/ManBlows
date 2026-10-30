@@ -396,3 +396,92 @@ html[data-motion="gentle"] .deck-item {
 html[data-motion="gentle"] .deck-arrow {
   animation: none;
 }
+
+/*
+ * Hero scroll cue (see Hero.tsx): a quiet label above three yellow chevrons that light up in turn.
+ * Visible while data-state is "idle" (at the top, or after a pause halfway through the camera
+ * sequence); hidden as soon as the visitor scrolls.
+ */
+.scroll-cue {
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease;
+}
+.scroll-cue[data-state="gone"] {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+/* Two labels share one cell: "Faites défiler" at first, "Continuez" once the camera is moving */
+.cue-labels {
+  display: grid;
+  justify-items: center;
+}
+.cue-labels > span {
+  grid-area: 1 / 1;
+  white-space: nowrap;
+  transition: opacity 0.4s ease;
+}
+.cue-labels > .cue-l-going {
+  opacity: 0;
+}
+.scroll-cue[data-state="going"] .cue-l-idle {
+  opacity: 0;
+}
+.scroll-cue[data-state="going"] .cue-l-going {
+  opacity: 1;
+}
+.cue-chev {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.cue-chev b {
+  display: block;
+  width: 15px;
+  height: 15px;
+  margin-top: -8px;
+  border-right: 2.5px solid var(--brand);
+  border-bottom: 2.5px solid var(--brand);
+  transform: rotate(45deg);
+  opacity: 0.3;
+  animation: cue-chev 1.5s ease-in-out infinite;
+}
+.cue-chev b:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.cue-chev b:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes cue-chev {
+  0% {
+    opacity: 0.3;
+  }
+  40% {
+    opacity: 1;
+  }
+  80%,
+  100% {
+    opacity: 0.3;
+  }
+}
+/* Soft animation mode: the three chevrons stay on, fading from top to bottom */
+html[data-motion="gentle"] .cue-chev b {
+  animation: none;
+}
+html[data-motion="gentle"] .cue-chev b:nth-child(1) {
+  opacity: 0.35;
+}
+html[data-motion="gentle"] .cue-chev b:nth-child(2) {
+  opacity: 0.65;
+}
+html[data-motion="gentle"] .cue-chev b:nth-child(3) {
+  opacity: 1;
+}
+/* A soft shade under the cue keeps it readable; it goes away with the cue */
+.cue-shade {
+  transition: opacity 0.5s ease;
+}
+.scroll-cue[data-state="gone"] + .cue-shade {
+  opacity: 0;
+}

@@ -17,6 +17,8 @@ export const dict = {
       status: "Réservations ouvertes",
       cta: "Voir les travaux",
       lens: "Chaque image commence ici.",
+      scroll: "Faites défiler",
+      keepScrolling: "Continuez",
     },
     home: {
       selection: "Sélection",
@@ -155,6 +157,8 @@ export const dict = {
       status: "Now booking",
       cta: "See the work",
       lens: "Every frame starts here.",
+      scroll: "Scroll down",
+      keepScrolling: "Keep going",
     },
     home: {
       selection: "Selection",

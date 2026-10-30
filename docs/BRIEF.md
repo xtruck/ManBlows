@@ -81,3 +81,10 @@ dossier OneDrive, pas sur GitHub.
 - Trois courts plans de préparation de fruits (IMG_1445, 1447, 1448) montés en un seul film avec des fondus : « Les Bols du Bonheur, en cuisine ».
 - IMG_2001 (mains au clavier) et IMG_2144 (détail de mariage, filigrane SM Production) ajoutées telles quelles.
 - Aucune nouvelle photo n'était arrivée dans le dossier à ce moment-là.
+
+## Indicateur de défilement (accueil, `Hero.tsx`)
+La caméra de l'accueil reste fixe pendant une longue séquence au défilement : un visiteur pouvait croire la
+page bloquée. Un indicateur « Faites défiler » avec trois chevrons jaunes en cascade (style C, choisi par le
+propriétaire) reste visible pendant toute la séquence, avec le texte « Continuez » une fois la caméra en
+mouvement, et disparaît quand l'écran s'ouvre sur le site. En mode d'animations réduites, il disparaît
+dès le premier défilement.
