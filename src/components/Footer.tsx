@@ -47,6 +47,9 @@ export function Footer() {
           <a href={`https://instagram.com/${contact.instagram}`} target="_blank" rel="noopener noreferrer" className="hover:text-paper">
             Instagram
           </a>
+          <a href={`https://www.tiktok.com/@${contact.tiktok}`} target="_blank" rel="noopener noreferrer" className="hover:text-paper">
+            TikTok
+          </a>
           <a href={`https://wa.me/${contact.whatsapp}`} target="_blank" rel="noopener noreferrer" className="hover:text-paper">
             WhatsApp
           </a>

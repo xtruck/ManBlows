@@ -81,6 +81,16 @@ export function Contact() {
               Instagram @{contact.instagram}
             </a>
           </li>
+          <li>
+            <a
+              href={`https://www.tiktok.com/@${contact.tiktok}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline decoration-1 underline-offset-[6px] hover:decoration-2"
+            >
+              TikTok @{contact.tiktok}
+            </a>
+          </li>
         </ul>
       </div>
 
