@@ -10,6 +10,7 @@ import { Footer } from "@/components/Footer";
 import { Reveals } from "@/components/Reveals";
 import { Interactions } from "@/components/Interactions";
 import { MotionControl } from "@/components/MotionControl";
+import { TitleSync } from "@/components/TitleSync";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -64,6 +65,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Reveals />
             <Interactions />
             <MotionControl />
+            <TitleSync />
           </TransitionProvider>
         </LangProvider>
       </body>

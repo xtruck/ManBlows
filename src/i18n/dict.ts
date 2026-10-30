@@ -137,6 +137,7 @@ export const dict = {
       on: "Animations activées",
       off: "Animations réduites",
     },
+    meta: { home: "EGC Studio | Photo, vidéo et design" },
     preloader: "Chargement",
     focus: "Mise au point",
     a11y: {
@@ -281,6 +282,7 @@ export const dict = {
       on: "Animations on",
       off: "Animations reduced",
     },
+    meta: { home: "EGC Studio | Photo, video and design" },
     preloader: "Loading",
     focus: "Focusing",
     a11y: {
