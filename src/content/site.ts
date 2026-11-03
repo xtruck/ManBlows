@@ -215,6 +215,7 @@ export const clients = [
   "Eliah Home Déco",
   "Skinnys",
   "Javelot Bar Resto",
+  "SIFEC",
 ];
 
 // Contact details, as printed on the founder's own posters.

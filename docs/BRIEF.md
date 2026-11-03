@@ -103,6 +103,6 @@ dès le premier défilement.
 - À confirmer : accord des personnes photographiées pour la publication.
 
 ## Ajout du 03/11 (suite)
-- Photos 36 à 41 : un portrait de studio (Portraits) et 5 photos d'un événement officiel (invités, assistance, stand). Le nom de l'événement est inconnu : à préciser.
+- Photos 36 à 41 : un portrait de studio (Portraits) et 5 photos du client SIFEC (Événements), ajouté à « Ils m'ont fait confiance ». Nom complet de SIFEC à confirmer.
 - 10 vidéos ajoutées aux Films (n° 14 à 23) : 6 plans de coulisses (drone, tournage), 3 reportages d'événement et le clip « Alors, ta date ? ». IMG_1482 (enregistrement d'écran) non publiée.
 - Titres génériques écrits d'après les images : à corriger avec lui.
