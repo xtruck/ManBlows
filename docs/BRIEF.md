@@ -96,3 +96,8 @@ dès le premier défilement.
 - `Maracana.mp4` allégée (18,7 → 14,2 Mo, 30 images/s).
 - Titres d'onglet : ils suivent la langue choisie (`components/TitleSync.tsx`, « Work | EGC Studio » en anglais).
 - Pas fait : la description (balise meta) et l'image de partage restent en français.
+
+## Nouvelles photos (03/11)
+- 24 photos ajoutées (`photos.ts`, n° 12 à 35) : 5 portraits professionnels en studio (filtre Portraits) et 19 photos d'une soirée de future mariée (filtre Cérémonies, type « Particulier »).
+- Gardées de côté : 2 portraits d'un jeune homme avec deux appareils photo (IMG_9865/9866), peut-être Egu pour la page À propos : à confirmer.
+- À confirmer : accord des personnes photographiées pour la publication.
