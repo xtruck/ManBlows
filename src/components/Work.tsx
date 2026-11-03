@@ -8,7 +8,7 @@ import { useFocusTrap } from "@/lib/useFocusTrap";
 import { useLang } from "./LangProvider";
 import { getLenis } from "./SmoothScroll";
 import { useMedia } from "@/lib/useMedia";
-import { shots, type Category, type Kind, type Shot } from "@/content/site";
+import { shots, thumb, type Category, type Kind, type Shot } from "@/content/site";
 
 type Filter = "all" | "photos" | Category;
 // Only offer filters that have something in them: when photos or films are added later,
@@ -204,7 +204,7 @@ export function Work() {
                 aria-label={label(shot)}
               >
                 <Image
-                  src={shot.src}
+                  src={thumb(shot.src)}
                   alt={altOf(shot)}
                   width={shot.w}
                   height={shot.h}

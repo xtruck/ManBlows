@@ -7,7 +7,7 @@ import { useFocusTrap } from "@/lib/useFocusTrap";
 import { useLang } from "./LangProvider";
 import { getLenis } from "./SmoothScroll";
 import { TransitionLink } from "./TransitionProvider";
-import { offers } from "@/content/site";
+import { offers, thumb } from "@/content/site";
 
 /**
  * EGC Studio's own posters: service packages, what each one includes and the price list.
@@ -99,7 +99,7 @@ export function Offers() {
               className="group block w-full cursor-zoom-in overflow-hidden rounded-2xl bg-paper-2 shadow-lg shadow-ink/10 transition-transform duration-300 active:scale-[0.98]"
             >
               <Image
-                src={shot.src}
+                src={thumb(shot.src)}
                 alt={`${shot.place}, ${t.a11y.realDesign}`}
                 width={shot.w}
                 height={shot.h}

@@ -136,3 +136,6 @@ export const contact = {
   instagram: "egc_studio225", // from the studio's Instagram profile link
   tiktok: "egc_studio225", // from the studio's TikTok profile link
 };
+
+/** 640px copy of a work image, for grids and previews; the full file stays for the lightbox. */
+export const thumb = (src: string) => src.replace("/work/", "/work/sm/");

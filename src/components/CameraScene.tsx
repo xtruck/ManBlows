@@ -130,19 +130,20 @@ export default function CameraScene({ progress, compact, active }: SceneProps) {
       dpr={[1, compact ? 1.25 : 2]}
       shadows={!compact}
       camera={{ position: [0, 0.25, 8.5], fov: 30, near: 0.01, far: 50 }}
-      gl={{ antialias: true, alpha: true }}
+      gl={{ antialias: !compact, alpha: true, powerPreference: "high-performance" }}
     >
       <ambientLight intensity={0.15} />
       <spotLight position={[4, 6, 5]} angle={0.45} penumbra={1} intensity={80} castShadow={!compact} />
       <Suspense fallback={null}>
         <CameraModel progress={progress} compact={compact} />
         {/* Local studio lighting: no HDR download needed */}
-        <Environment resolution={256} environmentIntensity={0.55}>
+        <Environment resolution={compact ? 64 : 256} environmentIntensity={0.55}>
           <Lightformer form="rect" intensity={1.6} position={[0, 5, -1]} rotation-x={Math.PI / 2} scale={[10, 4, 1]} />
           <Lightformer form="rect" intensity={2.4} color="#ffc400" position={[-5, 1, 1]} rotation-y={Math.PI / 2} scale={[3, 8, 1]} />
           <Lightformer form="rect" intensity={0.9} position={[5, 1, 3]} rotation-y={-Math.PI / 2} scale={[4, 8, 1]} />
         </Environment>
-        <ContactShadows position={[0, -1.7, 0]} opacity={0.5} scale={8} blur={2.8} far={3} />
+        {/* Re-rendered every frame, so it is skipped on phones where it costs the most */}
+        {!compact && <ContactShadows position={[0, -1.7, 0]} opacity={0.5} scale={8} blur={2.8} far={3} resolution={256} />}
       </Suspense>
     </Canvas>
   );

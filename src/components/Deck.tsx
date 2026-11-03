@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useMotionMode } from "@/lib/motion";
+import { thumb } from "@/content/site";
 
 export type DeckItem = {
   src: string;
@@ -58,7 +59,7 @@ export function Deck({ items, hint, delay = 0 }: { items: DeckItem[]; hint: stri
         const depth = Math.min(3, (i - active + items.length) % items.length);
         return (
           <div key={item.src} data-depth={depth} className="deck-item absolute inset-0 overflow-hidden rounded-xl bg-ink/15 shadow-xl shadow-black/25">
-            <Image src={item.src} alt="" fill sizes="(min-width: 768px) 20vw, 60vw" className="object-cover" />
+            <Image src={thumb(item.src)} alt="" fill sizes="(min-width: 768px) 20vw, 60vw" className="object-cover" />
             {item.play && (
               <span className="absolute top-1/2 left-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-brand text-ink shadow-lg">
                 <svg viewBox="0 0 24 24" className="ml-0.5 size-5" fill="currentColor">
