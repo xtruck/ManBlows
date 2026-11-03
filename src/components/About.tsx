@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useLang } from "./LangProvider";
 import { TransitionLink } from "./TransitionProvider";
 
@@ -21,10 +22,24 @@ export function About({ mode = "page" }: { mode?: "page" | "teaser" }) {
           {t.about.title}
         </Heading>
         <div className="mt-8 max-w-[58ch] space-y-5 text-lg leading-relaxed text-graphite">
-          {(teaser ? t.about.bio.slice(0, 1) : t.about.bio).map((p) => (
-            <p key={p} data-reveal>
-              {p}
-            </p>
+          {(teaser ? t.about.bio.slice(0, 1) : t.about.bio).map((p, i) => (
+            <div key={p} className="space-y-5">
+              <p data-reveal>{p}</p>
+              {/* The founder's portrait sits between the first two paragraphs of the story. */}
+              {!teaser && i === 0 && (
+                <figure data-reveal className="py-3">
+                  <Image
+                    src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/egu.webp`}
+                    alt={t.about.portraitAlt}
+                    width={800}
+                    height={1199}
+                    sizes="(min-width: 768px) 360px, 80vw"
+                    className="h-auto w-[min(80vw,360px)] rounded-2xl shadow-xl shadow-ink/15"
+                  />
+                  <figcaption className="mt-3 text-sm text-muted">{t.about.portraitCaption}</figcaption>
+                </figure>
+              )}
+            </div>
           ))}
         </div>
 

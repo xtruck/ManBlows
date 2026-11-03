@@ -99,5 +99,5 @@ dès le premier défilement.
 
 ## Nouvelles photos (03/11)
 - 24 photos ajoutées (`photos.ts`, n° 12 à 35) : 5 portraits professionnels en studio (filtre Portraits) et 19 photos d'une soirée de future mariée (filtre Cérémonies, type « Particulier »).
-- Gardées de côté : 2 portraits d'un jeune homme avec deux appareils photo (IMG_9865/9866), peut-être Egu pour la page À propos : à confirmer.
+- Portrait d'Egu (IMG_9865) sur la page À propos, entre le 1er et le 2e paragraphe de la bio (`public/egu.webp`). IMG_9866 non utilisée.
 - À confirmer : accord des personnes photographiées pour la publication.

@@ -54,7 +54,10 @@ export const dict = {
         "Egu a commencé comme infographiste, avec des affiches et des visuels créés sur Canva, avant de prendre la caméra. De cette époque il garde l'œil du cadre et de la composition.",
         "Aujourd'hui il photographie et filme mariages, baptêmes, lancements et portraits, en freelance, pour des familles comme pour des marques.",
         "Il reste infographiste : affiches, visuels pour les réseaux et identités de marque, sur Canva d'abord, et au-delà de Canva quand le projet l'exige.",
+        "Basé à Abidjan, il travaille pour des églises, des entreprises, des écoles et des familles. Du portrait en studio à la soirée de fiançailles, du reportage de salon au film de mariage, il garde la même exigence : une image juste, livrée à temps.",
       ],
+      portraitAlt: "Egu, fondateur d'EGC Studio, un appareil photo sur l'épaule et un autre à la main",
+      portraitCaption: "Egu, fondateur d'EGC Studio",
       servicesTitle: "Ce que je fais",
       services: [
         "Photo de cérémonie",
@@ -199,7 +202,10 @@ export const dict = {
         "Egu started out as a graphic designer, making posters and visuals in Canva, before picking up a camera. From those days he kept an eye for framing and composition.",
         "Today he shoots photo and video for weddings, christenings, launches and portraits, freelance, for families and brands alike.",
         "He is still a graphic designer: posters, social media visuals and brand identities, in Canva first, and beyond Canva when a project calls for it.",
+        "Based in Abidjan, he works for churches, businesses, schools and families. From a studio portrait to an engagement party, from a trade-fair report to a wedding film, he holds himself to the same standard: the right image, delivered on time.",
       ],
+      portraitAlt: "Egu, founder of EGC Studio, with one camera on his shoulder and another in his hand",
+      portraitCaption: "Egu, founder of EGC Studio",
       servicesTitle: "What I do",
       services: [
         "Ceremony photography",
