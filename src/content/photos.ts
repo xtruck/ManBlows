@@ -62,4 +62,10 @@ export const photoShots: Shot[] = [
   p(33, 1400, 933, "ceremonies", "personal", "Soirée de future mariée, le gâteau"),
   p(34, 933, 1400, "ceremonies", "personal", "Soirée de future mariée, invitée"),
   p(35, 933, 1400, "ceremonies", "personal", "Soirée de future mariée, invitée"),
+  p(36, 933, 1400, "portraits", "business", "Portrait professionnel, studio"),
+  p(37, 1400, 933, "events", "event", "Événement officiel, la salle"),
+  p(38, 1400, 933, "events", "event", "Événement officiel, au stand"),
+  p(39, 933, 1400, "events", "event", "Événement officiel, un invité"),
+  p(40, 1400, 933, "events", "event", "Événement officiel, l’assistance"),
+  p(41, 933, 1400, "events", "event", "Événement officiel, accueil d’une personnalité"),
 ];

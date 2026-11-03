@@ -101,3 +101,8 @@ dès le premier défilement.
 - 24 photos ajoutées (`photos.ts`, n° 12 à 35) : 5 portraits professionnels en studio (filtre Portraits) et 19 photos d'une soirée de future mariée (filtre Cérémonies, type « Particulier »).
 - Portrait d'Egu (IMG_9865) sur la page À propos, entre le 1er et le 2e paragraphe de la bio (`public/egu.webp`). IMG_9866 non utilisée.
 - À confirmer : accord des personnes photographiées pour la publication.
+
+## Ajout du 03/11 (suite)
+- Photos 36 à 41 : un portrait de studio (Portraits) et 5 photos d'un événement officiel (invités, assistance, stand). Le nom de l'événement est inconnu : à préciser.
+- 10 vidéos ajoutées aux Films (n° 14 à 23) : 6 plans de coulisses (drone, tournage), 3 reportages d'événement et le clip « Alors, ta date ? ». IMG_1482 (enregistrement d'écran) non publiée.
+- Titres génériques écrits d'après les images : à corriger avec lui.
