@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { preload } from "react-dom";
 import { Bricolage_Grotesque, Geist, Mrs_Saint_Delafield, Poppins } from "next/font/google";
 import { LangProvider } from "@/components/LangProvider";
@@ -37,11 +37,45 @@ const poppins = Poppins({
   subsets: ["latin"],
 });
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const siteUrl = `https://xtruck.github.io${basePath}/`;
+const description = "EGC Studio, photographe, vidéaste et infographiste à Abidjan : cérémonies, événements, portraits, films et design graphique.";
+
 export const metadata: Metadata = {
   // Absolute base for share previews (WhatsApp, Facebook); otherwise they point at localhost.
-  metadataBase: new URL(`https://xtruck.github.io${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/`),
+  metadataBase: new URL(siteUrl),
   title: { default: "EGC Studio | Photo, vidéo et design", template: "%s | EGC Studio" },
-  description: "EGC Studio, photographe, vidéaste et infographiste : cérémonies, événements, portraits, films et design graphique.",
+  description,
+  alternates: { canonical: "./" },
+  openGraph: {
+    type: "website",
+    siteName: "EGC Studio",
+    locale: "fr_FR",
+    alternateLocale: ["en_US"],
+    title: "EGC Studio | Photo, vidéo et design",
+    description,
+    url: "./",
+    images: [{ url: "og.png", width: 1200, height: 630, alt: "EGC Studio, photo, vidéo et design" }],
+  },
+  twitter: { card: "summary_large_image", title: "EGC Studio | Photo, vidéo et design", description, images: ["og.png"] },
+};
+
+export const viewport: Viewport = { themeColor: "#ffc400" };
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  name: "EGC Studio",
+  description,
+  url: siteUrl,
+  image: `${siteUrl}og.png`,
+  email: "vegcstudio@gmail.com",
+  telephone: "+2250160668682",
+  areaServed: "Abidjan, Côte d'Ivoire",
+  address: { "@type": "PostalAddress", addressLocality: "Abidjan", addressCountry: "CI" },
+  founder: { "@type": "Person", name: "Egu" },
+  sameAs: ["https://www.instagram.com/egc_studio225", "https://www.tiktok.com/@egc_studio225"],
+  knowsAbout: ["Photographie", "Vidéographie", "Design graphique"],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -55,6 +89,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${geistSans.variable} ${bricolage.variable} ${script.variable} ${poppins.variable} h-full antialiased`}
     >
       <body className="grain min-h-full font-sans">
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <LangProvider>
           <SmoothScroll />
           <TransitionProvider>
