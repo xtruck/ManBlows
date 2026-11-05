@@ -158,6 +158,10 @@ export const dict = {
       cta: "Parler de mon site",
       secondary: "Voir l'étude de cas",
       whatsapp: "Bonjour EGC Studio, j'aimerais un site web pour mon activité.",
+      worksTitle: "Réalisations",
+      works: [
+        { name: "ANAREKA-CI", kind: "Site vitrine d'association", url: "anarekaci.com", desk: "real-anareka-desk", phone: "real-anareka-phone" },
+      ],
       offersTitle: "Ce que je crée",
       offers: [
         { name: "Site vitrine", text: "Votre activité, vos services et vos coordonnées, en quelques pages claires." },
@@ -385,6 +389,10 @@ export const dict = {
       cta: "Talk about my site",
       secondary: "See the case study",
       whatsapp: "Hello EGC Studio, I'd like a website for my business.",
+      worksTitle: "Projects",
+      works: [
+        { name: "ANAREKA-CI", kind: "Association website", url: "anarekaci.com", desk: "real-anareka-desk", phone: "real-anareka-phone" },
+      ],
       offersTitle: "What I build",
       offers: [
         { name: "Business site", text: "Your business, your services and how to reach you, in a few clear pages." },

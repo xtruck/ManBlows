@@ -89,6 +89,34 @@ export function WebStudio() {
         </div>
       </section>
 
+      {/* Real projects: screenshots of sites the studio built */}
+      <section className="bg-ink px-4 py-24 text-paper md:px-8 md:py-32">
+        <h2 data-reveal className={h2}>
+          {w.worksTitle}
+        </h2>
+        <ul className="mt-12 grid gap-6 md:grid-cols-2">
+          {w.works.map((work) => (
+            <li key={work.name} data-reveal className="overflow-hidden rounded-[1.5rem] border border-paper/10 bg-graphite">
+              <div className="relative aspect-[16/10] overflow-hidden border-b border-paper/10 bg-ink">
+                <Image src={shot(work.desk)} alt={`${work.name}, ${work.kind}`} fill sizes="(min-width: 768px) 40rem, 100vw" className="object-cover object-top" />
+              </div>
+              <div className="flex items-center gap-4 p-5 md:p-6">
+                <div className="relative h-24 w-11 shrink-0 overflow-hidden rounded-[0.6rem] border border-paper/20 bg-ink">
+                  <Image src={shot(work.phone)} alt="" fill sizes="44px" className="object-cover object-top" />
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-display text-2xl font-semibold tracking-[-0.03em]">{work.name}</h3>
+                  <p className="text-sm text-paper/70">{work.kind}</p>
+                  <a href={`https://${work.url}`} target="_blank" rel="noopener noreferrer" className="mt-1 inline-block text-sm text-brand underline-offset-4 hover:underline">
+                    {work.url}
+                  </a>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       {/* What I build */}
       <section className="bg-paper px-4 py-24 md:px-8 md:py-32">
         <h2 data-reveal className={h2}>
