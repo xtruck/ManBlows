@@ -10,6 +10,7 @@ import { Reveals } from "@/components/Reveals";
 import { Interactions } from "@/components/Interactions";
 import { MotionControl } from "@/components/MotionControl";
 import { TitleSync } from "@/components/TitleSync";
+import { WhatsAppButton } from "@/components/WhatsAppButton";
 import { INTRO_SEEN_KEY } from "@/lib/intro";
 import "./globals.css";
 
@@ -113,6 +114,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Interactions />
             <MotionControl />
             <TitleSync />
+            <WhatsAppButton />
           </TransitionProvider>
         </LangProvider>
       </body>

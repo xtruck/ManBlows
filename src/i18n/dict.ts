@@ -102,6 +102,10 @@ export const dict = {
       cta: "Demander un devis",
     },
     clients: { title: "Ils m'ont fait confiance" },
+    whatsapp: {
+      label: "Écrire sur WhatsApp",
+      message: "Bonjour EGC Studio, je viens de votre site (page {page}) et j'aimerais en savoir plus.",
+    },
     cta: {
       title: "Une date en tête ?",
       text: "Mariage, événement, portrait ou visuel graphique : dites-moi ce que vous préparez.",
@@ -253,6 +257,10 @@ export const dict = {
       cta: "Ask for a quote",
     },
     clients: { title: "Trusted by" },
+    whatsapp: {
+      label: "Chat on WhatsApp",
+      message: "Hello EGC Studio, I'm coming from your website ({page} page) and would like to know more.",
+    },
     cta: {
       title: "Got a date in mind?",
       text: "Wedding, event, portrait or graphic visual: tell me what you're planning.",

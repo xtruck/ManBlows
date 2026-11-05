@@ -131,3 +131,12 @@ Travaux 69 → 91, Films 75 → 88, À propos 77 → 92, Contact 76 → 92. Acce
 - Gris des textes secondaires un peu plus foncé (`--muted` : #5c5954) pour être lisible au soleil (contraste AA).
 - Reste : l'accueil (score 35). Le texte reste caché derrière l'intro (≈ 2,5 s minimum sur chaque page,
   plus sur l'accueil le temps de charger la caméra 3D) ; c'est un choix de design, à décider avec lui.
+
+## Intro une fois par visite + bouton WhatsApp (05/11)
+- L'intro (appareil photo, diaphragme) ne joue plus qu'au **premier chargement d'une visite** (par onglet,
+  `sessionStorage`, clé `egc-intro-seen`). Ensuite : simple fondu de 0,4 s. Mesuré sur téléphone : 4,3 s la
+  première fois, 0,7 à 0,8 s ensuite. Lighthouse simule toujours une première visite, donc ses scores ne bougent pas.
+- **Bouton WhatsApp flottant** sur téléphone (`components/WhatsAppButton.tsx`), vert WhatsApp, en bas à droite.
+  Il ouvre la discussion avec un premier message déjà écrit dans la langue choisie, qui cite la page
+  (« Bonjour EGC Studio, je viens de votre site (page Travaux)… »). Absent sur la page Contact (elle a son
+  formulaire), caché pendant l'intro, pendant la séquence caméra de l'accueil et quand le pied de page est visible.
