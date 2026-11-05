@@ -1,6 +1,7 @@
 # EGC Studio
 
-Portfolio site for **EGC Studio**, a photographer, videographer and graphic designer (Egu) in Abidjan.
+Portfolio site for **EGC Studio** (Egu) in Abidjan, built around four crafts: photo, video,
+graphic design and websites.
 The site is in French and English and is live at **https://xtruck.github.io/ManBlows/**.
 
 The client brief, content decisions and change log (in French) are in [`docs/BRIEF.md`](docs/BRIEF.md).
@@ -20,8 +21,8 @@ npm run dev        # http://localhost:3000
 | `npm run lint`      | ESLint                                                         |
 | `npm run typecheck` | Generates Next's route types, then runs TypeScript             |
 
-Stack: Next.js 16 (App Router, `output: "export"`), React 19, Tailwind CSS 4, Three.js via
-React Three Fiber (3D camera on the home page), GSAP, Motion and Lenis for animation.
+Stack: Next.js 16 (App Router, `output: "export"`), React 19, Tailwind CSS 4, GSAP, Motion and
+Lenis for animation. The home page's four-craft prism is pure CSS 3D (no WebGL).
 
 > This Next.js version differs from older ones. Check `node_modules/next/dist/docs/` before
 > relying on remembered APIs (see `AGENTS.md`).
@@ -30,7 +31,8 @@ React Three Fiber (3D camera on the home page), GSAP, Motion and Lenis for anima
 
 | Path                         | Contents                                                              |
 | ---------------------------- | --------------------------------------------------------------------- |
-| `src/app/`                   | Pages: home, `travaux` (work), `films`, `a-propos` (about), `contact` |
+| `src/app/`                   | Pages: home, `travaux` (work), `films`, `web`, `a-propos` (about), `contact` |
+| `src/content/crafts.ts`      | The four crafts: order, links and the image on each prism face         |
 | `src/components/`            | Sections and site-wide pieces (nav, preloader, page transitions…)     |
 | `src/content/photos.ts`      | Photos shown in the Work gallery                                      |
 | `src/content/design.ts`      | Graphic design work, plus the studio's own price posters              |
@@ -49,6 +51,11 @@ French, and each page has a single URL for both languages.
 2. Copy the converted files into `public/work/` or `public/films/`.
 3. Add an entry in `photos.ts`, `design.ts` or the `films` list in `site.ts`.
 4. For new images, run `node scripts/make-thumbs.mjs` to create the 640px copies.
+
+## Captures of the site
+
+`public/web/` holds screenshots of this site, used for the Web craft (prism face, card, `/web/`
+page). After a visible change, serve the build on port 8765 and run `node scripts/make-web-shots.mjs`.
 
 ## Share preview
 

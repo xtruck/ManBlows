@@ -16,11 +16,14 @@ const pick = (list: Shot[], ids: number[]) =>
 const photoPicks = pick(photos, [205, 201, 209, 203, 206]);
 const designPicks = pick(designs, [102, 109, 119, 126, 121]);
 const filmPicks = [6, 10, 9, 8, 7].map((id) => films.find((f) => f.id === id)).filter((f): f is (typeof films)[number] => Boolean(f));
+// This very site, captured on a phone (scripts/make-web-shots.mjs).
+const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const webPicks = ["site-work", "site-films", "site-contact"].map((n) => `${base}/web/${n}.webp`);
 
 /**
- * The studio's three crafts, each with a stack of its real work. A click goes straight to the
- * photos, the films or the designs. Graphic design is where the founder started, so its card
- * is the highlighted one (brand yellow), with a second link to the rates.
+ * The studio's four crafts, each with a stack of its real work. A click goes straight to the
+ * photos, the films, the designs or the web offer. Graphic design is where the founder started,
+ * so its card is brand yellow, with a second link to the offers; the web card is the new one (ink).
  */
 export function Disciplines() {
   const { t, lang } = useLang();
@@ -42,6 +45,11 @@ export function Disciplines() {
       hint: d.cta,
       href: "/travaux/#design",
     },
+    {
+      items: webPicks.map((src) => ({ src, caption: "EGC Studio" })),
+      hint: d.webCta,
+      href: "/web/",
+    },
   ];
 
   const toOffers = () => {
@@ -62,23 +70,24 @@ export function Disciplines() {
           data-reveal
           className="font-display text-[clamp(3rem,8vw,7.5rem)] leading-[0.9] font-semibold tracking-[-0.04em] md:col-span-8"
         >
-          {d.title}
+          {d.title} <span className="font-serif font-normal tracking-[-0.02em] italic">{d.titleAccent}</span>
         </h2>
         <p data-reveal className="max-w-[44ch] text-lg leading-relaxed text-muted md:col-span-4">
           {d.intro}
         </p>
       </div>
 
-      <ul className="mt-12 grid gap-4 md:mt-20 md:grid-cols-3">
+      <ul className="mt-12 grid gap-4 md:mt-20 md:grid-cols-2 xl:grid-cols-4">
         {d.items.map((item, i) => {
           const design = i === 2;
+          const web = i === 3;
           const deck = decks[i];
           return (
             <li
               key={item.name}
               data-reveal
               className={`relative flex flex-col overflow-hidden rounded-[1.75rem] p-6 md:min-h-[34rem] md:p-8 ${
-                design ? "on-brand bg-brand text-ink" : "border border-ink/10 bg-paper-2 text-ink"
+                design ? "on-brand bg-brand text-ink" : web ? "bg-ink text-paper" : "border border-ink/10 bg-paper-2 text-ink"
               }`}
             >
               <div className="flex items-start justify-between gap-4">
@@ -86,6 +95,7 @@ export function Disciplines() {
                 {design && (
                   <span className="rounded-full bg-ink px-3 py-1 text-xs font-medium text-paper">{d.since}</span>
                 )}
+                {web && <span className="rounded-full bg-brand px-3 py-1 text-xs font-medium text-ink">{d.newBadge}</span>}
               </div>
 
               {/* The stack is also a link to the full set; the buttons below carry the accessible name */}
@@ -95,9 +105,9 @@ export function Disciplines() {
 
               <div className="mt-auto pt-6">
                 <h3 className="font-display text-4xl leading-none font-semibold tracking-[-0.03em] md:text-5xl">{item.name}</h3>
-                <p className={`mt-4 max-w-[34ch] leading-relaxed ${design ? "text-ink" : "text-graphite"}`}>{item.text}</p>
+                <p className={`mt-4 max-w-[34ch] leading-relaxed ${design ? "text-ink" : web ? "text-paper/80" : "text-graphite"}`}>{item.text}</p>
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <TransitionLink href={deck.href} className={`${linkClass} bg-ink text-paper`}>
+                  <TransitionLink href={deck.href} className={`${linkClass} ${web ? "bg-brand text-ink" : "bg-ink text-paper"}`}>
                     {deck.hint}
                   </TransitionLink>
                   {design && (

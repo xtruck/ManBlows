@@ -1,262 +1,211 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
+import Image from "next/image";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { Logo } from "./Logo";
 import { useLang } from "./LangProvider";
 import { TransitionLink } from "./TransitionProvider";
 import { LightLeaks } from "./LightLeaks";
-import { onIntroDone, onSceneReady } from "@/lib/intro";
-import { useMedia } from "@/lib/useMedia";
+import { CraftMotif } from "./CraftMotif";
+import { onIntroDone } from "@/lib/intro";
 import { useMotionMode } from "@/lib/motion";
-import { getLenis } from "./SmoothScroll";
+import { crafts } from "@/content/crafts";
 
-gsap.registerPlugin(ScrollTrigger);
-
-const CameraScene = dynamic(() => import("./CameraScene"), { ssr: false });
-
-const corners = [
-  "top-0 left-0 border-t-2 border-l-2",
-  "top-0 right-0 border-t-2 border-r-2",
-  "bottom-0 left-0 border-b-2 border-l-2",
-  "bottom-0 right-0 border-b-2 border-r-2",
-];
+const TURN_MS = 4200; // time on each face before the prism turns to the next craft
 
 /**
- * The site opens through a viewfinder on a 3D camera. Scrolling turns the camera
- * to face you, flies into the lens, and light through the aperture opens onto the work.
+ * The studio's four crafts on a 3D prism: each face is real work (photo, film, poster, this
+ * website) carrying its craft's signature. The prism turns a quarter at a time, always in the
+ * same direction; the words on the left pick a face. It leans toward the pointer on a mouse.
+ * Pure CSS 3D: no WebGL, so it stays light on phones.
  */
 export function Hero() {
   const { t } = useLang();
   const root = useRef<HTMLElement>(null);
-  const timecode = useRef<HTMLSpanElement>(null);
-  const progress = useRef(0);
-  const compact = useMedia("(max-width: 767px)");
-  const reduced = useMotionMode() === "gentle";
-  const [active, setActive] = useState(true);
-  const cue = useRef<HTMLButtonElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  const gentle = useMotionMode() === "gentle";
+  // `turn` only ever grows, so going from Web back to Photo keeps spinning the same way.
+  const [turn, setTurn] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [started, setStarted] = useState(false);
+  const active = ((turn % 4) + 4) % 4;
+  const craft = t.crafts[active];
 
-  // Tapping the cue scrolls about one screen further, which also continues the camera sequence.
-  const nudge = () => {
-    const to = window.scrollY + window.innerHeight * 0.9;
-    const lenis = getLenis();
-    if (lenis) lenis.scrollTo(to);
-    else window.scrollTo({ top: to, behavior: "smooth" });
-  };
+  // Start turning once the intro is over.
+  useEffect(() => onIntroDone(() => setStarted(true)), []);
 
-  // The scroll cue: "idle" (label and bouncing arrow), "going" (progress ring while the camera
-  // sequence plays) and "gone" (once the aperture has opened, or in calm mode after a first scroll).
+  useEffect(() => {
+    if (!started || paused || gentle) return;
+    const id = window.setTimeout(() => setTurn((n) => n + 1), TURN_MS);
+    return () => window.clearTimeout(id);
+  }, [turn, started, paused, gentle]);
+
+  // Jump to a craft by the shortest forward path.
+  const pick = (i: number) => setTurn((n) => n + ((i - (n % 4) + 4) % 4));
+
+  // Entrance after the intro, and the lean toward the pointer.
   useEffect(() => {
     const el = root.current;
-    const c = cue.current;
-    if (!el || !c) return;
-    const update = () => {
-      const y = window.scrollY;
-      const p = Math.min(1, Math.max(0, y / Math.max(1, el.offsetHeight - window.innerHeight)));
-      // The cue stays on screen for the whole camera sequence, so the page never looks stuck.
-      c.dataset.state = reduced ? (y > 40 ? "gone" : "idle") : p < 0.02 ? "idle" : p < 0.82 ? "going" : "gone";
-    };
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
-    return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
-    };
-  }, [reduced]);
-
-  // Pause the 3D render once the hero has scrolled away.
-  useEffect(() => {
-    const el = root.current;
-    if (!el) return;
-    const io = new IntersectionObserver(([entry]) => setActive(entry.isIntersecting), { rootMargin: "200px" });
-    io.observe(el);
-    return () => io.disconnect();
-  }, []);
-
-  // Running timecode at 25 fps, written straight to the DOM to avoid re-renders.
-  // It only runs while the hero is on screen, and only touches the DOM when the frame changes.
-  useEffect(() => {
-    if (!active) return;
-    const start = performance.now();
-    let raf = 0;
-    let last = -1;
-    const pad = (n: number) => String(n).padStart(2, "0");
-    const loop = () => {
-      const ms = performance.now() - start;
-      const frame = Math.floor(ms / 40);
-      if (frame !== last && timecode.current) {
-        last = frame;
-        const s = Math.floor(ms / 1000);
-        timecode.current.textContent = `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}:${pad(frame % 25)}`;
-      }
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, [active]);
-
-  useEffect(() => {
-    const el = root.current;
-    if (!el) return;
-
+    const st = stage.current;
+    if (!el || !st) return;
     const ctx = gsap.context(() => {
-      gsap.set("[data-hero-3d]", { autoAlpha: 0 });
-      if (reduced) return;
-
-      gsap.set("[data-corner]", { autoAlpha: 0, scale: 1.6 });
-      gsap.set("[data-logo-word]", { yPercent: 60, autoAlpha: 0 });
-      gsap.set("[data-logo-script]", { clipPath: "inset(-20% 100% -20% 0)" });
-      gsap.set("[data-hero-fade]", { y: 20, autoAlpha: 0 });
-
-      // One scrubbed timeline drives the DOM layers; the 3D scene reads `progress`.
-      gsap
-        .timeline({
-          scrollTrigger: {
-            trigger: el,
-            start: "top top",
-            end: "bottom bottom",
-            scrub: true,
-            onUpdate: (self) => {
-              progress.current = self.progress;
-            },
-          },
-        })
-        .to("[data-hero-ui]", { autoAlpha: 0, y: -40, duration: 0.25, ease: "none" }, 0)
-        .to("[data-hero-frame]", { autoAlpha: 0, scale: 1.08, duration: 0.3, ease: "none" }, 0.05)
-        .fromTo("[data-hero-lens]", { autoAlpha: 0, y: 30 }, { autoAlpha: 1, y: 0, duration: 0.12, ease: "none" }, 0.3)
-        .to("[data-hero-lens]", { autoAlpha: 0, y: -30, duration: 0.1, ease: "none" }, 0.58)
-        .fromTo(
-          "[data-hero-iris]",
-          { clipPath: "circle(0% at 50% 50%)" },
-          { clipPath: "circle(75% at 50% 50%)", duration: 0.16, ease: "power2.in" },
-          0.84,
-        );
+      if (gentle) return;
+      gsap.set("[data-hero-in]", { y: 28, autoAlpha: 0 });
+      gsap.set(st, { autoAlpha: 0, scale: 0.9, rotateX: 14 });
     }, el);
-
-    // Fade the 3D camera in once it's loaded, and play the entrance after the preloader.
-    const offScene = onSceneReady(() => {
-      ctx.add(() => gsap.to("[data-hero-3d]", { autoAlpha: 1, duration: 1.2, ease: "power2.out" }));
+    const offIntro = onIntroDone(() => {
+      ctx.add(() => {
+        if (gentle) return;
+        gsap.to("[data-hero-in]", { y: 0, autoAlpha: 1, duration: 0.9, ease: "power3.out", stagger: 0.07 });
+        gsap.to(st, { autoAlpha: 1, scale: 1, rotateX: 0, duration: 1.4, ease: "expo.out", delay: 0.1 });
+      });
     });
-    const offIntro = reduced
-      ? () => {}
-      : onIntroDone(() => {
-          ctx.add(() => {
-            gsap
-              .timeline()
-              .to("[data-corner]", { autoAlpha: 1, scale: 1, duration: 0.9, ease: "expo.out", stagger: 0.05 }, 0.1)
-              .to("[data-logo-word]", { yPercent: 0, autoAlpha: 1, duration: 1, ease: "expo.out" }, 0.2)
-              .to("[data-logo-script]", { clipPath: "inset(-20% 0% -20% 0)", duration: 1.1, ease: "power2.inOut" }, 0.4)
-              .to("[data-hero-fade]", { y: 0, autoAlpha: 1, duration: 0.8, ease: "power3.out", stagger: 0.08 }, 0.55);
-          });
-        });
 
+    const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+    const tiltX = gsap.quickTo(st, "--tilt-x", { duration: 0.9, ease: "power3.out" });
+    const tiltY = gsap.quickTo(st, "--tilt-y", { duration: 0.9, ease: "power3.out" });
+    const onMove = (e: PointerEvent) => {
+      const r = el.getBoundingClientRect();
+      tiltY(((e.clientX - r.left) / r.width - 0.5) * 18);
+      tiltX(-((e.clientY - r.top) / r.height - 0.5) * 12);
+    };
+    if (fine && !gentle) el.addEventListener("pointermove", onMove);
     return () => {
-      offScene();
       offIntro();
+      el.removeEventListener("pointermove", onMove);
       ctx.revert();
     };
-  }, [reduced]);
+  }, [gentle]);
 
   return (
-    <section ref={root} id="top" className={`relative bg-ink ${reduced ? "h-[100svh]" : "h-[230svh] md:h-[280svh]"}`}>
-      <div className="sticky top-0 isolate h-[100svh] min-h-[620px] overflow-hidden text-paper">
-        {/* Studio backdrop with warm light leaks */}
-        <div className="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_70%_60%_at_62%_45%,#2e2b28_0%,#0e0e0e_70%)] max-md:bg-[radial-gradient(ellipse_90%_50%_at_50%_38%,#2e2b28_0%,#0e0e0e_75%)]" />
-        <LightLeaks className="opacity-60" />
+    <section
+      ref={root}
+      id="top"
+      className="relative isolate overflow-hidden bg-ink text-paper"
+      onPointerEnter={() => setPaused(true)}
+      onPointerLeave={() => setPaused(false)}
+    >
+      <div className="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_70%_60%_at_70%_45%,#2e2b28_0%,#0e0e0e_70%)]" />
+      <LightLeaks className="opacity-60" />
 
-        <div data-hero-3d className="absolute inset-0">
-          <CameraScene progress={progress} compact={compact} active={active} />
-        </div>
+      <div className="mx-auto grid min-h-[100svh] max-w-[110rem] items-center gap-10 px-5 pt-28 pb-14 md:px-10 lg:grid-cols-[1.05fr_1fr] lg:gap-6 lg:pt-24">
+        <div className="order-2 lg:order-1">
+          <p data-hero-in className="text-xs font-medium tracking-[0.28em] text-paper/60 uppercase md:text-sm">
+            {t.hero.kicker}
+          </p>
 
-        {/* Viewfinder frame */}
-        <div data-hero-frame aria-hidden className="pointer-events-none absolute inset-3 top-20 md:inset-8 md:top-24">
-          {corners.map((c) => (
-            <span key={c} data-corner className={`absolute size-7 border-paper/80 md:size-12 ${c}`} />
-          ))}
-          <div data-hero-fade className="absolute top-4 left-4 flex items-center gap-2 text-xs md:top-6 md:left-6 md:text-sm">
-            <span className="rec-dot size-2 rounded-full bg-[#ff3b30]" />
-            <span className="font-medium">REC</span>
-            <span ref={timecode} className="tabular-nums text-paper/80">
-              00:00:00:00
+          <h1 className="mt-5">
+            <span className="sr-only">EGC Studio : </span>
+            {/* The four crafts double as the prism's controls */}
+            <span className="flex flex-wrap gap-x-[0.28em] font-display text-[clamp(2.9rem,9.5vw,8.2rem)] leading-[0.92] font-semibold tracking-[-0.045em] lg:flex-col">
+              {t.crafts.map((c, i) => (
+                <button
+                  key={c.key}
+                  type="button"
+                  data-hero-in
+                  onClick={() => pick(i)}
+                  aria-pressed={i === active}
+                  className={`group relative w-fit cursor-pointer text-left transition-colors duration-500 ${i === active ? "text-paper" : "text-paper/22 hover:text-paper/55"}`}
+                >
+                  {c.name}
+                  <span className={i === active ? "text-brand" : ""}>.</span>
+                  <sup className={`absolute -top-1 -right-6 font-sans text-xs font-medium tracking-normal tabular-nums transition-opacity duration-500 md:text-sm ${i === active ? "text-brand opacity-100" : "opacity-0"}`}>
+                    0{i + 1}
+                  </sup>
+                </button>
+              ))}
+            </span>
+          </h1>
+
+          <p data-hero-in className="mt-8 max-w-[34rem] text-lg leading-snug text-paper/85 md:text-xl">
+            {t.hero.line}
+          </p>
+
+          <div data-hero-in className="mt-8 flex flex-wrap items-center gap-3">
+            <TransitionLink
+              href="/travaux/"
+              data-magnetic
+              className="flex h-12 items-center rounded-full bg-paper px-6 text-sm font-medium text-ink transition-transform duration-200 hover:scale-[1.03] active:scale-95"
+            >
+              {t.hero.cta}
+            </TransitionLink>
+            <TransitionLink
+              href="/contact/"
+              className="flex h-12 items-center rounded-full border border-paper/30 px-6 text-sm font-medium transition-colors duration-200 hover:bg-paper/10 active:scale-95"
+            >
+              {t.hero.quote}
+            </TransitionLink>
+            <span className="ml-2 flex items-center gap-2 text-sm text-paper/70">
+              <span className="size-1.5 rounded-full bg-brand" />
+              {t.hero.status}
             </span>
           </div>
-          <div
-            data-hero-fade
-            className="absolute top-4 right-4 hidden gap-5 text-sm text-paper/70 tabular-nums md:top-6 md:right-6 md:flex"
-          >
-            <span>ISO 400</span>
-            <span>1/125</span>
-            <span>f/2.8</span>
-          </div>
         </div>
 
-        <div
-          data-hero-ui
-          className="absolute inset-x-5 bottom-[6rem] flex flex-col gap-7 md:inset-x-14 md:bottom-[6rem] lg:flex-row lg:items-end lg:justify-between"
-        >
-          <h1 className="pt-[0.6em]">
-            <Logo tone="paper" className="text-[23vw] md:text-[15vw] lg:text-[11vw]" />
-          </h1>
-          <div className="max-w-sm lg:pb-[1.2vw]">
-            <p data-hero-fade className="text-lg leading-snug text-paper/90 md:text-xl">
-              {t.hero.line}
+        {/* The prism */}
+        <div className="order-1 flex flex-col items-center lg:order-2">
+          <div className="prism-scene" style={{ perspective: "1600px" }}>
+            <div
+              ref={stage}
+              className="prism-stage relative"
+              style={{ "--tilt-x": 0, "--tilt-y": 0 } as React.CSSProperties}
+            >
+              <div className="prism" style={{ "--turn": turn } as React.CSSProperties}>
+                {crafts.map((c, i) => (
+                  <TransitionLink
+                    key={c.key}
+                    href={c.href}
+                    tabIndex={i === active ? 0 : -1}
+                    aria-hidden={i !== active}
+                    aria-label={`${t.crafts[i].verb} : ${t.crafts[i].what}`}
+                    className="prism-face group overflow-hidden rounded-[1.4rem] bg-graphite shadow-2xl shadow-black/50"
+                    style={{ "--i": i } as React.CSSProperties}
+                  >
+                    <Image
+                      src={c.image}
+                      alt=""
+                      width={c.w}
+                      height={c.h}
+                      sizes="(min-width: 1024px) 26rem, 72vw"
+                      preload={i === 0}
+                      className={`size-full object-cover transition-transform duration-[1.4s] ease-out group-hover:scale-[1.04] ${c.key === "web" ? "object-top pt-9" : ""}`}
+                    />
+                    <span className="absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-ink/10" />
+                    <CraftMotif craft={c.key} meta={t.crafts[i].meta} />
+                  </TransitionLink>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Caption and progress for the face in front */}
+          <div data-hero-in className="mt-8 flex w-[var(--prism-w)] max-w-full flex-col items-center gap-3 text-center">
+            <p aria-live="polite" className="text-sm text-paper/80 md:text-base">
+              <span className="font-serif text-lg text-brand italic md:text-xl">{craft.verb}</span>
+              <span className="text-paper/60"> · {craft.what}</span>
             </p>
-            <div data-hero-fade className="mt-6 flex items-center gap-5">
-              <TransitionLink
-                href="/travaux/"
-                data-magnetic
-                className="flex h-12 items-center rounded-full bg-paper px-6 text-sm font-medium text-ink transition-transform duration-200 hover:scale-[1.03] active:scale-95"
-              >
-                {t.hero.cta}
-              </TransitionLink>
-              <span className="flex items-center gap-2 text-sm text-paper/75">
-                <span className="size-1.5 rounded-full bg-brand" />
-                {t.hero.status}
-              </span>
+            <div className="flex gap-2" aria-label={t.hero.pick}>
+              {t.crafts.map((c, i) => (
+                <button
+                  key={c.key}
+                  type="button"
+                  onClick={() => pick(i)}
+                  aria-label={c.name}
+                  aria-pressed={i === active}
+                  className="relative h-1 w-10 cursor-pointer overflow-hidden rounded-full bg-paper/20"
+                >
+                  {i === active && (
+                    <span
+                      key={turn}
+                      className={`absolute inset-0 origin-left rounded-full bg-brand ${started && !paused && !gentle ? "prism-progress" : ""}`}
+                      style={{ animationDuration: `${TURN_MS}ms` }}
+                    />
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         </div>
-
-        {/*
-          Scroll cue: the hero stays pinned while the camera turns, so visitors could think the page
-          is stuck. A bouncing arrow says "scroll", then becomes a progress ring for the whole
-          sequence, and disappears when the aperture opens onto the work.
-        */}
-        <div data-hero-fade className="pointer-events-none absolute inset-x-0 bottom-0 z-10 flex justify-center">
-          <button
-            ref={cue}
-            type="button"
-            data-state="idle"
-            onClick={nudge}
-            aria-label={t.hero.scroll}
-            className="scroll-cue pointer-events-auto relative z-10 flex cursor-pointer flex-col items-center gap-2 px-6 pt-2 pb-[max(1rem,env(safe-area-inset-bottom))] text-paper"
-          >
-            <span className="cue-labels text-[10px] font-medium tracking-[0.3em] text-paper/85 uppercase md:text-[11px]">
-              <span className="cue-l-idle">{t.hero.scroll}</span>
-              <span className="cue-l-going">{t.hero.keepScrolling}</span>
-            </span>
-            <span aria-hidden className="cue-chev">
-              <b />
-              <b />
-              <b />
-            </span>
-          </button>
-          {/* A soft shade under the cue keeps it readable; it goes away with the cue (see globals.css) */}
-          <span aria-hidden className="cue-shade absolute inset-x-0 bottom-0 z-0 h-28 bg-gradient-to-t from-ink/70 to-transparent" />
-        </div>
-
-        <p
-          data-hero-lens
-          className="pointer-events-none invisible absolute inset-x-4 bottom-[12svh] text-center font-display text-[clamp(1.8rem,4.5vw,3.6rem)] font-semibold tracking-[-0.03em] text-paper"
-        >
-          {t.hero.lens}
-        </p>
-
-        {/* Light through the aperture: opens onto the paper-coloured work section */}
-        <div data-hero-iris aria-hidden className="pointer-events-none absolute inset-0 bg-paper [clip-path:circle(0%_at_50%_50%)]" />
       </div>
     </section>
   );

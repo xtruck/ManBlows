@@ -26,8 +26,8 @@ body { width: 1200px; height: 630px; background: #ffc400; color: #0e0e0e; font-f
 </style></head><body>
   <div><div class="egc">egc</div><div class="studio">studio.</div></div>
   <div class="row">
-    <span><span class="lang">FR</span>Photo, vidéo et design</span>
-    <span><span class="lang">EN</span>Photo, video and design</span>
+    <span><span class="lang">FR</span>Photo, vidéo, design et web</span>
+    <span><span class="lang">EN</span>Photo, video, design and web</span>
   </div>
 </body></html>`;
 

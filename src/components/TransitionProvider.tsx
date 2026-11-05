@@ -15,8 +15,9 @@ type TransitionContext = { navigate: (href: string) => void };
 const Ctx = createContext<TransitionContext>({ navigate: () => {} });
 
 /**
- * Page changes run behind an ink curtain: it rises with the next page's name,
- * the route changes underneath, then it lifts away with a brand-yellow edge.
+ * Page changes run behind four ink bands, one per craft (Photo, Vidéo, Design, Web): they rise
+ * one after the other with the next page's name, the route changes underneath, then they lift
+ * away in the same order, each with a brand-yellow edge.
  */
 export function TransitionProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -59,10 +60,11 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
       const route = routes.find((r) => r.href === target);
       if (label.current) label.current.textContent = route ? t.nav[route.key] : "";
       getLenis()?.stop();
+      const bands = el.querySelectorAll("[data-band]");
       gsap
         .timeline()
-        .set(el, { visibility: "visible", yPercent: 100 })
-        .to(el, { yPercent: 0, duration: 0.6, ease: "expo.inOut" })
+        .set(el, { visibility: "visible" })
+        .fromTo(bands, { yPercent: 100 }, { yPercent: 0, duration: 0.55, ease: "expo.inOut", stagger: 0.07 })
         .fromTo(label.current, { yPercent: 110 }, { yPercent: 0, duration: 0.45, ease: "power3.out" }, "-=0.3")
         .add(() => router.push(href));
     },
@@ -99,21 +101,26 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
     gsap
       .timeline({ delay: 0.12 })
       .to(label.current, { yPercent: -110, duration: 0.35, ease: "power2.in" })
-      .to(el, { yPercent: -100, duration: 0.75, ease: "expo.inOut" }, "-=0.15")
-      .set(el, { visibility: "hidden", yPercent: 100 });
+      .to(el.querySelectorAll("[data-band]"), { yPercent: -100, duration: 0.7, ease: "expo.inOut", stagger: 0.07 }, "-=0.15")
+      .set(el, { visibility: "hidden" });
     return () => timers.forEach((id) => window.clearTimeout(id));
   }, [pathname]);
 
   return (
     <Ctx.Provider value={{ navigate }}>
       {children}
-      <div
-        ref={curtain}
-        aria-hidden
-        className="invisible fixed inset-0 z-[90] flex items-end bg-ink px-5 pb-12 text-paper md:px-10 md:pb-16"
-      >
-        <span className="absolute inset-x-0 top-0 h-1.5 bg-brand" />
-        <div className="overflow-hidden">
+      <div ref={curtain} aria-hidden className="invisible fixed inset-0 z-[90] flex items-end px-5 pb-12 text-paper md:px-10 md:pb-16">
+        <div className="absolute inset-0 flex">
+          {t.crafts.map((c, i) => (
+            <div key={c.key} data-band className="relative h-full flex-1 bg-ink shadow-[-1px_0_0_rgb(255_255_255/0.06)]">
+              <span className="absolute inset-x-0 top-0 h-1.5 bg-brand" />
+              <span className="absolute top-6 left-3 text-[10px] tracking-[0.2em] text-paper/40 uppercase md:left-6 md:text-xs">
+                0{i + 1} {c.name}
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="relative overflow-hidden">
           <span
             ref={label}
             className="block font-display text-[clamp(3.2rem,13vw,11rem)] leading-[0.95] font-semibold tracking-[-0.045em]"
