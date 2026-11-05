@@ -118,3 +118,16 @@ dès le premier défilement.
   (refaite avec `node scripts/make-og.mjs`). La description de la page suit aussi la langue choisie.
 - `npm run typecheck` ajouté ; le déploiement lance maintenant lint et vérification des types avant le build.
 - README réécrit pour ce site.
+
+## Vitesse sur téléphone (05/11)
+Mesuré avec Lighthouse en mode téléphone (4G lente). Score performance avant → après :
+Travaux 69 → 91, Films 75 → 88, À propos 77 → 92, Contact 76 → 92. Accessibilité 100 partout.
+- La caméra 3D (613 Ko) se téléchargeait sur **toutes** les pages ; elle ne se charge plus que sur l'accueil
+  (petit script dans `layout.tsx`). Contact : 1 Mo → 394 Ko.
+- Les images de la galerie et les affiches des films existent maintenant en 3 tailles (400 px `xs/`,
+  640 px `sm/`, pleine taille) ; le téléphone prend la plus petite qui suffit (`src/lib/image-loader.ts`).
+  Après tout ajout d'image : `node scripts/make-thumbs.mjs`.
+- Les premières images de la galerie se chargent tout de suite au lieu d'attendre.
+- Gris des textes secondaires un peu plus foncé (`--muted` : #5c5954) pour être lisible au soleil (contraste AA).
+- Reste : l'accueil (score 35). Le texte reste caché derrière l'intro (≈ 2,5 s minimum sur chaque page,
+  plus sur l'accueil le temps de charger la caméra 3D) ; c'est un choix de design, à décider avec lui.

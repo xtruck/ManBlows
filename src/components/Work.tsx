@@ -209,6 +209,8 @@ export function Work() {
                   width={shot.w}
                   height={shot.h}
                   sizes="(min-width: 1024px) 33vw, 50vw"
+                  loading={i < 4 ? "eager" : "lazy"}
+                  fetchPriority={i < 2 ? "high" : "auto"}
                   className="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                 />
               </button>

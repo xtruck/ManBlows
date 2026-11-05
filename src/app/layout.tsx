@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { preload } from "react-dom";
 import { Bricolage_Grotesque, Geist, Mrs_Saint_Delafield, Poppins } from "next/font/google";
 import { LangProvider } from "@/components/LangProvider";
 import { SmoothScroll } from "@/components/SmoothScroll";
@@ -67,6 +66,12 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#ffc400" };
 
+// Start downloading the 3D camera while the HTML is still parsing, but only on the home page,
+// the one place it is shown. An inline script rather than react-dom's preload() or a <link>:
+// React passes those along when other pages prefetch the home page in the background, which
+// made every page download the 613 KB model.
+const modelPreload = `(function(){var b=${JSON.stringify(basePath)},p=location.pathname;if(p===b+"/"||p===b||p===b+"/index.html"){var l=document.createElement("link");l.rel="preload";l.as="fetch";l.crossOrigin="anonymous";l.href=b+"/models/camera.glb";document.head.appendChild(l)}})()`;
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "ProfessionalService",
@@ -85,16 +90,13 @@ const jsonLd = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  // Start downloading the 3D camera right away, in parallel with the scripts, instead of
-  // waiting for the hero to mount and ask for it. Saves the preloader a few hundred ms.
-  preload(`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/models/camera.glb`, { as: "fetch", crossOrigin: "anonymous" });
-
   return (
     <html
       lang="fr"
       className={`${geistSans.variable} ${bricolage.variable} ${script.variable} ${poppins.variable} h-full antialiased`}
     >
       <body className="grain min-h-full font-sans">
+        <script dangerouslySetInnerHTML={{ __html: modelPreload }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <LangProvider>
           <SmoothScroll />

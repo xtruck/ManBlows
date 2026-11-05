@@ -10,8 +10,12 @@ const nextConfig: NextConfig = {
   trailingSlash: true, // /travaux/ -> travaux/index.html, which GitHub Pages serves directly
   devIndicators: false, // hide the Next.js "N" badge shown over the page in development
   images: {
-    // Static export: images are pre-sized WebP files in /public, so no optimizer is needed.
-    unoptimized: true,
+    // Static export: no optimizer. The loader maps each srcset width to a pre-sized WebP copy
+    // in /public (scripts/make-thumbs.mjs), so phones fetch small files and desktops large ones.
+    loader: "custom",
+    loaderFile: "./src/lib/image-loader.ts",
+    imageSizes: [400],
+    deviceSizes: [480, 640, 828, 1080, 1400, 1920],
   },
   turbopack: {
     rules: {

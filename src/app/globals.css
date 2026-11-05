@@ -6,7 +6,7 @@
   --paper-2: #ded8cd;
   --ink: #0e0e0e;
   --graphite: #2a2826;
-  --muted: #6d6a65;
+  --muted: #5c5954; /* 5.7:1 on paper, 4.9:1 on paper-2 (WCAG AA) */
   --brand: #ffc400; /* EGC Studio yellow, from the logo */
 }
 

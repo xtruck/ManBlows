@@ -39,7 +39,7 @@ export function Films() {
               className={`group relative block w-full cursor-pointer overflow-hidden rounded-sm bg-graphite active:scale-[0.98] ${
                 f.vertical ? "mx-auto aspect-[9/16] max-w-[22rem]" : "aspect-video"
               }`}
-              aria-label={`${t.films.play} : ${f.title[lang]}`}
+              aria-label={`${t.films.play} : ${f.title[lang]}, ${f.duration}`}
             >
               <Image
                 src={f.poster}

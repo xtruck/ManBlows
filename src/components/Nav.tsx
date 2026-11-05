@@ -59,7 +59,7 @@ export function Nav() {
   return (
     <>
       <header className="liquid-glass-dark glass-rim fixed inset-x-3 top-3 z-50 flex h-14 items-center justify-between gap-4 rounded-full pr-2 pl-5 text-paper md:inset-x-6 md:top-5 xl:inset-x-8">
-        <TransitionLink href="/" aria-label="EGC Studio" className="shrink-0 pt-2">
+        <TransitionLink href="/" className="shrink-0 pt-2">
           <Logo tone="paper" className="text-[22px]" />
         </TransitionLink>
 
