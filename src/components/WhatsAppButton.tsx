@@ -65,18 +65,35 @@ export function WhatsAppButton() {
       href={`https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(text)}`}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label={t.whatsapp.label}
       inert={!shown}
-      className={`fixed right-4 z-[55] flex h-14 items-center gap-2.5 rounded-full bg-[#25d366] pr-5 pl-4 text-sm font-semibold text-ink shadow-lg shadow-black/25 transition-[opacity,translate] duration-300 ease-out active:scale-95 motion-reduce:transition-opacity md:hidden ${
-        shown ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-4 opacity-0"
+      // Same dark glass as the menu bar, so it reads as part of the site rather than a widget.
+      className={`liquid-glass-dark glass-rim fixed right-3 z-[55] flex items-center gap-3 rounded-full py-1.5 pr-5 pl-1.5 text-paper transition-[opacity,translate,scale] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95 motion-reduce:transition-opacity md:hidden ${
+        shown ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
       }`}
-      style={{ bottom: "max(1rem, calc(env(safe-area-inset-bottom) + 0.5rem))" }}
+      style={{ bottom: "max(0.75rem, calc(env(safe-area-inset-bottom) + 0.5rem))" }}
     >
-      <svg viewBox="0 0 24 24" aria-hidden className="size-6" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round">
-        <path d="M20 11.6a8 8 0 0 1-11.8 7L4 20l1.4-4.1A8 8 0 1 1 20 11.6z" />
-        <path d="M9.2 8.4c0 3.2 2.6 5.8 5.8 5.8l1.1-1.2-1.8-1.1-.9.8a3.6 3.6 0 0 1-1.9-1.9l.8-.9-1.1-1.8z" />
-      </svg>
-      WhatsApp
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-[#25d366] text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.35)]">
+        <WhatsAppGlyph />
+      </span>
+      <span className="sr-only">{t.whatsapp.label}. </span>
+      <span className="flex flex-col leading-tight">
+        <span className="text-[11px] tracking-wide text-paper/65">{t.whatsapp.note}</span>
+        <span className="text-sm font-medium">{t.whatsapp.title}</span>
+      </span>
     </a>
+  );
+}
+
+/** WhatsApp mark: a speech bubble with a handset inside. */
+function WhatsAppGlyph() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden className="size-[22px]" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7.9 20A9 9 0 1 0 4 16.1L2.6 21.4Z" strokeWidth={1.8} />
+      <path
+        transform="translate(7.1 6.9) scale(0.43)"
+        strokeWidth={3.4}
+        d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+      />
+    </svg>
   );
 }

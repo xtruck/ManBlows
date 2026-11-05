@@ -104,6 +104,8 @@ export const dict = {
     clients: { title: "Ils m'ont fait confiance" },
     whatsapp: {
       label: "Écrire sur WhatsApp",
+      title: "Écrivez-moi",
+      note: "Réponse sous 24 h",
       message: "Bonjour EGC Studio, je viens de votre site (page {page}) et j'aimerais en savoir plus.",
     },
     cta: {
@@ -259,6 +261,8 @@ export const dict = {
     clients: { title: "Trusted by" },
     whatsapp: {
       label: "Chat on WhatsApp",
+      title: "Message me",
+      note: "Replies within 24 h",
       message: "Hello EGC Studio, I'm coming from your website ({page} page) and would like to know more.",
     },
     cta: {
