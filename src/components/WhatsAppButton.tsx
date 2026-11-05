@@ -13,8 +13,25 @@ import { normalize, routes } from "@/lib/routes";
  * naming the page they came from.
  *
  * Hidden: on the contact page (it has its own WhatsApp form), until the intro has finished,
- * during the home page's 3D camera sequence, and while the footer (which has the link) is on screen.
+ * during the home page's 3D camera sequence, while the footer (which has the link) is on screen,
+ * and whenever a video's playback controls sit under it.
  */
+/** The button's corner of the screen (bottom right). */
+const ZONE = { width: 260, height: 96 };
+
+/** Height of a video's native control bar, along its bottom edge. */
+const CONTROLS = 64;
+
+/** True when a video's playback controls overlap the button's corner. */
+function videoBelow() {
+  const top = window.innerHeight - ZONE.height;
+  const left = window.innerWidth - ZONE.width;
+  return [...document.querySelectorAll<HTMLVideoElement>("video[controls]")].some((v) => {
+    const r = v.getBoundingClientRect();
+    return r.bottom > top && r.bottom - CONTROLS < window.innerHeight && r.right > left;
+  });
+}
+
 export function WhatsAppButton() {
   const { t } = useLang();
   const pathname = normalize(usePathname());
@@ -31,7 +48,7 @@ export function WhatsAppButton() {
       // On the home page, wait until the scroll-driven camera sequence is over.
       const hero = document.getElementById("top");
       const pastHero = !hero || hero.getBoundingClientRect().bottom < window.innerHeight * 0.5;
-      setClear(pastHero && !footerInView);
+      setClear(pastHero && !footerInView && !videoBelow());
     };
     const schedule = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -44,12 +61,17 @@ export function WhatsAppButton() {
     if (footer) observer.observe(footer);
     window.addEventListener("scroll", schedule, { passive: true });
     window.addEventListener("resize", schedule);
+    // A film's player only appears once it's tapped, without any scroll: check again then.
+    document.addEventListener("play", schedule, true);
+    document.addEventListener("loadedmetadata", schedule, true);
     update();
     return () => {
       cancelAnimationFrame(raf);
       observer.disconnect();
       window.removeEventListener("scroll", schedule);
       window.removeEventListener("resize", schedule);
+      document.removeEventListener("play", schedule, true);
+      document.removeEventListener("loadedmetadata", schedule, true);
     };
   }, [pathname]);
 

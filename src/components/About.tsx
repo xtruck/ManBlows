@@ -21,7 +21,7 @@ export function About({ mode = "page" }: { mode?: "page" | "teaser" }) {
         </Heading>
 
         {/* Page: black-and-white portrait on one side, the story on the other; stacked on phones. */}
-        <div className={teaser ? "" : "mt-10 grid items-start gap-8 md:mt-14 md:grid-cols-2 md:gap-14"}>
+        <div className={teaser ? "mt-6 md:mt-8" : "mt-10 grid items-start gap-8 md:mt-14 md:grid-cols-2 md:gap-14"}>
           {!teaser && (
             <figure className="md:sticky md:top-28">
               <Image
@@ -30,7 +30,7 @@ export function About({ mode = "page" }: { mode?: "page" | "teaser" }) {
                 width={800}
                 height={1199}
                 sizes="(min-width: 768px) 45vw, 100vw"
-                priority
+                preload
                 className="h-auto w-full max-w-[34rem] rounded-2xl object-cover grayscale contrast-[1.05] shadow-xl shadow-ink/15 md:max-h-[78svh] md:object-top"
               />
               <figcaption className="mt-3 text-sm text-muted">{t.about.portraitCaption}</figcaption>

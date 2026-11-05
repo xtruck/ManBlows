@@ -140,3 +140,13 @@ Travaux 69 → 91, Films 75 → 88, À propos 77 → 92, Contact 76 → 92. Acce
   Il ouvre la discussion avec un premier message déjà écrit dans la langue choisie, qui cite la page
   (« Bonjour EGC Studio, je viens de votre site (page Travaux)… »). Absent sur la page Contact (elle a son
   formulaire), caché pendant l'intro, pendant la séquence caméra de l'accueil et quand le pied de page est visible.
+
+## Finitions (05/11, suite)
+- Bouton WhatsApp redessiné : même verre sombre que la barre de menu, pastille verte avec le logo,
+  « Réponse sous 24 h / Écrivez-moi » (la promesse de la page Contact). Il s'efface quand les commandes
+  d'une vidéo passent dessous.
+- Affiche du showreel remplacée : l'ancienne était la 1re image de la vidéo (des pieds, flous, teinte lavande).
+  La nouvelle est le plan à 0:16,8, Egu en train de photographier dans le salon.
+- La bio de la page À propos passe à la **1re personne** (« Je m'appelle Egu. J'ai commencé… »), comme le reste
+  du site (« Ce que je fais », « Comment je travaille », « Je réponds sous 24 heures »). Mêmes faits. À valider avec lui.
+- Accueil : espace ajouté entre le titre « Derrière l'objectif » et son texte.
