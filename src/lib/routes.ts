@@ -2,6 +2,7 @@ export const routes = [
   { href: "/", key: "home" },
   { href: "/travaux/", key: "work" },
   { href: "/films/", key: "reel" },
+  { href: "/web/", key: "web" },
   { href: "/a-propos/", key: "about" },
   { href: "/contact/", key: "contact" },
 ] as const;

@@ -65,6 +65,7 @@ export function Footer() {
     { label: t.disciplines.items[0].name, href: "/travaux/#photos" },
     { label: t.disciplines.items[1].name, href: "/films/" },
     { label: t.disciplines.items[2].name, href: "/travaux/#design" },
+    { label: t.disciplines.items[3].name, href: "/web/" },
     { label: f.offers, href: "/#offres" },
   ];
 

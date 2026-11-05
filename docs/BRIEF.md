@@ -150,3 +150,19 @@ Travaux 69 → 91, Films 75 → 88, À propos 77 → 92, Contact 76 → 92. Acce
 - La bio de la page À propos passe à la **1re personne** (« Je m'appelle Egu. J'ai commencé… »), comme le reste
   du site (« Ce que je fais », « Comment je travaille », « Je réponds sous 24 heures »). Mêmes faits. À valider avec lui.
 - Accueil : espace ajouté entre le titre « Derrière l'objectif » et son texte.
+
+## Refonte « Quatre métiers » (05/11)
+Le studio présente maintenant **quatre métiers** : photo, vidéo, design graphique et **sites web** (nouveau).
+- **Accueil** : l'appareil photo 3D est remplacé par un **prisme 3D à quatre faces** (une vraie réalisation par
+  métier, avec son signe : cadrage photo, REC, poignées de sélection, fenêtre de navigateur). Il tourne d'un
+  quart de tour toutes les 4 s, les mots « Photo. Vidéo. Design. Web. » permettent de choisir. En 3D CSS, sans
+  three.js : score Lighthouse téléphone de l'accueil 35 → 74. Visuels choisis dans `src/content/crafts.ts`.
+- **Intro** (1re visite) : le même prisme tourne sur les quatre métiers avec un compteur, puis jaune et logo.
+- **Transition entre pages** : quatre bandes (01 Photo … 04 Web) qui montent l'une après l'autre.
+- **Nouvelle page `/web/`** : ce que je crée (site vitrine, portfolio, page de lancement, refonte), ce qui est
+  inclus, étude de cas = ce site (Lighthouse : accessibilité, SEO et bonnes pratiques à 100), méthode, FAQ,
+  bouton WhatsApp avec message prérempli. Lien « Web » dans le menu, « Site web » dans le formulaire de contact.
+- Quatre cartes métiers (la carte Web est sombre, badge « Nouveau »), bandeau **En chiffres** calculé depuis le
+  contenu (photos, créations, films, clients, réponse sous 24 h), titre avec une serif italique (Instrument Serif).
+- Pas de tarifs ajoutés pour le moment (demande du propriétaire). Pas d'affiche pour le web (demande du propriétaire).
+- À confirmer avec Egu : l'offre web (types de sites, accompagnement nom de domaine / hébergement).

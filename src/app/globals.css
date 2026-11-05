@@ -21,6 +21,7 @@
   --font-display: var(--font-bricolage);
   --font-script: var(--font-script-face);
   --font-logo: var(--font-poppins);
+  --font-serif: var(--font-serif-face);
 }
 
 html {
@@ -252,39 +253,6 @@ html[data-motion="gentle"] .leak {
  * Preloader entrance, in CSS so it starts on first paint: on a slow phone network the
  * JavaScript can take seconds to arrive, and the screen used to stay black until then.
  */
-.pre-outline > * {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: pre-draw 1.1s cubic-bezier(0.65, 0, 0.35, 1) forwards;
-}
-.pre-outline > :nth-child(2) { animation-delay: 0.06s; }
-.pre-outline > :nth-child(3) { animation-delay: 0.12s; }
-.pre-outline > :nth-child(4) { animation-delay: 0.18s; }
-.pre-outline > :nth-child(5) { animation-delay: 0.24s; }
-.pre-outline > :nth-child(6) { animation-delay: 0.3s; }
-.pre-outline > :nth-child(7) { animation-delay: 0.36s; }
-.pre-fill {
-  opacity: 0;
-  animation: pre-fade 0.7s ease-out 0.55s forwards;
-}
-.pre-glass {
-  opacity: 0;
-  animation: pre-fade 0.7s ease-out 0.8s forwards;
-}
-.pre-stage {
-  opacity: 0;
-  transform: scale(0.6);
-  animation: pre-pop 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
-}
-@keyframes pre-draw {
-  to { stroke-dashoffset: 0; }
-}
-@keyframes pre-fade {
-  to { opacity: 1; }
-}
-@keyframes pre-pop {
-  to { opacity: 1; transform: scale(1); }
-}
 
 /* Film grain overlay for a photographic texture */
 .grain::after {
@@ -397,97 +365,106 @@ html[data-motion="gentle"] .deck-arrow {
   animation: none;
 }
 
-/*
- * Hero scroll cue (see Hero.tsx): a quiet label above three yellow chevrons that light up in turn.
- * Visible while data-state is "idle" (at the top, or after a pause halfway through the camera
- * sequence); hidden as soon as the visitor scrolls.
- */
-.scroll-cue {
-  transition:
-    opacity 0.5s ease,
-    transform 0.5s ease;
-}
-.scroll-cue[data-state="gone"] {
-  opacity: 0;
-  transform: translateY(10px);
-  pointer-events: none;
-}
-/* Two labels share one cell: "Faites défiler" at first, "Continuez" once the camera is moving */
-.cue-labels {
-  display: grid;
-  justify-items: center;
-}
-.cue-labels > span {
-  grid-area: 1 / 1;
-  white-space: nowrap;
-  transition: opacity 0.4s ease;
-}
-.cue-labels > .cue-l-going {
-  opacity: 0;
-}
-.scroll-cue[data-state="going"] .cue-l-idle {
-  opacity: 0;
-}
-.scroll-cue[data-state="going"] .cue-l-going {
-  opacity: 1;
-}
-.cue-chev {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-.cue-chev b {
-  display: block;
-  width: 15px;
-  height: 15px;
-  margin-top: -8px;
-  border-right: 2.5px solid var(--brand);
-  border-bottom: 2.5px solid var(--brand);
-  transform: rotate(45deg);
-  opacity: 0.3;
-  animation: cue-chev 1.5s ease-in-out infinite;
-}
-.cue-chev b:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.cue-chev b:nth-child(3) {
-  animation-delay: 0.4s;
-}
-@keyframes cue-chev {
-  0% {
-    opacity: 0.3;
-  }
-  40% {
-    opacity: 1;
-  }
-  80%,
-  100% {
-    opacity: 0.3;
-  }
-}
-/* Soft animation mode: the three chevrons stay on, fading from top to bottom */
-html[data-motion="gentle"] .cue-chev b {
-  animation: none;
-}
-html[data-motion="gentle"] .cue-chev b:nth-child(1) {
-  opacity: 0.35;
-}
-html[data-motion="gentle"] .cue-chev b:nth-child(2) {
-  opacity: 0.65;
-}
-html[data-motion="gentle"] .cue-chev b:nth-child(3) {
-  opacity: 1;
-}
-/* A soft shade under the cue keeps it readable; it goes away with the cue */
-.cue-shade {
-  transition: opacity 0.5s ease;
-}
-.scroll-cue[data-state="gone"] + .cue-shade {
-  opacity: 0;
-}
-
 /* Repeat load in the same visit (set by the boot script in layout.tsx): the preloader is just a
-   dark cover that fades out, so hide the camera artwork before it can flash on screen. */
+   dark cover that fades out, so hide the intro artwork before it can flash on screen. */
 html[data-intro="quick"] [data-preloader] > * {
   display: none;
+}
+
+/* ---------- Home: the four-craft prism (components/Hero.tsx) ---------- */
+#top {
+  --prism-w: min(66vw, 21rem);
+}
+@media (min-width: 1024px) {
+  #top {
+    --prism-w: min(30vw, 27rem);
+  }
+}
+.prism-scene {
+  position: relative;
+  width: var(--prism-w);
+  height: calc(var(--prism-w) * 1.25);
+}
+/* Soft shadow on the "floor" under the prism */
+.prism-scene::after {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  bottom: -9%;
+  height: 12%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.7), transparent);
+  filter: blur(8px);
+  z-index: -1;
+}
+.prism-stage {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transform: rotateX(calc(var(--tilt-x) * 1deg)) rotateY(calc(var(--tilt-y) * 1deg));
+}
+.prism {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  /* Pull the prism back by half its depth so the front face sits at its real size */
+  transform: translateZ(calc(var(--prism-w) / -2)) rotateY(calc(var(--turn) * -90deg));
+  transition: transform 1.25s cubic-bezier(0.77, 0, 0.18, 1);
+}
+.prism-face {
+  position: absolute;
+  inset: 0;
+  display: block;
+  backface-visibility: hidden;
+  transform: rotateY(calc(var(--i) * 90deg)) translateZ(calc(var(--prism-w) / 2));
+}
+html[data-motion="gentle"] .prism {
+  transition-duration: 0.45s;
+}
+.prism-progress {
+  animation: prism-progress linear forwards;
+}
+@keyframes prism-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+/* Craft signatures (components/CraftMotif.tsx) */
+.motif-focus {
+  animation: motif-focus 2.4s ease-in-out infinite;
+}
+@keyframes motif-focus {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+  50% { transform: translate(-50%, -50%) scale(0.82); opacity: 1; }
+}
+.motif-progress {
+  animation: motif-progress 6s linear infinite;
+}
+@keyframes motif-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.motif-caret {
+  animation: motif-caret 1s steps(1) infinite;
+}
+@keyframes motif-caret {
+  50% { opacity: 0; }
+}
+html[data-motion="gentle"] .motif-focus,
+html[data-motion="gentle"] .motif-progress,
+html[data-motion="gentle"] .motif-caret {
+  animation: none;
+}
+
+/* /web/ page: the laptop and phone mock-up leans in, and straightens on hover */
+.devices {
+  transform: rotateY(-14deg) rotateX(6deg);
+  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.devices:hover {
+  transform: rotateY(-4deg) rotateX(2deg);
+}
+html[data-motion="gentle"] .devices {
+  transition: none;
 }

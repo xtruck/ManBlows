@@ -1,7 +1,7 @@
-// Tiny signals between the preloader, the hero and the 3D scene.
+// Tiny signal between the preloader and the sections that wait for it.
 
 /**
- * The full camera intro plays once per visit (per tab). Later full loads in the same visit get a
+ * The full intro plays once per visit (per tab). Later full loads in the same visit get a
  * short fade. The inline boot script in layout.tsx reads the same key before first paint.
  */
 export const INTRO_SEEN_KEY = "egc-intro-seen";
@@ -33,20 +33,3 @@ function signal() {
 const intro = signal();
 export const markIntroDone = intro.fire;
 export const onIntroDone = intro.on;
-
-/** Fired when the 3D camera model is loaded and on screen. */
-const scene = signal();
-export const markSceneReady = scene.fire;
-export const onSceneReady = scene.on;
-
-/** Loading progress of the 3D assets, 0 → 1, so the preloader shows real progress. */
-const progressListeners = new Set<(value: number) => void>();
-export function setSceneProgress(value: number) {
-  progressListeners.forEach((fn) => fn(value));
-}
-export function onSceneProgress(fn: (value: number) => void) {
-  progressListeners.add(fn);
-  return () => {
-    progressListeners.delete(fn);
-  };
-}
