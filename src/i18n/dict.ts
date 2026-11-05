@@ -140,7 +140,10 @@ export const dict = {
       on: "Animations activées",
       off: "Animations réduites",
     },
-    meta: { home: "EGC Studio | Photo, vidéo et design" },
+    meta: {
+      home: "EGC Studio | Photo, vidéo et design",
+      description: "EGC Studio, photographe, vidéaste et infographiste à Abidjan : cérémonies, événements, portraits, films et design graphique.",
+    },
     preloader: "Chargement",
     focus: "Mise au point",
     a11y: {
@@ -288,7 +291,10 @@ export const dict = {
       on: "Animations on",
       off: "Animations reduced",
     },
-    meta: { home: "EGC Studio | Photo, video and design" },
+    meta: {
+      home: "EGC Studio | Photo, video and design",
+      description: "EGC Studio, photographer, videographer and graphic designer in Abidjan: ceremonies, events, portraits, films and graphic design.",
+    },
     preloader: "Loading",
     focus: "Focusing",
     a11y: {
