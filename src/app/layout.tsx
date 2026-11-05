@@ -10,6 +10,7 @@ import { Reveals } from "@/components/Reveals";
 import { Interactions } from "@/components/Interactions";
 import { MotionControl } from "@/components/MotionControl";
 import { TitleSync } from "@/components/TitleSync";
+import { INTRO_SEEN_KEY } from "@/lib/intro";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -66,11 +67,13 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#ffc400" };
 
-// Start downloading the 3D camera while the HTML is still parsing, but only on the home page,
-// the one place it is shown. An inline script rather than react-dom's preload() or a <link>:
-// React passes those along when other pages prefetch the home page in the background, which
-// made every page download the 613 KB model.
-const modelPreload = `(function(){var b=${JSON.stringify(basePath)},p=location.pathname;if(p===b+"/"||p===b||p===b+"/index.html"){var l=document.createElement("link");l.rel="preload";l.as="fetch";l.crossOrigin="anonymous";l.href=b+"/models/camera.glb";document.head.appendChild(l)}})()`;
+// Runs while the HTML is still parsing, before anything is drawn:
+// 1. If the intro already played in this visit, mark <html> so the preloader shows a plain dark
+//    cover (no camera artwork) that the preloader then fades out quickly.
+// 2. On the home page only, start downloading the 3D camera. An inline script rather than
+//    react-dom's preload() or a <link>: React passes those along when other pages prefetch the
+//    home page in the background, which made every page download the 613 KB model.
+const bootScript = `(function(){try{if(sessionStorage.getItem(${JSON.stringify(INTRO_SEEN_KEY)}))document.documentElement.dataset.intro="quick"}catch(e){}var b=${JSON.stringify(basePath)},p=location.pathname;if(p===b+"/"||p===b||p===b+"/index.html"){var l=document.createElement("link");l.rel="preload";l.as="fetch";l.crossOrigin="anonymous";l.href=b+"/models/camera.glb";document.head.appendChild(l)}})()`;
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -93,10 +96,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="fr"
+      suppressHydrationWarning
       className={`${geistSans.variable} ${bricolage.variable} ${script.variable} ${poppins.variable} h-full antialiased`}
     >
       <body className="grain min-h-full font-sans">
-        <script dangerouslySetInnerHTML={{ __html: modelPreload }} />
+        <script dangerouslySetInnerHTML={{ __html: bootScript }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <LangProvider>
           <SmoothScroll />

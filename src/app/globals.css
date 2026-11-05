@@ -485,3 +485,9 @@ html[data-motion="gentle"] .cue-chev b:nth-child(3) {
 .scroll-cue[data-state="gone"] + .cue-shade {
   opacity: 0;
 }
+
+/* Repeat load in the same visit (set by the boot script in layout.tsx): the preloader is just a
+   dark cover that fades out, so hide the camera artwork before it can flash on screen. */
+html[data-intro="quick"] [data-preloader] > * {
+  display: none;
+}

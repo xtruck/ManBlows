@@ -5,7 +5,7 @@ import { gsap } from "gsap";
 import { Logo } from "./Logo";
 import { LightLeaks } from "./LightLeaks";
 import { useLang } from "./LangProvider";
-import { markIntroDone, onSceneProgress, onSceneReady } from "@/lib/intro";
+import { INTRO_SEEN_KEY, markIntroDone, onSceneProgress, onSceneReady } from "@/lib/intro";
 import { motionMode } from "@/lib/motion";
 
 // Aperture geometry, in a 200 × 200 viewBox.
@@ -41,7 +41,7 @@ function iris(open: number) {
 const CLOSED = iris(0.06);
 
 /**
- * First visit: a lens aperture whose opening follows real loading progress, with a live
+ * First load of a visit: a lens aperture whose opening follows real loading progress, with a live
  * f-stop readout. When everything is ready it opens wide, we fly through it into the brand
  * yellow, "egc" is written in, and the shutter opens onto the site.
  */
@@ -76,11 +76,31 @@ export function Preloader() {
     const finish = () => {
       window.scrollTo(0, 0);
       document.documentElement.style.overflow = "";
+      try {
+        sessionStorage.setItem(INTRO_SEEN_KEY, "1");
+      } catch {}
       setGone(true);
       markIntroDone();
     };
 
     document.documentElement.style.overflow = "hidden";
+
+    // Already seen in this visit: no camera sequence and no waiting for the 3D model (the hero
+    // fades it in by itself when it's ready). Just lift the dark cover once fonts are in.
+    if (document.documentElement.dataset.intro === "quick") {
+      let tween: gsap.core.Tween | null = null;
+      let cancelled = false;
+      const fonts = document.fonts?.ready ?? Promise.resolve();
+      Promise.race([fonts, new Promise((r) => setTimeout(r, 800))]).then(() => {
+        if (cancelled) return;
+        tween = gsap.to(el, { autoAlpha: 0, duration: reduced ? 0.25 : 0.4, ease: "power1.out", onComplete: finish });
+      });
+      return () => {
+        cancelled = true;
+        tween?.kill();
+        document.documentElement.style.overflow = "";
+      };
+    }
 
     // The intro plays on every full page load (refresh included); page-to-page navigation
     // keeps the layout mounted, so it never replays there. It also plays with reduced motion
@@ -218,6 +238,7 @@ export function Preloader() {
     <div
       ref={root}
       aria-hidden
+      data-preloader
       className="fixed inset-0 isolate z-[100] flex items-center justify-center overflow-hidden bg-ink text-paper"
       style={{ clipPath: "inset(0% 0% 0% 0%)" }}
     >

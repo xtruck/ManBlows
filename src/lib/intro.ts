@@ -1,4 +1,11 @@
 // Tiny signals between the preloader, the hero and the 3D scene.
+
+/**
+ * The full camera intro plays once per visit (per tab). Later full loads in the same visit get a
+ * short fade. The inline boot script in layout.tsx reads the same key before first paint.
+ */
+export const INTRO_SEEN_KEY = "egc-intro-seen";
+
 function signal() {
   let done = false;
   const listeners = new Set<() => void>();
