@@ -112,7 +112,7 @@ export const films = [
   },
   {
     id: 14,
-    title: { fr: "Prise de vue par drone, en coulisses", en: "Drone shoot, behind the scenes" },
+    title: { fr: "Décollage du drone, en pleine rue", en: "Drone take-off, out on the street" },
     kind: { fr: "Coulisses", en: "Behind the scenes" },
     duration: "00:06",
     poster: `${base}/films/film-1451-poster.webp`,
@@ -121,7 +121,7 @@ export const films = [
   },
   {
     id: 15,
-    title: { fr: "Pilotage du drone, en coulisses", en: "Flying the drone, behind the scenes" },
+    title: { fr: "Pilotage du drone, tablette en main", en: "Flying the drone from a tablet" },
     kind: { fr: "Coulisses", en: "Behind the scenes" },
     duration: "00:14",
     poster: `${base}/films/film-1453-poster.webp`,
@@ -130,7 +130,7 @@ export const films = [
   },
   {
     id: 16,
-    title: { fr: "Sur le terrain, en tournage", en: "On location, filming" },
+    title: { fr: "Tournage d'une danse en pleine rue", en: "Filming a street dance" },
     kind: { fr: "Coulisses", en: "Behind the scenes" },
     duration: "00:23",
     poster: `${base}/films/film-1440-poster.webp`,
@@ -139,7 +139,7 @@ export const films = [
   },
   {
     id: 17,
-    title: { fr: "Sur le terrain, en route", en: "On location, on the move" },
+    title: { fr: "Une marche de groupe, filmée depuis le bord de la route", en: "A group walk, filmed from the roadside" },
     kind: { fr: "Coulisses", en: "Behind the scenes" },
     duration: "00:06",
     poster: `${base}/films/film-1439-poster.webp`,
@@ -148,7 +148,7 @@ export const films = [
   },
   {
     id: 18,
-    title: { fr: "Sur le terrain, la caméra à la main", en: "On location, camera in hand" },
+    title: { fr: "L'équipe arrive sur le tournage", en: "The crew arrives on set" },
     kind: { fr: "Coulisses", en: "Behind the scenes" },
     duration: "00:06",
     poster: `${base}/films/film-1441-poster.webp`,
@@ -157,7 +157,7 @@ export const films = [
   },
   {
     id: 19,
-    title: { fr: "Sur le terrain, plan de tournage", en: "On location, filming angle" },
+    title: { fr: "Le caméraman en action", en: "The camera operator at work" },
     kind: { fr: "Coulisses", en: "Behind the scenes" },
     duration: "00:12",
     poster: `${base}/films/film-1452-poster.webp`,
@@ -166,8 +166,8 @@ export const films = [
   },
   {
     id: 20,
-    title: { fr: "Événement, invitée en tenue traditionnelle", en: "Event, guest in traditional dress" },
-    kind: { fr: "Événement", en: "Event" },
+    title: { fr: "Séance photo en robe kente", en: "Kente gown photo shoot" },
+    kind: { fr: "Portrait", en: "Portrait" },
     duration: "00:27",
     poster: `${base}/films/film-2002-poster.webp`,
     video: `${base}/films/film-2002.mp4`,
@@ -175,7 +175,7 @@ export const films = [
   },
   {
     id: 21,
-    title: { fr: "Événement, le buffet", en: "Event, the buffet" },
+    title: { fr: "Réception sous chapiteau, le buffet", en: "Marquee reception, the buffet" },
     kind: { fr: "Événement", en: "Event" },
     duration: "00:53",
     poster: `${base}/films/film-2585-poster.webp`,
@@ -183,7 +183,7 @@ export const films = [
   },
   {
     id: 22,
-    title: { fr: "Événement, reportage", en: "Event, coverage" },
+    title: { fr: "Salon professionnel, interviews et rencontres", en: "Trade show, interviews and meetings" },
     kind: { fr: "Événement", en: "Event" },
     duration: "01:21",
     poster: `${base}/films/film-3647-poster.webp`,
@@ -192,7 +192,7 @@ export const films = [
   },
   {
     id: 23,
-    title: { fr: "Alors, ta date ?", en: "So, what is your date?" },
+    title: { fr: "Alors, ta date ?", en: "So, when's your date?" },
     kind: { fr: "Promo", en: "Promo" },
     duration: "00:18",
     poster: `${base}/films/film-3726-poster.webp`,

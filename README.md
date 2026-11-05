@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# EGC Studio
 
-## Getting Started
+Portfolio site for **EGC Studio**, a photographer, videographer and graphic designer (Egu) in Abidjan.
+The site is in French and English and is live at **https://xtruck.github.io/ManBlows/**.
 
-First, run the development server:
+The client brief, content decisions and change log (in French) are in [`docs/BRIEF.md`](docs/BRIEF.md).
+Read it before changing content.
+
+## Run it
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Command             | What it does                                                   |
+| ------------------- | -------------------------------------------------------------- |
+| `npm run dev`       | Local dev server                                               |
+| `npm run build`     | Static export into `out/`                                      |
+| `npm run lint`      | ESLint                                                         |
+| `npm run typecheck` | Generates Next's route types, then runs TypeScript             |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Stack: Next.js 16 (App Router, `output: "export"`), React 19, Tailwind CSS 4, Three.js via
+React Three Fiber (3D camera on the home page), GSAP, Motion and Lenis for animation.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+> This Next.js version differs from older ones. Check `node_modules/next/dist/docs/` before
+> relying on remembered APIs (see `AGENTS.md`).
 
-## Learn More
+## Where things live
 
-To learn more about Next.js, take a look at the following resources:
+| Path                         | Contents                                                              |
+| ---------------------------- | --------------------------------------------------------------------- |
+| `src/app/`                   | Pages: home, `travaux` (work), `films`, `a-propos` (about), `contact` |
+| `src/components/`            | Sections and site-wide pieces (nav, preloader, page transitions…)     |
+| `src/content/photos.ts`      | Photos shown in the Work gallery                                      |
+| `src/content/design.ts`      | Graphic design work, plus the studio's own price posters              |
+| `src/content/site.ts`        | Films, showreel, client list and contact details                      |
+| `src/i18n/dict.ts`           | Every interface text, in French and English                           |
+| `src/lib/motion.ts`          | Full / gentle animation modes                                         |
+| `public/work/`, `public/films/` | Optimised images (with 640px copies in `work/sm/`) and videos      |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The language is chosen in the browser (stored in `localStorage`); the HTML is always rendered in
+French, and each page has a single URL for both languages.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Adding work
 
-## Deploy on Vercel
+1. Put new files through `node scripts/ingest-watch.mjs` (converts photos to WebP and videos to
+   H.264 into `inbox/ready/`). It watches the owner's folder on his Windows PC.
+2. Copy the converted files into `public/work/` or `public/films/`.
+3. Add an entry in `photos.ts`, `design.ts` or the `films` list in `site.ts`.
+4. For new images, run `node scripts/make-thumbs.mjs` to create the 640px copies.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Share preview
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`public/og.png` is the image shown when a link is shared on WhatsApp, Facebook or X. It carries
+French and English text. To change it, edit and run `node scripts/make-og.mjs` (needs Playwright).
+
+## Deploy
+
+Every push to `main` runs `.github/workflows/pages.yml`: lint, type-check, build with
+`NEXT_PUBLIC_BASE_PATH=/ManBlows`, then publish `out/` to GitHub Pages. Local files referenced
+outside `next/link` must include that base path (see `src/content/site.ts` for the pattern).

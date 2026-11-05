@@ -40,6 +40,11 @@ const poppins = Poppins({
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const siteUrl = `https://xtruck.github.io${basePath}/`;
 const description = "EGC Studio, photographe, vidéaste et infographiste à Abidjan : cérémonies, événements, portraits, films et design graphique.";
+const descriptionEn = "EGC Studio, photographer, videographer and graphic designer in Abidjan: ceremonies, events, portraits, films and graphic design.";
+// Share previews (WhatsApp, Facebook, X) read only this static HTML and every page has one URL for
+// both languages, so the preview text carries French then English. The image does the same.
+const shareTitle = "EGC Studio | Photo, vidéo et design · Photo, video and design";
+const shareDescription = `${description} / ${descriptionEn}`;
 
 export const metadata: Metadata = {
   // Absolute base for share previews (WhatsApp, Facebook); otherwise they point at localhost.
@@ -52,12 +57,12 @@ export const metadata: Metadata = {
     siteName: "EGC Studio",
     locale: "fr_FR",
     alternateLocale: ["en_US"],
-    title: "EGC Studio | Photo, vidéo et design",
-    description,
+    title: shareTitle,
+    description: shareDescription,
     url: "./",
-    images: [{ url: "og.png", width: 1200, height: 630, alt: "EGC Studio, photo, vidéo et design" }],
+    images: [{ url: "og.png", width: 1200, height: 630, alt: "EGC Studio, photo, vidéo et design / photo, video and design" }],
   },
-  twitter: { card: "summary_large_image", title: "EGC Studio | Photo, vidéo et design", description, images: ["og.png"] },
+  twitter: { card: "summary_large_image", title: shareTitle, description: shareDescription, images: ["og.png"] },
 };
 
 export const viewport: Viewport = { themeColor: "#ffc400" };
@@ -75,7 +80,8 @@ const jsonLd = {
   address: { "@type": "PostalAddress", addressLocality: "Abidjan", addressCountry: "CI" },
   founder: { "@type": "Person", name: "Egu" },
   sameAs: ["https://www.instagram.com/egc_studio225", "https://www.tiktok.com/@egc_studio225"],
-  knowsAbout: ["Photographie", "Vidéographie", "Design graphique"],
+  knowsAbout: ["Photographie", "Vidéographie", "Design graphique", "Photography", "Videography", "Graphic design"],
+  availableLanguage: ["fr", "en"],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

@@ -106,3 +106,15 @@ dès le premier défilement.
 - Photos 36 à 41 : un portrait de studio (Portraits) et 5 photos du client SIFEC (Événements), ajouté à « Ils m'ont fait confiance ». Nom complet de SIFEC à confirmer.
 - 10 vidéos ajoutées aux Films (n° 14 à 23) : 6 plans de coulisses (drone, tournage), 3 reportages d'événement et le clip « Alors, ta date ? ». IMG_1482 (enregistrement d'écran) non publiée.
 - Titres génériques écrits d'après les images : à corriger avec lui.
+
+## Mise à jour du 05/11
+- Titres des 10 derniers films (n° 14 à 23) réécrits d'après leurs images : drone en ville, danse filmée
+  dans la rue, marche de groupe, arrivée de l'équipe, caméraman, séance photo en robe kente (type passé à
+  « Portrait »), réception sous chapiteau, salon professionnel. À valider avec lui.
+- **Vidéo abîmée : `film-2585.mp4` (réception sous chapiteau, logo « MO Events »).** Seules 592 images sur
+  1 570 se décodent, la lecture saute. Il faut la reconvertir depuis l'original (IMG_2585) dans son dossier.
+- Le salon (n° 22) semble être « Brand Icons Africa » d'après un panneau : à confirmer.
+- Aperçu de partage (WhatsApp, Facebook, X) en français et en anglais : texte et image `og.png`
+  (refaite avec `node scripts/make-og.mjs`). La description de la page suit aussi la langue choisie.
+- `npm run typecheck` ajouté ; le déploiement lance maintenant lint et vérification des types avant le build.
+- README réécrit pour ce site.
