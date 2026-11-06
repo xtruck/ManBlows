@@ -29,7 +29,26 @@ function signal() {
   };
 }
 
-/** Fired when the preloader's shutter has opened. */
+/** Fired when the preloader starts to uncover the page (its cover begins to dissolve). */
+const leaving = signal();
+export const markIntroLeaving = leaving.fire;
+/** Sections that animate in (Reveals) set up here, so nothing shows and then hides again. */
+export const onIntroLeaving = leaving.on;
+
+/** Fired when the preloader is gone. Also counts as "leaving" if that wasn't fired. */
 const intro = signal();
-export const markIntroDone = intro.fire;
+export const markIntroDone = () => {
+  leaving.fire();
+  intro.fire();
+};
 export const onIntroDone = intro.on;
+
+/**
+ * Set by the preloader just before it fires `markIntroDone` when its last frame has landed exactly
+ * on the home prism: the hero then shows the prism as is instead of playing its own entrance.
+ */
+let handoff = false;
+export const setIntroHandoff = (v: boolean) => {
+  handoff = v;
+};
+export const introHandoff = () => handoff;

@@ -11,6 +11,8 @@ export type DeckItem = {
   caption?: string;
   /** Show a play badge, for videos. */
   play?: boolean;
+  /** Keep the top of the image in view (screenshots of a web page). */
+  top?: boolean;
 };
 
 /**
@@ -59,7 +61,7 @@ export function Deck({ items, hint, delay = 0 }: { items: DeckItem[]; hint: stri
         const depth = Math.min(3, (i - active + items.length) % items.length);
         return (
           <div key={item.src} data-depth={depth} className="deck-item absolute inset-0 overflow-hidden rounded-xl bg-ink/15 shadow-xl shadow-black/25">
-            <Image src={thumb(item.src)} alt="" fill sizes="(min-width: 768px) 20vw, 60vw" className="object-cover" />
+            <Image src={thumb(item.src)} alt="" fill sizes="(min-width: 768px) 20vw, 60vw" className={`object-cover ${item.top ? "object-top" : ""}`} />
             {item.play && (
               <span className="absolute top-1/2 left-1/2 flex size-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-brand text-ink shadow-lg">
                 <svg viewBox="0 0 24 24" className="ml-0.5 size-5" fill="currentColor">
@@ -67,7 +69,13 @@ export function Deck({ items, hint, delay = 0 }: { items: DeckItem[]; hint: stri
                 </svg>
               </span>
             )}
-            {item.caption && (
+            {/* A web page has its own header at the top: its caption goes on a solid pill instead */}
+            {item.caption && item.top && (
+              <span className="deck-cap absolute top-2 left-2 max-w-[85%] rounded-full bg-ink/85 px-2.5 py-1 text-[11px] font-medium text-white shadow-lg backdrop-blur-sm">
+                <span className="line-clamp-1">{item.caption}</span>
+              </span>
+            )}
+            {item.caption && !item.top && (
               <span className="deck-cap absolute inset-x-0 top-0 bg-gradient-to-b from-black/75 to-transparent px-3 pt-2.5 pb-8 text-xs font-medium text-white">
                 <span className="line-clamp-2">{item.caption}</span>
               </span>

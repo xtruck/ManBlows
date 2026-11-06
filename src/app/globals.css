@@ -371,6 +371,105 @@ html[data-intro="quick"] [data-preloader] > * {
   display: none;
 }
 
+/* ---------- Intro (components/Preloader.tsx) ---------- */
+/* Same size as the hero prism, so the frame lands on it without scaling */
+.pre-frame {
+  width: min(66vw, 21rem, 46svh);
+  aspect-ratio: 4 / 5;
+}
+@media (min-width: 1024px) {
+  .pre-frame {
+    width: min(30vw, 27rem, 50svh);
+  }
+}
+/* 01 Photo runs in CSS, from the first paint, so a slow phone sees it before the script loads:
+   the frame opens, the negative develops while the focus settles, the brackets come in.
+   "backwards" fill: once done, the element's own styles (and GSAP's) apply again. */
+/* Only transform and opacity here: the browser keeps those moving even while the page's
+   JavaScript is loading (clip-path or filter animations would freeze on a slow phone). */
+.pre-open {
+  animation: pre-open 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.05s backwards;
+}
+.pre-develop {
+  animation: pre-develop 0.9s cubic-bezier(0.33, 1, 0.68, 1) 0.9s backwards;
+}
+/* A white layer in "difference" mode turns the photo into its negative; fading it develops it */
+.pre-negative {
+  background: #fff;
+  mix-blend-mode: difference;
+  opacity: 0;
+  animation: pre-negative 0.8s ease-in-out 1s backwards;
+}
+@keyframes pre-negative {
+  from { opacity: 0.92; }
+  to { opacity: 0; }
+}
+.pre-motif {
+  animation: pre-motif 0.45s cubic-bezier(0.33, 1, 0.68, 1) 1.4s backwards;
+}
+/* The burst: two photos uncovered in quick succession, then lifted away onto the portrait.
+   Each layer and its image move in opposite directions, so the picture itself seems still. */
+.pre-burst {
+  transform: translateY(-101%);
+}
+.pre-burst-img {
+  transform: translateY(101%);
+}
+.pre-burst-0 {
+  animation: pre-burst 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.45s backwards;
+}
+.pre-burst-0 .pre-burst-img {
+  animation: pre-burst-img 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.45s backwards;
+}
+.pre-burst-1 {
+  animation: pre-burst 0.75s cubic-bezier(0.65, 0, 0.35, 1) 0.6s backwards;
+}
+.pre-burst-1 .pre-burst-img {
+  animation: pre-burst-img 0.75s cubic-bezier(0.65, 0, 0.35, 1) 0.6s backwards;
+}
+@keyframes pre-burst {
+  0% { transform: translateY(101%); }
+  40%, 62% { transform: translateY(0); }
+  100% { transform: translateY(-101%); }
+}
+@keyframes pre-burst-img {
+  0% { transform: translateY(-101%); }
+  40%, 62% { transform: translateY(0); }
+  100% { transform: translateY(101%); }
+}
+/* Copies of the photo trailing the frame on its way to the hero */
+.pre-ghost {
+  position: absolute;
+  border-radius: 1.4rem;
+  background-size: cover;
+  background-position: center;
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+@keyframes pre-open {
+  from { opacity: 0; transform: scale(0.32); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes pre-develop {
+  from { transform: scale(1.18); }
+  to { transform: scale(1); }
+}
+@keyframes pre-motif {
+  from { opacity: 0; transform: scale(1.1); }
+  to { opacity: 1; transform: scale(1); }
+}
+/* Repeat load in the same visit: the dark cover only (its bands are hidden with the rest) */
+html[data-intro="quick"] [data-preloader] {
+  background: var(--ink);
+}
+html[data-intro="quick"] [data-pre-skip] {
+  display: none;
+}
+/* Film-strip perforations */
+.pre-sprockets {
+  background: #000 repeating-linear-gradient(to bottom, transparent 0 5px, rgb(236 232 225 / 0.8) 5px 12px, transparent 12px 18px) center / 46% 100% no-repeat;
+}
+
 /* ---------- Home: the four-craft prism (components/Hero.tsx) ---------- */
 #top {
   --prism-w: min(66vw, 21rem);
@@ -404,23 +503,138 @@ html[data-intro="quick"] [data-preloader] > * {
   transform-style: preserve-3d;
   transform: rotateX(calc(var(--tilt-x) * 1deg)) rotateY(calc(var(--tilt-y) * 1deg));
 }
+.prism-scene {
+  touch-action: pan-y; /* a sideways swipe spins the prism, a vertical one still scrolls */
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.prism-scene:active {
+  cursor: grabbing;
+}
 .prism {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
-  /* Pull the prism back by half its depth so the front face sits at its real size */
-  transform: translateZ(calc(var(--prism-w) / -2)) rotateY(calc(var(--turn) * -90deg));
-  transition: transform 1.25s cubic-bezier(0.77, 0, 0.18, 1);
+  /* Pull the prism back by half its depth so the front face sits at its real size.
+     --spin (set by Hero.tsx) is the rotation in quarter turns. */
+  transform: translateZ(calc(var(--prism-w) / -2)) rotateY(calc(var(--spin) * -90deg));
 }
 .prism-face {
   position: absolute;
   inset: 0;
   display: block;
   backface-visibility: hidden;
+  -webkit-user-drag: none;
   transform: rotateY(calc(var(--i) * 90deg)) translateZ(calc(var(--prism-w) / 2));
 }
-html[data-motion="gentle"] .prism {
-  transition-duration: 0.45s;
+
+/* Light on the faces, from each face's angle to the viewer: it darkens as it turns away, and a
+   glint sweeps across while it moves. Browsers without CSS trigonometry just skip it. */
+.prism-shade,
+.prism-sheen,
+.prism-flash,
+.prism-scan {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+}
+.prism-shade {
+  inset: 0;
+  background: #050505;
+}
+.prism-sheen {
+  inset: -10% -70%;
+  background: linear-gradient(100deg, transparent 40%, rgb(255 255 255 / 0.3) 50%, transparent 60%);
+  mix-blend-mode: soft-light;
+}
+@supports (width: calc(1px * cos(0deg))) {
+  .prism-face {
+    --a: calc((var(--i) - var(--spin)) * 90deg);
+  }
+  .prism-shade {
+    opacity: calc(0.82 - 0.82 * max(cos(var(--a)), 0));
+  }
+  .prism-sheen {
+    transform: translateX(calc(sin(var(--a)) * 40%));
+    opacity: calc(max(cos(var(--a)), 0) * max(sin(var(--a)), -1 * sin(var(--a))) * 2.2);
+  }
+}
+
+/* Each craft's moment when its face arrives in front (after the quarter turn) */
+.prism-flash {
+  inset: 0;
+  background: #fff;
+}
+.prism-scan {
+  inset-inline: 0;
+  top: -30%;
+  height: 30%;
+  background: linear-gradient(transparent, rgb(255 196 0 / 0.22), transparent);
+}
+.prism-face.is-front[data-craft="photo"] .prism-flash {
+  animation: face-flash 0.6s ease-out 1.15s both;
+}
+.prism-face.is-front[data-craft="video"] .prism-scan {
+  animation: face-scan 1.1s ease-in-out 1.1s both;
+}
+.prism-face.is-front[data-craft="design"] .prism-motif {
+  animation: face-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 1.05s both;
+}
+.prism-face.is-front[data-craft="web"] img {
+  animation: face-scroll 3.2s ease-in-out 1.2s both;
+}
+@keyframes face-flash {
+  0% { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+@keyframes face-scan {
+  0% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 1; transform: translateY(440%); }
+}
+@keyframes face-pop {
+  from { opacity: 0; transform: scale(1.12); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes face-scroll {
+  0%, 100% { object-position: 50% 0%; }
+  50% { object-position: 50% 24%; }
+}
+
+/* The craft's name in outline, behind the prism */
+.hero-word {
+  z-index: -1;
+  pointer-events: none;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(7rem, 36vw, 24rem);
+  line-height: 0.8;
+  letter-spacing: -0.05em;
+  white-space: nowrap;
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(236 232 225 / 0.13);
+  perspective: 600px;
+}
+.hero-word span span {
+  display: inline-block;
+  animation: word-in 1s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes word-in {
+  from { opacity: 0; transform: translateY(45%) rotateX(-75deg); }
+  to { opacity: 1; transform: none; }
+}
+
+/* A soft light under the mouse */
+.hero-spot {
+  background: radial-gradient(520px circle at var(--mx, 70%) var(--my, 40%), rgb(255 196 0 / 0.07), transparent 65%);
+}
+
+html[data-motion="gentle"] .prism-face .prism-flash,
+html[data-motion="gentle"] .prism-face .prism-scan,
+html[data-motion="gentle"] .prism-face .prism-motif,
+html[data-motion="gentle"] .prism-face img,
+html[data-motion="gentle"] .hero-word span span {
+  animation: none;
 }
 .prism-progress {
   animation: prism-progress linear forwards;

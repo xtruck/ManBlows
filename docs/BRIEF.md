@@ -179,3 +179,27 @@ Le studio présente maintenant **quatre métiers** : photo, vidéo, design graph
 - Captures : `node scripts/make-real-shots.mjs [slug]` (Playwright, hors dépendances du projet ;
   `PW_CHANNEL=msedge` pour utiliser Edge), fichiers `public/web/real-<slug>-desk.webp` (1280 × 800) et
   `-phone.webp` (420 px de large).
+
+## Nouvel intro, hero et vrais sites partout (06/11, suite)
+- **Plus aucune capture de ce site-ci** dans les animations ni comme exemple de site : la carte « Sites web »
+  de l'accueil montre ANAREKA-CI, BMT Green Academy, Graya Holistic, Espace Kignon et VIP Garage (avec leur nom) ;
+  l'en-tête de `/web/` montre ANAREKA-CI ; la face Web du prisme et l'étape Web de l'intro aussi
+  (`real-anareka-face.webp`, capture téléphone nette 780 px : `SHOTS=face node scripts/make-real-shots.mjs anareka`).
+  Seule l'« Étude de cas : ce site » de `/web/` garde des captures de ce site, puisqu'elle en parle.
+- **Intro** (1re visite, `components/Preloader.tsx`), inspirée de démos Codrops (RapidLayersAnimation,
+  IntroTrailEffect) : un même cadre vit les quatre métiers. Photo : rafale de deux vraies photos dévoilées
+  « en couches », puis le portrait passe du négatif au positif, mise au point, déclencheur. Vidéo : pellicule qui
+  défile et s'arrête, timecode. Design : poignées de sélection, curseur qui redimensionne, nuancier. Web : barre de
+  navigateur, l'adresse anarekaci.com se tape, la page défile. Puis jaune et logo. Sur l'accueil, le cadre
+  **s'envole jusqu'au prisme** avec une traînée d'images et devient sa face avant (aucune coupure) ; ailleurs le
+  fond se dissout. Bouton « Passer l'intro ». L'étape Photo est en CSS (transform et opacité seulement), donc
+  visible avant même le chargement du JavaScript sur un téléphone lent.
+- **Hero** (`components/Hero.tsx`) : le prisme se tourne au doigt ou à la souris (élan, puis il se pose sur la
+  face la plus proche ; un geste net avance toujours d'une face), chaque face est éclairée selon son angle
+  (trigonométrie CSS), et joue un petit moment de son métier en arrivant devant (flash, ligne de scan, poignées,
+  page qui défile). Le nom du métier en contour géant derrière, re-lettré à chaque tour ; lumière sous la souris.
+  La rotation automatique s'arrête quand l'onglet est en arrière-plan.
+- Les sections ne « clignotent » plus à la fin de l'intro : elles se préparent quand le fond commence à se dissoudre.
+- Lighthouse téléphone (mesuré sur la même machine lente que le site en ligne précédent : 44) : accueil 36,
+  `/web/` 37 ; accessibilité 100, bonnes pratiques 96–100, SEO 92. L'écart vient de l'intro, qui retient la page
+  jusqu'au JavaScript. Piste si on veut remonter : intro plus courte, ou pas d'intro sur les pages autres que l'accueil.

@@ -16,9 +16,15 @@ const pick = (list: Shot[], ids: number[]) =>
 const photoPicks = pick(photos, [205, 201, 209, 203, 206]);
 const designPicks = pick(designs, [102, 109, 119, 126, 121]);
 const filmPicks = [6, 10, 9, 8, 7].map((id) => films.find((f) => f.id === id)).filter((f): f is (typeof films)[number] => Boolean(f));
-// This very site, captured on a phone (scripts/make-web-shots.mjs).
+// Sites the studio built, captured on a phone (scripts/make-real-shots.mjs), same order as /web/.
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-const webPicks = ["site-work", "site-films", "site-contact"].map((n) => `${base}/web/${n}.webp`);
+const webPicks = [
+  ["anareka", "ANAREKA-CI"],
+  ["bmtacademy", "BMT Green Academy"],
+  ["graya", "Graya Holistic"],
+  ["kignon", "Espace Kignon"],
+  ["vipgarage", "VIP Garage"],
+].map(([slug, name]) => ({ src: `${base}/web/real-${slug}-phone.webp`, caption: name, top: true }));
 
 /**
  * The studio's four crafts, each with a stack of its real work. A click goes straight to the
@@ -46,7 +52,7 @@ export function Disciplines() {
       href: "/travaux/#design",
     },
     {
-      items: webPicks.map((src) => ({ src, caption: "EGC Studio" })),
+      items: webPicks,
       hint: d.webCta,
       href: "/web/",
     },

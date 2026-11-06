@@ -17,7 +17,7 @@ const Check = () => (
   </svg>
 );
 
-/** A laptop and a phone showing this site, slightly turned in 3D. */
+/** A laptop and a phone showing a site the studio built (ANAREKA-CI), slightly turned in 3D. */
 function Devices() {
   return (
     <div aria-hidden className="relative mx-auto aspect-[16/11] w-full max-w-[44rem] [perspective:1800px]">
@@ -31,7 +31,7 @@ function Devices() {
               <span className="size-2 rounded-full bg-[#28c840]" />
             </div>
             <div className="relative aspect-[16/10] overflow-hidden rounded-[0.35rem] bg-paper">
-              <Image src={shot("site-desktop")} alt="" fill sizes="(min-width: 1024px) 38rem, 86vw" className="object-cover object-top" preload />
+              <Image src={shot("real-anareka-desk")} alt="" fill sizes="(min-width: 1024px) 38rem, 86vw" className="object-cover object-top" preload />
             </div>
           </div>
           <div className="mx-[-4%] h-[0.9rem] rounded-b-[1rem] bg-gradient-to-b from-[#3a3734] to-[#1b1a19]" />
@@ -40,7 +40,7 @@ function Devices() {
         <div className="absolute right-0 bottom-0 w-[27%] [transform:translateZ(60px)]">
           <div className="rounded-[1.4rem] border border-paper/20 bg-[#111] p-[4%] shadow-2xl shadow-black/70">
             <div className="relative aspect-[9/19.5] overflow-hidden rounded-[1.05rem] bg-paper">
-              <Image src={shot("site-work")} alt="" fill sizes="(min-width: 1024px) 12rem, 27vw" className="object-cover object-top" />
+              <Image src={shot("real-anareka-phone")} alt="" fill sizes="(min-width: 1024px) 12rem, 27vw" className="object-cover object-top" />
             </div>
           </div>
         </div>

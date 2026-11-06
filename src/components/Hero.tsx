@@ -7,26 +7,34 @@ import { useLang } from "./LangProvider";
 import { TransitionLink } from "./TransitionProvider";
 import { LightLeaks } from "./LightLeaks";
 import { CraftMotif } from "./CraftMotif";
-import { onIntroDone } from "@/lib/intro";
+import { introHandoff, onIntroDone, onIntroLeaving } from "@/lib/intro";
 import { useMotionMode } from "@/lib/motion";
 import { crafts } from "@/content/crafts";
 
 const TURN_MS = 4200; // time on each face before the prism turns to the next craft
 
 /**
- * The studio's four crafts on a 3D prism: each face is real work (photo, film, poster, this
- * website) carrying its craft's signature. The prism turns a quarter at a time, always in the
- * same direction; the words on the left pick a face. It leans toward the pointer on a mouse.
- * Pure CSS 3D: no WebGL, so it stays light on phones.
+ * The studio's four crafts on a 3D prism: each face is real work (photo, film, poster, website)
+ * carrying its craft's signature. It turns a quarter at a time; the words on the left pick a face,
+ * and it can be spun by hand (drag or swipe, with momentum, then it settles on the nearest face).
+ * Each face is lit by its angle as it turns (CSS trigonometry), and plays a small moment of its
+ * craft when it arrives in front: shutter flash, scan line, handles, a page scrolling.
+ * Behind it, the craft's name in outline. Pure CSS 3D: no WebGL, so it stays light on phones.
+ * On a first visit the intro's last frame lands exactly on the front face (see Preloader).
  */
 export function Hero() {
   const { t } = useLang();
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
+  const scene = useRef<HTMLDivElement>(null);
+  const spinTween = useRef<gsap.core.Tween | null>(null);
+  const released = useRef(false);
+  const drag = useRef({ on: false, moved: false, x: 0, spin0: 0, last: 0, lastT: 0, v: 0 });
   const gentle = useMotionMode() === "gentle";
-  // `turn` only ever grows, so going from Web back to Photo keeps spinning the same way.
+  // `turn` only grows when it plays by itself, so it always spins the same way.
   const [turn, setTurn] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [started, setStarted] = useState(false);
   const active = ((turn % 4) + 4) % 4;
   const craft = t.crafts[active];
@@ -34,45 +42,125 @@ export function Hero() {
   // Start turning once the intro is over.
   useEffect(() => onIntroDone(() => setStarted(true)), []);
 
+  // No turning while the tab is in the background.
+  const [hidden, setHidden] = useState(false);
   useEffect(() => {
-    if (!started || paused || gentle) return;
+    const onVis = () => setHidden(document.visibilityState === "hidden");
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, []);
+
+  useEffect(() => {
+    if (!started || paused || dragging || gentle || hidden) return;
     const id = window.setTimeout(() => setTurn((n) => n + 1), TURN_MS);
     return () => window.clearTimeout(id);
-  }, [turn, started, paused, gentle]);
+  }, [turn, started, paused, dragging, gentle, hidden]);
+
+  // Turn the prism: one number, --spin, drives the rotation and the lighting of every face.
+  useEffect(() => {
+    const st = stage.current;
+    if (!st || drag.current.on) return;
+    spinTween.current?.kill();
+    const fromRelease = released.current;
+    released.current = false;
+    spinTween.current = gsap.to(st, {
+      "--spin": turn,
+      duration: gentle ? 0.45 : fromRelease ? 0.75 : 1.25,
+      ease: fromRelease ? "power3.out" : "power4.inOut",
+    });
+  }, [turn, gentle]);
 
   // Jump to a craft by the shortest forward path.
   const pick = (i: number) => setTurn((n) => n + ((i - (n % 4) + 4) % 4));
 
-  // Entrance after the intro, and the lean toward the pointer.
+  // Spin by hand.
+  const spinNow = () => Number(gsap.getProperty(stage.current!, "--spin")) || 0;
+  const onDown = (e: React.PointerEvent) => {
+    if (gentle || (e.pointerType === "mouse" && e.button !== 0)) return;
+    const s = spinNow();
+    drag.current = { on: true, moved: false, x: e.clientX, spin0: s, last: s, lastT: performance.now(), v: 0 };
+  };
+  const onMove = (e: React.PointerEvent) => {
+    const d = drag.current;
+    if (!d.on) return;
+    const dx = e.clientX - d.x;
+    if (!d.moved) {
+      if (Math.abs(dx) < 8) return;
+      d.moved = true;
+      setDragging(true);
+      spinTween.current?.kill();
+      scene.current?.setPointerCapture(e.pointerId);
+    }
+    const s = d.spin0 - dx / ((scene.current?.offsetWidth || 300) * 1.1);
+    const now = performance.now();
+    const dt = Math.max(now - d.lastT, 1);
+    d.v = d.v * 0.6 + ((s - d.last) / dt) * 0.4; // turns per ms, smoothed
+    d.last = s;
+    d.lastT = now;
+    gsap.set(stage.current, { "--spin": s });
+  };
+  const onUp = () => {
+    const d = drag.current;
+    if (!d.on) return;
+    d.on = false;
+    if (!d.moved) return;
+    setDragging(false);
+    // Carry the momentum, then settle on the nearest face. A clear swipe (a fifth of a turn, or a
+    // quick flick) always moves at least one face, so a short gesture never springs back.
+    const now = spinNow();
+    let target = Math.round(now + Math.max(-1.5, Math.min(1.5, d.v * 220)));
+    const pushed = now - d.spin0;
+    const flick = Math.abs(d.v) > 0.0015;
+    if (target === Math.round(d.spin0) && (Math.abs(pushed) > 0.2 || flick)) target += Math.sign(pushed || d.v);
+    if (target === turn) {
+      spinTween.current = gsap.to(stage.current, { "--spin": target, duration: 0.6, ease: "power3.out" });
+    } else {
+      released.current = true;
+      setTurn(target);
+    }
+  };
+
+  // Entrance after the intro, the lean toward the pointer, and the light that follows it.
   useEffect(() => {
     const el = root.current;
     const st = stage.current;
     if (!el || !st) return;
+    // A full intro is about to play over the page: the prism is drawn right away underneath it
+    // (its photo loads and paints early), and hidden only while the intro's frame flies onto it.
+    const fullIntro = !gentle && document.documentElement.dataset.intro !== "quick" && !!document.querySelector("[data-preloader]");
     const ctx = gsap.context(() => {
       if (gentle) return;
       gsap.set("[data-hero-in]", { y: 28, autoAlpha: 0 });
-      gsap.set(st, { autoAlpha: 0, scale: 0.9, rotateX: 14 });
+      if (!fullIntro) gsap.set(st, { autoAlpha: 0, scale: 0.9, rotateX: 14 });
     }, el);
+    const offLeaving = onIntroLeaving(() => {
+      if (fullIntro) gsap.set(st, { autoAlpha: 0 });
+    });
     const offIntro = onIntroDone(() => {
       ctx.add(() => {
         if (gentle) return;
         gsap.to("[data-hero-in]", { y: 0, autoAlpha: 1, duration: 0.9, ease: "power3.out", stagger: 0.07 });
-        gsap.to(st, { autoAlpha: 1, scale: 1, rotateX: 0, duration: 1.4, ease: "expo.out", delay: 0.1 });
+        // The intro's frame has landed exactly here: show the prism as is, no entrance.
+        if (introHandoff()) gsap.set(st, { autoAlpha: 1, scale: 1, rotateX: 0 });
+        else gsap.to(st, { autoAlpha: 1, scale: 1, rotateX: 0, duration: 1.4, ease: "expo.out", delay: 0.1 });
       });
     });
 
     const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
     const tiltX = gsap.quickTo(st, "--tilt-x", { duration: 0.9, ease: "power3.out" });
     const tiltY = gsap.quickTo(st, "--tilt-y", { duration: 0.9, ease: "power3.out" });
-    const onMove = (e: PointerEvent) => {
+    const onPointer = (e: PointerEvent) => {
       const r = el.getBoundingClientRect();
       tiltY(((e.clientX - r.left) / r.width - 0.5) * 18);
       tiltX(-((e.clientY - r.top) / r.height - 0.5) * 12);
+      el.style.setProperty("--mx", `${e.clientX - r.left}px`);
+      el.style.setProperty("--my", `${e.clientY - r.top}px`);
     };
-    if (fine && !gentle) el.addEventListener("pointermove", onMove);
+    if (fine && !gentle) el.addEventListener("pointermove", onPointer);
     return () => {
       offIntro();
-      el.removeEventListener("pointermove", onMove);
+      offLeaving();
+      el.removeEventListener("pointermove", onPointer);
       ctx.revert();
     };
   }, [gentle]);
@@ -82,10 +170,11 @@ export function Hero() {
       ref={root}
       id="top"
       className="relative isolate overflow-hidden bg-ink text-paper"
-      onPointerEnter={() => setPaused(true)}
-      onPointerLeave={() => setPaused(false)}
+      onPointerEnter={(e) => e.pointerType === "mouse" && setPaused(true)}
+      onPointerLeave={(e) => e.pointerType === "mouse" && setPaused(false)}
     >
       <div className="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_70%_60%_at_70%_45%,#2e2b28_0%,#0e0e0e_70%)]" />
+      <div aria-hidden className="hero-spot absolute inset-0 -z-10" />
       <LightLeaks className="opacity-60" />
 
       <div className="mx-auto grid min-h-[100svh] max-w-[110rem] items-center gap-10 px-5 pt-28 pb-14 md:px-10 lg:grid-cols-[1.05fr_1fr] lg:gap-6 lg:pt-24">
@@ -143,14 +232,42 @@ export function Hero() {
         </div>
 
         {/* The prism */}
-        <div className="order-1 flex flex-col items-center lg:order-2">
-          <div className="prism-scene" style={{ perspective: "1600px" }}>
+        <div className="relative order-1 flex flex-col items-center lg:order-2">
+          {/* The craft's name in outline behind the prism, re-lettered at each turn */}
+          <div aria-hidden className="hero-word absolute top-[44%] left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <span key={turn} className="block">
+              {craft.name.split("").map((ch, i) => (
+                <span key={i} style={{ animationDelay: `${0.35 + i * 0.05}s` }}>
+                  {ch}
+                </span>
+              ))}
+            </span>
+          </div>
+
+          <div
+            ref={scene}
+            className="prism-scene"
+            style={{ perspective: "1600px" }}
+            onPointerDown={onDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerCancel={onUp}
+            onClickCapture={(e) => {
+              // A drag ends with a click on the face under the pointer: don't follow that link.
+              if (drag.current.moved) {
+                e.preventDefault();
+                e.stopPropagation();
+                drag.current.moved = false;
+              }
+            }}
+            onDragStart={(e) => e.preventDefault()}
+          >
             <div
               ref={stage}
               className="prism-stage relative"
-              style={{ "--tilt-x": 0, "--tilt-y": 0 } as React.CSSProperties}
+              style={{ "--tilt-x": 0, "--tilt-y": 0, "--spin": 0 } as React.CSSProperties}
             >
-              <div className="prism" style={{ "--turn": turn } as React.CSSProperties}>
+              <div className="prism">
                 {crafts.map((c, i) => (
                   <TransitionLink
                     key={c.key}
@@ -158,7 +275,8 @@ export function Hero() {
                     tabIndex={i === active ? 0 : -1}
                     aria-hidden={i !== active}
                     aria-label={`${t.crafts[i].verb} : ${t.crafts[i].what}`}
-                    className="prism-face group overflow-hidden rounded-[1.4rem] bg-graphite shadow-2xl shadow-black/50"
+                    data-craft={c.key}
+                    className={`prism-face group overflow-hidden rounded-[1.4rem] bg-graphite shadow-2xl shadow-black/50 ${i === active && !dragging ? "is-front" : ""}`}
                     style={{ "--i": i } as React.CSSProperties}
                   >
                     <Image
@@ -168,10 +286,17 @@ export function Hero() {
                       height={c.h}
                       sizes="(min-width: 1024px) 26rem, 72vw"
                       preload={i === 0}
+                      draggable={false}
                       className={`size-full object-cover transition-transform duration-[1.4s] ease-out group-hover:scale-[1.04] ${c.key === "web" ? "object-top pt-9" : ""}`}
                     />
                     <span className="absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-ink/10" />
-                    <CraftMotif craft={c.key} meta={t.crafts[i].meta} />
+                    <span className="prism-scan" />
+                    <span className="prism-motif absolute inset-0">
+                      <CraftMotif craft={c.key} meta={t.crafts[i].meta} />
+                    </span>
+                    <span className="prism-flash" />
+                    <span className="prism-shade" />
+                    <span className="prism-sheen" />
                   </TransitionLink>
                 ))}
               </div>
@@ -197,7 +322,7 @@ export function Hero() {
                   {i === active && (
                     <span
                       key={turn}
-                      className={`absolute inset-0 origin-left rounded-full bg-brand ${started && !paused && !gentle ? "prism-progress" : ""}`}
+                      className={`absolute inset-0 origin-left rounded-full bg-brand ${started && !paused && !dragging && !gentle ? "prism-progress" : ""}`}
                       style={{ animationDuration: `${TURN_MS}ms` }}
                     />
                   )}

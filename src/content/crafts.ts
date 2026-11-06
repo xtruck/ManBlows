@@ -12,6 +12,6 @@ export const crafts: { key: CraftKey; href: string; image: string; w: number; h:
   { key: "video", href: "/films/", image: `${base}/films/film-2476-poster.webp`, w: 720, h: 1280 },
   // "Opération rentrée scolaire" poster for Église Mesev (design.ts n° 2)
   { key: "design", href: "/travaux/#design", image: `${base}/work/design-02.webp`, w: 1120, h: 1400 },
-  // This very site, captured on a phone (scripts/make-web-shots.mjs)
-  { key: "web", href: "/web/", image: `${base}/web/site-work.webp`, w: 780, h: 1688 },
+  // ANAREKA-CI, a site the studio built for a client, on a phone (scripts/make-real-shots.mjs, SHOTS=face)
+  { key: "web", href: "/web/", image: `${base}/web/real-anareka-face.webp`, w: 780, h: 1688 },
 ];

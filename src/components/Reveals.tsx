@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { onIntroDone } from "@/lib/intro";
+import { onIntroLeaving } from "@/lib/intro";
 import { useMotionMode } from "@/lib/motion";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -48,7 +48,9 @@ export function Reveals() {
     let ctx: gsap.Context | null = null;
     let raf = 0;
 
-    const off = onIntroDone(() => {
+    // Set up as soon as the intro starts uncovering the page: what is on screen then animates in
+    // while the cover dissolves, instead of showing, hiding, and showing again.
+    const off = onIntroLeaving(() => {
       raf = requestAnimationFrame(() => {
         ctx = gsap.context(() => {
           gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {

@@ -9,6 +9,7 @@ const require = createRequire(import.meta.url);
 const { chromium } = require("playwright");
 
 export const sites = [
+  { slug: "anareka", url: "https://anarekaci.com/" },
   { slug: "bmtacademy", url: "https://xtruck149.github.io/bmtacademy/" },
   { slug: "graya", url: "https://xtruck149.github.io/GrayaHolistic/" },
   { slug: "mima", url: "https://real11-espace-mima.vercel.app/" },
@@ -19,10 +20,15 @@ export const sites = [
 const only = process.argv.slice(2);
 const list = only.length ? sites.filter((s) => only.includes(s.slug)) : sites;
 
-const shots = [
+const allShots = [
   { suffix: "desk", viewport: { width: 1280, height: 800 }, scale: 1, width: 1280, mobile: false },
   { suffix: "phone", viewport: { width: 390, height: 794 }, scale: 2, width: 420, mobile: true },
+  // Sharp, taller phone capture for the home prism's Web face and the intro (SHOTS=face)
+  { suffix: "face", viewport: { width: 390, height: 844 }, scale: 2, width: 780, mobile: true },
 ];
+// SHOTS=face (or desk,phone) picks which captures to make; default: desk and phone.
+const pickShots = (process.env.SHOTS ?? "desk,phone").split(",");
+const shots = allShots.filter((s) => pickShots.includes(s.suffix));
 
 // PW_CHANNEL=msedge (or chrome) uses an installed browser instead of Playwright's own Chromium.
 const browser = await chromium.launch(process.env.PW_CHANNEL ? { channel: process.env.PW_CHANNEL } : {});

@@ -238,6 +238,7 @@ export const dict = {
       mainNav: "Navigation principale",
       realDesign: "création graphique EGC Studio",
       loading: "Chargement du site EGC Studio…",
+      skipIntro: "Passer l'intro",
     },
   },
   en: {
@@ -477,6 +478,7 @@ export const dict = {
       mainNav: "Main navigation",
       realDesign: "EGC Studio graphic design",
       loading: "Loading the EGC Studio site…",
+      skipIntro: "Skip intro",
     },
   },
 } as const;
