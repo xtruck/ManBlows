@@ -457,6 +457,37 @@ html[data-motion="gentle"] .motif-caret {
   animation: none;
 }
 
+/* /web/ "Réalisations": each card leans toward the pointer, the phone comes forward */
+.works-row::-webkit-scrollbar {
+  display: none;
+}
+.work-card {
+  --rx: 0deg;
+  --ry: 0deg;
+  transform: perspective(1200px) rotateX(var(--rx)) rotateY(var(--ry));
+  transform-style: preserve-3d;
+  transition:
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.4s ease;
+}
+.work-card:hover {
+  border-color: rgb(255 196 0 / 0.35);
+}
+.work-card-stage {
+  transform-style: preserve-3d;
+}
+.work-card-phone {
+  transform: translateZ(30px) rotate(3deg);
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.work-card:hover .work-card-phone {
+  transform: translateZ(70px) translateY(-6%) rotate(0deg);
+}
+html[data-motion="gentle"] .work-card,
+html[data-motion="gentle"] .work-card-phone {
+  transition: none;
+}
+
 /* /web/ page: the laptop and phone mock-up leans in, and straightens on hover */
 .devices {
   transform: rotateY(-14deg) rotateX(6deg);

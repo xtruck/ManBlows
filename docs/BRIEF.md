@@ -166,3 +166,16 @@ Le studio présente maintenant **quatre métiers** : photo, vidéo, design graph
   contenu (photos, créations, films, clients, réponse sous 24 h), titre avec une serif italique (Instrument Serif).
 - Pas de tarifs ajoutés pour le moment (demande du propriétaire). Pas d'affiche pour le web (demande du propriétaire).
 - À confirmer avec Egu : l'offre web (types de sites, accompagnement nom de domaine / hébergement).
+
+## Réalisations web (06/11)
+- Page `/web/`, section **Réalisations** : six sites créés par le studio, chacun avec sa page d'accueil sur
+  ordinateur dans un cadre de navigateur (avec l'adresse), sa version téléphone posée devant, et un lien vers le site.
+  ANAREKA-CI, BMT Green Academy, Graya Holistic, Espace Mima, Espace Kignon, VIP Garage.
+- **Espace Mima, Espace Kignon et VIP Garage** affichent eux-mêmes « Maquette de démonstration… ni commandée ni
+  validée par » le commerce : ils portent un badge **Maquette** (EN : « Concept »), et le texte d'intro le dit.
+  Les trois autres n'ont pas de badge. À corriger dans `webPage.works` (`concept`) si un statut change.
+- Sur téléphone, les cartes défilent au doigt (une carte et le début de la suivante) ; tablette 2 colonnes,
+  ordinateur 3 colonnes. Sur ordinateur, la carte s'incline vers la souris et le téléphone avance.
+- Captures : `node scripts/make-real-shots.mjs [slug]` (Playwright, hors dépendances du projet ;
+  `PW_CHANNEL=msedge` pour utiliser Edge), fichiers `public/web/real-<slug>-desk.webp` (1280 × 800) et
+  `-phone.webp` (420 px de large).
