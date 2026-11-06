@@ -203,3 +203,19 @@ Le studio présente maintenant **quatre métiers** : photo, vidéo, design graph
 - Lighthouse téléphone (mesuré sur la même machine lente que le site en ligne précédent : 44) : accueil 36,
   `/web/` 37 ; accessibilité 100, bonnes pratiques 96–100, SEO 92. L'écart vient de l'intro, qui retient la page
   jusqu'au JavaScript. Piste si on veut remonter : intro plus courte, ou pas d'intro sur les pages autres que l'accueil.
+
+## Hero : diaporama, film et nouvelles idées (06/11, suite)
+- **Diaporama sur le prisme** (`src/content/crafts.ts`, champ `slides`) : chaque face passe à l'image suivante
+  pendant qu'elle est derrière (invisible), donc chaque retour devant montre autre chose. Photo : 5 photos ;
+  Vidéo : 4 films ; Design : 5 affiches (sans les affiches de tarifs du studio) ; Web : 5 sites
+  (ANAREKA-CI, Graya Holistic, BMT Green Academy, Espace Kignon, VIP Garage). Seuls des visuels en portrait ou
+  carrés, pour ne pas trop recadrer.
+- **Le film joue sur la face Vidéo** quand elle est devant (et s'arrête sinon, si le hero n'est plus à l'écran,
+  si l'onglet est caché ou en mode « animations réduites »). Ce sont des boucles de 6 s sans son, en 480 × 600,
+  320 à 670 Ko chacune, dans `public/films/loop/` (tirées du showreel, du henné, du mariage à la calebasse et
+  des Bols du Bonheur ; refaites-les avec ffmpeg si on change de film).
+- **Lumière d'ambiance** derrière le prisme dans la couleur du métier devant (bleu, or, orange, vert), qui glisse
+  d'une couleur à l'autre.
+- En faisant défiler la page, le prisme **bascule en arrière** et se pose. Flèches du clavier pour le tourner
+  (quand sa face a le focus), petite vibration sur Android quand il se pose après un geste.
+- Le prisme ne tourne plus quand le hero est hors de l'écran.

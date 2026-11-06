@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLang } from "./LangProvider";
 import { TransitionLink } from "./TransitionProvider";
 import { LightLeaks } from "./LightLeaks";
@@ -11,7 +12,19 @@ import { introHandoff, onIntroDone, onIntroLeaving } from "@/lib/intro";
 import { useMotionMode } from "@/lib/motion";
 import { crafts } from "@/content/crafts";
 
+gsap.registerPlugin(ScrollTrigger);
+
 const TURN_MS = 4200; // time on each face before the prism turns to the next craft
+// Ambient light behind the prism, in the colour of the craft in front (photo blue, film gold,
+// poster orange, web green), like a screen glowing on the wall behind it.
+const AMBIENT = ["#2f5fa8", "#b8862f", "#e0782a", "#1f7a4a"];
+const mod = (n: number, m: number) => ((n % m) + m) % m;
+// Which slide a face shows: it moves on to the next one while it is at the back (out of sight),
+// so each time it comes round to the front it shows something new.
+const slideOf = (turn: number, face: number, count: number) => {
+  const k = Math.floor((turn - face + 2) / 4);
+  return mod(turn >= 0 ? Math.max(0, k) : k, count); // every face starts on its first slide
+};
 
 /**
  * The studio's four crafts on a 3D prism: each face is real work (photo, film, poster, website)
@@ -27,6 +40,8 @@ export function Hero() {
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);
   const scene = useRef<HTMLDivElement>(null);
+  const wrap = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(true);
   const spinTween = useRef<gsap.core.Tween | null>(null);
   const released = useRef(false);
   const drag = useRef({ on: false, moved: false, x: 0, spin0: 0, last: 0, lastT: 0, v: 0 });
@@ -51,10 +66,52 @@ export function Hero() {
   }, []);
 
   useEffect(() => {
-    if (!started || paused || dragging || gentle || hidden) return;
+    if (!started || paused || dragging || gentle || hidden || !inView) return;
     const id = window.setTimeout(() => setTurn((n) => n + 1), TURN_MS);
     return () => window.clearTimeout(id);
-  }, [turn, started, paused, dragging, gentle, hidden]);
+  }, [turn, started, paused, dragging, gentle, hidden, inView]);
+
+  // The film face plays its loop only while it is in front, on screen and the tab is visible.
+  useEffect(() => {
+    const vids = root.current?.querySelectorAll<HTMLVideoElement>(".prism video");
+    vids?.forEach((v) => {
+      const face = Number(v.dataset.face);
+      const play = face === active && started && !dragging && !hidden && inView && !gentle;
+      if (play) {
+        v.currentTime = 0;
+        void v.play().catch(() => {});
+      } else v.pause();
+    });
+  }, [active, started, dragging, hidden, inView, gentle, turn]);
+
+  // Is the hero on screen? (no film playing, no turning, once it has been scrolled away)
+  useEffect(() => {
+    const el = root.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setInView(e.isIntersecting), { threshold: 0.15 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Scrolling away: the prism tips back and settles down, like an object put down on a table.
+  useEffect(() => {
+    const el = root.current;
+    const w = wrap.current;
+    if (!el || !w || gentle) return;
+    const tween = gsap.to(w, {
+      transformPerspective: 1200,
+      rotateX: 28,
+      scale: 0.86,
+      yPercent: 8,
+      ease: "none",
+      scrollTrigger: { trigger: el, start: "top top", end: "bottom top", scrub: 0.6 },
+    });
+    return () => {
+      tween.scrollTrigger?.kill();
+      tween.kill();
+      gsap.set(w, { clearProps: "transform" });
+    };
+  }, [gentle]);
 
   // Turn the prism: one number, --spin, drives the rotation and the lighting of every face.
   useEffect(() => {
@@ -99,7 +156,7 @@ export function Hero() {
     d.lastT = now;
     gsap.set(stage.current, { "--spin": s });
   };
-  const onUp = () => {
+  const onUp = (e: React.PointerEvent) => {
     const d = drag.current;
     if (!d.on) return;
     d.on = false;
@@ -112,6 +169,8 @@ export function Hero() {
     const pushed = now - d.spin0;
     const flick = Math.abs(d.v) > 0.0015;
     if (target === Math.round(d.spin0) && (Math.abs(pushed) > 0.2 || flick)) target += Math.sign(pushed || d.v);
+    // A light tick on phones that support it, as the prism clicks into place
+    if (e.pointerType === "touch") navigator.vibrate?.(8);
     if (target === turn) {
       spinTween.current = gsap.to(stage.current, { "--spin": target, duration: 0.6, ease: "power3.out" });
     } else {
@@ -170,10 +229,12 @@ export function Hero() {
       ref={root}
       id="top"
       className="relative isolate overflow-hidden bg-ink text-paper"
+      style={{ "--ambient": AMBIENT[active] } as React.CSSProperties}
       onPointerEnter={(e) => e.pointerType === "mouse" && setPaused(true)}
       onPointerLeave={(e) => e.pointerType === "mouse" && setPaused(false)}
     >
       <div className="absolute inset-0 -z-20 bg-[radial-gradient(ellipse_70%_60%_at_70%_45%,#2e2b28_0%,#0e0e0e_70%)]" />
+      <div aria-hidden className="hero-ambient absolute inset-0 -z-10" />
       <div aria-hidden className="hero-spot absolute inset-0 -z-10" />
       <LightLeaks className="opacity-60" />
 
@@ -244,6 +305,8 @@ export function Hero() {
             </span>
           </div>
 
+          {/* Tips back as the page scrolls away (wrapper, so it doesn't fight the tilt and the spin) */}
+          <div ref={wrap} className="prism-wrap">
           <div
             ref={scene}
             className="prism-scene"
@@ -261,6 +324,13 @@ export function Hero() {
               }
             }}
             onDragStart={(e) => e.preventDefault()}
+            onKeyDown={(e) => {
+              // Arrow keys turn the prism when its face has the keyboard focus
+              if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+                e.preventDefault();
+                setTurn((n) => n + (e.key === "ArrowRight" ? 1 : -1));
+              }
+            }}
           >
             <div
               ref={stage}
@@ -268,7 +338,9 @@ export function Hero() {
               style={{ "--tilt-x": 0, "--tilt-y": 0, "--spin": 0 } as React.CSSProperties}
             >
               <div className="prism">
-                {crafts.map((c, i) => (
+                {crafts.map((c, i) => {
+                  const slide = c.slides[slideOf(turn, i, c.slides.length)];
+                  return (
                   <TransitionLink
                     key={c.key}
                     href={c.href}
@@ -279,16 +351,32 @@ export function Hero() {
                     className={`prism-face group overflow-hidden rounded-[1.4rem] bg-graphite shadow-2xl shadow-black/50 ${i === active && !dragging ? "is-front" : ""}`}
                     style={{ "--i": i } as React.CSSProperties}
                   >
+                    {/* The slideshow: a new picture each time the face comes round (keyed, so the old
+                        one is replaced while the face is at the back) */}
                     <Image
-                      src={c.image}
+                      key={slide.src}
+                      src={slide.src}
                       alt=""
-                      width={c.w}
-                      height={c.h}
+                      width={slide.w}
+                      height={slide.h}
                       sizes="(min-width: 1024px) 26rem, 72vw"
-                      preload={i === 0}
+                      preload={i === 0 && slide.src === c.image}
                       draggable={false}
                       className={`size-full object-cover transition-transform duration-[1.4s] ease-out group-hover:scale-[1.04] ${c.key === "web" ? "object-top pt-9" : ""}`}
                     />
+                    {slide.video && (
+                      <video
+                        key={slide.video}
+                        data-face={i}
+                        src={slide.video}
+                        muted
+                        loop
+                        playsInline
+                        preload="none"
+                        aria-hidden
+                        className="absolute inset-0 size-full object-cover"
+                      />
+                    )}
                     <span className="absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-ink/10" />
                     <span className="prism-scan" />
                     <span className="prism-motif absolute inset-0">
@@ -298,9 +386,11 @@ export function Hero() {
                     <span className="prism-shade" />
                     <span className="prism-sheen" />
                   </TransitionLink>
-                ))}
+                  );
+                })}
               </div>
             </div>
+          </div>
           </div>
 
           {/* Caption and progress for the face in front */}

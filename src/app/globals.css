@@ -624,6 +624,27 @@ html[data-intro="quick"] [data-pre-skip] {
   to { opacity: 1; transform: none; }
 }
 
+/* Ambient light in the colour of the craft in front, fading from one craft to the next */
+@property --ambient {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #2f5fa8;
+}
+#top {
+  transition: --ambient 1.4s ease;
+}
+.hero-ambient {
+  background: radial-gradient(42% 46% at 72% 46%, color-mix(in srgb, var(--ambient) 34%, transparent), transparent 70%);
+}
+@media (max-width: 1023px) {
+  .hero-ambient {
+    background: radial-gradient(70% 34% at 50% 26%, color-mix(in srgb, var(--ambient) 34%, transparent), transparent 70%);
+  }
+}
+.prism-wrap {
+  will-change: transform;
+}
+
 /* A soft light under the mouse */
 .hero-spot {
   background: radial-gradient(520px circle at var(--mx, 70%) var(--my, 40%), rgb(255 196 0 / 0.07), transparent 65%);

@@ -24,7 +24,7 @@ export const dict = {
     },
     crafts: [
       { key: "photo", name: "Photo", verb: "Je photographie", what: "cérémonies, événements, portraits", meta: ["f/2.8", "1/125", "ISO 400"] },
-      { key: "video", name: "Vidéo", verb: "Je filme", what: "mariages, clips, reportages", meta: ["REC", "4K", "25 i/s"] },
+      { key: "video", name: "Vidéo", verb: "Je filme", what: "mariages, clips, reportages", meta: ["4K", "25 i/s"] },
       { key: "design", name: "Design", verb: "Je dessine", what: "affiches, logos, identités", meta: ["Affiche", "1080 × 1350", "RVB"] },
       { key: "web", name: "Web", verb: "Je crée", what: "sites vitrines, portfolios, pages", meta: ["FR / EN", "Mobile", "SEO"] },
     ],
@@ -264,7 +264,7 @@ export const dict = {
     },
     crafts: [
       { key: "photo", name: "Photo", verb: "I photograph", what: "ceremonies, events, portraits", meta: ["f/2.8", "1/125", "ISO 400"] },
-      { key: "video", name: "Video", verb: "I film", what: "weddings, music videos, coverage", meta: ["REC", "4K", "25 fps"] },
+      { key: "video", name: "Video", verb: "I film", what: "weddings, music videos, coverage", meta: ["4K", "25 fps"] },
       { key: "design", name: "Design", verb: "I design", what: "posters, logos, identities", meta: ["Poster", "1080 × 1350", "RGB"] },
       { key: "web", name: "Web", verb: "I build", what: "business sites, portfolios, pages", meta: ["FR / EN", "Mobile", "SEO"] },
     ],
