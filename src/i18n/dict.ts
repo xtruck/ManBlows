@@ -21,6 +21,15 @@ export const dict = {
       quote: "Demander un devis",
       scroll: "Découvrir",
       pick: "Choisir un métier",
+      // Stickers around the prism (decorative)
+      sticker: {
+        ticket: ["Shooting", "Cérémonie", "Mise au point", "1/125 · f/2.8"],
+        ask: "On shoote quand ?",
+        badge: "Nouveau : sites web",
+        heart: "Réserve ta date",
+        photo: "Ça rend bien !",
+        poster: "Affiche prête",
+      },
     },
     crafts: [
       { key: "photo", name: "Photo", verb: "Je photographie", what: "cérémonies, événements, portraits", meta: ["f/2.8", "1/125", "ISO 400"] },
@@ -261,6 +270,14 @@ export const dict = {
       quote: "Get a quote",
       scroll: "Discover",
       pick: "Pick a craft",
+      sticker: {
+        ticket: ["Photo shoot", "Ceremony", "In focus", "1/125 · f/2.8"],
+        ask: "When do we shoot?",
+        badge: "New: websites",
+        heart: "Book your date",
+        photo: "Looks great!",
+        poster: "Poster ready",
+      },
     },
     crafts: [
       { key: "photo", name: "Photo", verb: "I photograph", what: "ceremonies, events, portraits", meta: ["f/2.8", "1/125", "ISO 400"] },

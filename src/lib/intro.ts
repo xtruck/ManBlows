@@ -42,13 +42,3 @@ export const markIntroDone = () => {
   intro.fire();
 };
 export const onIntroDone = intro.on;
-
-/**
- * Set by the preloader just before it fires `markIntroDone` when its last frame has landed exactly
- * on the home prism: the hero then shows the prism as is instead of playing its own entrance.
- */
-let handoff = false;
-export const setIntroHandoff = (v: boolean) => {
-  handoff = v;
-};
-export const introHandoff = () => handoff;

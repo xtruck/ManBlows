@@ -219,3 +219,16 @@ Le studio présente maintenant **quatre métiers** : photo, vidéo, design graph
 - En faisant défiler la page, le prisme **bascule en arrière** et se pose. Flèches du clavier pour le tourner
   (quand sa face a le focus), petite vibration sur Android quand il se pose après un geste.
 - Le prisme ne tourne plus quand le hero est hors de l'écran.
+
+## Intro et hero façon « Square Kiosk » (07/11)
+Inspiré de l'animation de squareup.com/us/en/hardware/kiosk (vue sur Land-book), refaite aux couleurs du studio :
+- **Intro** (`components/Preloader.tsx`) : une pilule s'ouvre sur une photo du studio et grandit ; une pilule jaune
+  en sort et envahit l'écran ; le mot géant « studio. » se forme avec des bulles qui fusionnent (filtre SVG
+  « gooey », lettres arrondies comme chez Square) ; « egc » s'écrit par-dessus ; le jaune se lève comme un rideau
+  pendant que le prisme du hero monte depuis le bas. ~3,5 s (au lieu de ~6 s), bouton « Passer l'intro ».
+  La pilule du début est en CSS (transform et opacité), donc visible avant le chargement du JavaScript.
+- **Collage de stickers** autour du prisme (`components/HeroCollage.tsx`) : ticket de shooting rose, bulle
+  « On shoote quand ? », badge étoile « Nouveau : sites web », cœur « Réserve ta date », tirage photo et affiche
+  (ordinateur). Ils apparaissent après l'intro, flottent, suivent la souris et défilent à des vitesses différentes.
+  Sur téléphone, les quatre plus petits seulement. Textes dans `hero.sticker` (FR/EN).
+- Correction : après son entrée, le prisme gardait une transformation fixe qui bloquait l'inclinaison à la souris.

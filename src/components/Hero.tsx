@@ -8,7 +8,8 @@ import { useLang } from "./LangProvider";
 import { TransitionLink } from "./TransitionProvider";
 import { LightLeaks } from "./LightLeaks";
 import { CraftMotif } from "./CraftMotif";
-import { introHandoff, onIntroDone, onIntroLeaving } from "@/lib/intro";
+import { HeroCollage } from "./HeroCollage";
+import { onIntroDone, onIntroLeaving } from "@/lib/intro";
 import { useMotionMode } from "@/lib/motion";
 import { crafts } from "@/content/crafts";
 
@@ -33,7 +34,7 @@ const slideOf = (turn: number, face: number, count: number) => {
  * Each face is lit by its angle as it turns (CSS trigonometry), and plays a small moment of its
  * craft when it arrives in front: shutter flash, scan line, handles, a page scrolling.
  * Behind it, the craft's name in outline. Pure CSS 3D: no WebGL, so it stays light on phones.
- * On a first visit the intro's last frame lands exactly on the front face (see Preloader).
+ * On a first visit the prism rises from below as the intro's yellow curtain lifts (see Preloader).
  */
 export function Hero() {
   const { t } = useLang();
@@ -185,7 +186,7 @@ export function Hero() {
     const st = stage.current;
     if (!el || !st) return;
     // A full intro is about to play over the page: the prism is drawn right away underneath it
-    // (its photo loads and paints early), and hidden only while the intro's frame flies onto it.
+    // (its photo loads and paints early), then rises from below as the intro's curtain lifts.
     const fullIntro = !gentle && document.documentElement.dataset.intro !== "quick" && !!document.querySelector("[data-preloader]");
     const ctx = gsap.context(() => {
       if (gentle) return;
@@ -193,15 +194,22 @@ export function Hero() {
       if (!fullIntro) gsap.set(st, { autoAlpha: 0, scale: 0.9, rotateX: 14 });
     }, el);
     const offLeaving = onIntroLeaving(() => {
-      if (fullIntro) gsap.set(st, { autoAlpha: 0 });
+      if (!fullIntro) return;
+      ctx.add(() => {
+        gsap.fromTo(
+          st,
+          { autoAlpha: 1, y: () => window.innerHeight * 0.6, rotateX: 22, scale: 0.9 },
+          // clearProps hands the transform back to the CSS tilt that follows the mouse
+          { y: 0, rotateX: 0, scale: 1, duration: 1.35, ease: "expo.out", delay: 0.12, clearProps: "transform" },
+        );
+      });
     });
     const offIntro = onIntroDone(() => {
       ctx.add(() => {
         if (gentle) return;
         gsap.to("[data-hero-in]", { y: 0, autoAlpha: 1, duration: 0.9, ease: "power3.out", stagger: 0.07 });
-        // The intro's frame has landed exactly here: show the prism as is, no entrance.
-        if (introHandoff()) gsap.set(st, { autoAlpha: 1, scale: 1, rotateX: 0 });
-        else gsap.to(st, { autoAlpha: 1, scale: 1, rotateX: 0, duration: 1.4, ease: "expo.out", delay: 0.1 });
+        // After a full intro the prism has already risen into place (above)
+        if (!fullIntro) gsap.to(st, { autoAlpha: 1, scale: 1, rotateX: 0, duration: 1.4, ease: "expo.out", delay: 0.1, clearProps: "transform" });
       });
     });
 
@@ -306,7 +314,8 @@ export function Hero() {
           </div>
 
           {/* Tips back as the page scrolls away (wrapper, so it doesn't fight the tilt and the spin) */}
-          <div ref={wrap} className="prism-wrap">
+          <div ref={wrap} className="prism-wrap relative">
+          <HeroCollage />
           <div
             ref={scene}
             className="prism-scene"

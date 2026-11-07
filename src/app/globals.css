@@ -249,11 +249,6 @@ html[data-motion="gentle"] .leak {
   }
 }
 
-/*
- * Preloader entrance, in CSS so it starts on first paint: on a slow phone network the
- * JavaScript can take seconds to arrive, and the screen used to stay black until then.
- */
-
 /* Film grain overlay for a photographic texture */
 .grain::after {
   content: "";
@@ -371,105 +366,41 @@ html[data-intro="quick"] [data-preloader] > * {
   display: none;
 }
 
-/* ---------- Intro (components/Preloader.tsx) ---------- */
-/* Same size as the hero prism, so the frame lands on it without scaling */
-.pre-frame {
-  width: min(66vw, 21rem, 46svh);
-  aspect-ratio: 4 / 5;
+/* ---------- Intro (components/Preloader.tsx), after the Square Kiosk intro ---------- */
+[data-preloader] {
+  --pill-w: min(30vw, 10rem);
 }
-@media (min-width: 1024px) {
-  .pre-frame {
-    width: min(30vw, 27rem, 50svh);
-  }
+/* The pill opens in CSS (transform and opacity only, so it moves even while scripts load) */
+.sq-pill {
+  width: var(--pill-w);
+  height: calc(var(--pill-w) * 2);
+  transform: translate(-50%, -50%) scale(1);
+  animation: sq-pill 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
 }
-/* 01 Photo runs in CSS, from the first paint, so a slow phone sees it before the script loads:
-   the frame opens, the negative develops while the focus settles, the brackets come in.
-   "backwards" fill: once done, the element's own styles (and GSAP's) apply again. */
-/* Only transform and opacity here: the browser keeps those moving even while the page's
-   JavaScript is loading (clip-path or filter animations would freeze on a slow phone). */
-.pre-open {
-  animation: pre-open 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.05s backwards;
+.sq-pill-photo {
+  animation: sq-pill-photo 1.3s cubic-bezier(0.33, 1, 0.68, 1) 0.1s backwards;
 }
-.pre-develop {
-  animation: pre-develop 0.9s cubic-bezier(0.33, 1, 0.68, 1) 0.9s backwards;
+.sq-fill {
+  width: var(--pill-w);
+  height: calc(var(--pill-w) * 2);
+  transform: translate(-50%, -50%) scale(0);
 }
-/* A white layer in "difference" mode turns the photo into its negative; fading it develops it */
-.pre-negative {
-  background: #fff;
-  mix-blend-mode: difference;
-  opacity: 0;
-  animation: pre-negative 0.8s ease-in-out 1s backwards;
+@keyframes sq-pill {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.12); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
-@keyframes pre-negative {
-  from { opacity: 0.92; }
-  to { opacity: 0; }
-}
-.pre-motif {
-  animation: pre-motif 0.45s cubic-bezier(0.33, 1, 0.68, 1) 1.4s backwards;
-}
-/* The burst: two photos uncovered in quick succession, then lifted away onto the portrait.
-   Each layer and its image move in opposite directions, so the picture itself seems still. */
-.pre-burst {
-  transform: translateY(-101%);
-}
-.pre-burst-img {
-  transform: translateY(101%);
-}
-.pre-burst-0 {
-  animation: pre-burst 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.45s backwards;
-}
-.pre-burst-0 .pre-burst-img {
-  animation: pre-burst-img 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.45s backwards;
-}
-.pre-burst-1 {
-  animation: pre-burst 0.75s cubic-bezier(0.65, 0, 0.35, 1) 0.6s backwards;
-}
-.pre-burst-1 .pre-burst-img {
-  animation: pre-burst-img 0.75s cubic-bezier(0.65, 0, 0.35, 1) 0.6s backwards;
-}
-@keyframes pre-burst {
-  0% { transform: translateY(101%); }
-  40%, 62% { transform: translateY(0); }
-  100% { transform: translateY(-101%); }
-}
-@keyframes pre-burst-img {
-  0% { transform: translateY(-101%); }
-  40%, 62% { transform: translateY(0); }
-  100% { transform: translateY(101%); }
-}
-/* Copies of the photo trailing the frame on its way to the hero */
-.pre-ghost {
-  position: absolute;
-  border-radius: 1.4rem;
-  background-size: cover;
-  background-position: center;
-  transform-origin: 0 0;
-  pointer-events: none;
-}
-@keyframes pre-open {
-  from { opacity: 0; transform: scale(0.32); }
-  to { opacity: 1; transform: scale(1); }
-}
-@keyframes pre-develop {
-  from { transform: scale(1.18); }
+@keyframes sq-pill-photo {
+  from { transform: scale(1.35); }
   to { transform: scale(1); }
 }
-@keyframes pre-motif {
-  from { opacity: 0; transform: scale(1.1); }
-  to { opacity: 1; transform: scale(1); }
-}
-/* Repeat load in the same visit: the dark cover only (its bands are hidden with the rest) */
+
+/* Repeat load in the same visit: a dark cover only (the intro artwork is hidden, see above) */
 html[data-intro="quick"] [data-preloader] {
   background: var(--ink);
 }
 html[data-intro="quick"] [data-pre-skip] {
   display: none;
 }
-/* Film-strip perforations */
-.pre-sprockets {
-  background: #000 repeating-linear-gradient(to bottom, transparent 0 5px, rgb(236 232 225 / 0.8) 5px 12px, transparent 12px 18px) center / 46% 100% no-repeat;
-}
-
 /* ---------- Home: the four-craft prism (components/Hero.tsx) ---------- */
 #top {
   --prism-w: min(66vw, 21rem);
@@ -643,6 +574,20 @@ html[data-intro="quick"] [data-pre-skip] {
 }
 .prism-wrap {
   will-change: transform;
+}
+
+/* Stickers around the prism (components/HeroCollage.tsx). Their tilt and drift use the
+   individual rotate/translate properties, so they add up with GSAP's transforms. */
+.sticker > div {
+  rotate: var(--r, 0deg);
+  animation: sticker-float var(--d, 7s) ease-in-out infinite alternate;
+}
+@keyframes sticker-float {
+  from { translate: 0 0; }
+  to { translate: 0 -10px; }
+}
+html[data-motion="gentle"] .sticker > div {
+  animation: none;
 }
 
 /* A soft light under the mouse */
