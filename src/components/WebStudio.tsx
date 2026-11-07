@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useLang } from "./LangProvider";
 import { TransitionLink } from "./TransitionProvider";
 import { LightLeaks } from "./LightLeaks";
+import TumbleDeckShowcase from "./ui/tumble-deck-showcase";
 import { getLenis } from "./SmoothScroll";
 import { contact } from "@/content/site";
 
@@ -180,6 +181,23 @@ export function WebStudio() {
           <p data-reveal className="max-w-[44ch] text-lg leading-relaxed text-paper/70 md:col-span-6 md:justify-self-end">
             {w.worksIntro}
           </p>
+        </div>
+        {/* The sites as a deck of pages that tip over one after the other (tap, swipe sideways, arrows) */}
+        <div data-reveal className="mt-12 px-4 md:px-8">
+          <TumbleDeckShowcase
+            cards={w.works.map((work) => ({ src: shot(work.desk), alt: `${work.name}, ${work.kind}` }))}
+            height="min(78svh, 46rem)"
+            aspect={1.6}
+            depth={4}
+            captureWheel={false}
+            dragAxis="x"
+            background="transparent"
+            ariaLabel={w.worksDeck}
+            hint={w.worksDeckHint}
+            className="rounded-[1.6rem]"
+            style={{ "--color-foreground": "var(--paper)", "--color-background": "var(--ink)", "--color-primary": "var(--brand)" } as React.CSSProperties}
+          />
+          <p className="mt-3 text-center text-sm text-paper/55">{w.worksDeckHint}</p>
         </div>
         {/* Phones: a row to swipe through. Wider screens: a grid. */}
         <ul className="works-row mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 [scrollbar-width:none] md:grid md:snap-none md:grid-cols-2 md:gap-6 md:overflow-visible md:px-8 md:pb-0 xl:grid-cols-3">

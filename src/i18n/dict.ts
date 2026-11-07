@@ -40,6 +40,12 @@ export const dict = {
     home: {
       films: "Voir les films",
       more: "En savoir plus",
+      tunnel: {
+        eyebrow: "Photo · Vidéo · Design · Web",
+        title: ["Entrez", "dans l'image."],
+        text: "Des cérémonies, des affiches, des films et des sites : faites défiler, le travail vient à vous.",
+        prompt: "Faites défiler",
+      },
     },
     work: {
       title: "Travaux",
@@ -171,6 +177,8 @@ export const dict = {
       worksIntro: "Des sites conçus et développés de A à Z : design, code, mise en ligne. Les maquettes sont des propositions faites de ma propre initiative, pour montrer ce qu'un commerce pourrait avoir.",
       worksConcept: "Maquette",
       worksVisit: "Voir le site",
+      worksDeck: "Les sites, l'un après l'autre",
+      worksDeckHint: "Touchez ou glissez sur le côté pour faire basculer les pages. Flèches du clavier aussi.",
       works: [
         { name: "ANAREKA-CI", kind: "Site vitrine d'association", url: "anarekaci.com", desk: "real-anareka-desk", phone: "real-anareka-phone", concept: false },
         { name: "BMT Green Academy", kind: "Académie de formation en ligne", url: "xtruck149.github.io/bmtacademy/", desk: "real-bmtacademy-desk", phone: "real-bmtacademy-phone", concept: false },
@@ -288,6 +296,12 @@ export const dict = {
     home: {
       films: "See the films",
       more: "Read more",
+      tunnel: {
+        eyebrow: "Photo · Video · Design · Web",
+        title: ["Step", "into the frame."],
+        text: "Ceremonies, posters, films and websites: scroll, and the work comes to you.",
+        prompt: "Scroll",
+      },
     },
     work: {
       title: "Work",
@@ -419,6 +433,8 @@ export const dict = {
       worksIntro: "Sites designed and built from scratch: design, code, launch. The concepts are proposals made on my own initiative, to show what a local business could have.",
       worksConcept: "Concept",
       worksVisit: "Visit the site",
+      worksDeck: "The sites, one after another",
+      worksDeckHint: "Tap or swipe sideways to tip the pages over. Arrow keys work too.",
       works: [
         { name: "ANAREKA-CI", kind: "Association website", url: "anarekaci.com", desk: "real-anareka-desk", phone: "real-anareka-phone", concept: false },
         { name: "BMT Green Academy", kind: "Online training academy", url: "xtruck149.github.io/bmtacademy/", desk: "real-bmtacademy-desk", phone: "real-bmtacademy-phone", concept: false },

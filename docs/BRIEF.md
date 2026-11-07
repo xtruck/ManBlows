@@ -232,3 +232,17 @@ Inspiré de l'animation de squareup.com/us/en/hardware/kiosk (vue sur Land-book)
   (ordinateur). Ils apparaissent après l'intro, flottent, suivent la souris et défilent à des vitesses différentes.
   Sur téléphone, les quatre plus petits seulement. Textes dans `hero.sticker` (FR/EN).
 - Correction : après son entrée, le prisme gardait une transformation fixe qui bloquait l'inclinaison à la souris.
+
+## Composants 21st.dev intégrés (07/11)
+Dossier `src/components/ui/` créé (convention shadcn : briques réutilisables à part des composants du site ;
+le projet n'utilise pas le CLI shadcn, l'alias `@/` pointe sur `src/`). Pas de dépendance ajoutée :
+`gsap` était déjà là, et `motion/react` remplace `framer-motion` (même API, déjà installé).
+- **`ui/perspective-tunnel-hero.tsx`** : couloir 3D de cartes qui sortent du fond autour d'un titre. Adapté :
+  il avance avec le défilement de la page (section haute de 3 écrans, scène collante) au lieu de capturer la
+  molette — il marche au doigt et ne bloque jamais la page ; couleurs du studio ; images et textes en props.
+  Utilisé sur l'accueil juste après le hero (`components/WorkTunnel.tsx`, textes `home.tunnel`) avec 9 vraies
+  réalisations (photos, affiches, film, sites).
+- **`ui/tumble-deck-showcase.tsx`** : pile de captures de sites debout, qui basculent une à une. Ajout de deux
+  options : `captureWheel` (désactivée sur le site pour que la page défile) et `dragAxis="x"` (sur téléphone,
+  glisser sur le côté fait basculer, glisser vers le haut fait défiler). Utilisé dans `/web/` › Réalisations,
+  au-dessus des cartes, avec les 6 captures ordinateur. Touche, clic, flèches du clavier.
