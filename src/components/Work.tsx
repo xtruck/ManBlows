@@ -42,18 +42,32 @@ export function Work() {
   const dialog = useRef<HTMLDivElement>(null);
   useFocusTrap(dialog, index !== null);
 
-  // Deep links from the home page: /travaux/#photos, /travaux/#design...
+  // Deep links from the home page: /travaux/#photos, /travaux/#design... They pick the filter and
+  // go straight to the gallery, past the tunnel that opens the page.
+  const section = useRef<HTMLElement>(null);
   useEffect(() => {
-    const apply = () => {
+    let timer = 0;
+    const apply = (smooth: boolean) => {
       const wanted = window.location.hash.slice(1);
-      if ((filters as string[]).includes(wanted)) {
-        setFilter(wanted as Filter);
-        setKind("all");
-      }
+      if (!(filters as string[]).includes(wanted)) return;
+      setFilter(wanted as Filter);
+      setKind("all");
+      // After the page transition has put the page back at the top
+      timer = window.setTimeout(() => {
+        const el = section.current;
+        if (!el) return;
+        const lenis = getLenis();
+        if (lenis) lenis.scrollTo(el, { immediate: !smooth, force: true });
+        else el.scrollIntoView({ behavior: smooth ? "smooth" : "auto", block: "start" });
+      }, smooth ? 0 : 450);
     };
-    apply();
-    window.addEventListener("hashchange", apply);
-    return () => window.removeEventListener("hashchange", apply);
+    apply(false);
+    const onHash = () => apply(true);
+    window.addEventListener("hashchange", onHash);
+    return () => {
+      window.clearTimeout(timer);
+      window.removeEventListener("hashchange", onHash);
+    };
   }, []);
 
   // Filtering moves the remaining images up; re-measure scroll reveals once the
@@ -119,7 +133,7 @@ export function Work() {
   }, [index, close, step]);
 
   return (
-    <section className="bg-paper px-4 pt-32 pb-24 md:px-8 md:pt-44 md:pb-36">
+    <section ref={section} className="bg-paper px-4 pt-32 pb-24 md:px-8 md:pt-44 md:pb-36">
       <div className="grid gap-8 md:grid-cols-12 md:items-end">
         <h1
           data-reveal

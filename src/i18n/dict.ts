@@ -47,6 +47,20 @@ export const dict = {
         prompt: "Faites défiler",
       },
     },
+    tunnels: {
+      work: {
+        eyebrow: "Photos · Affiches · Visuels",
+        title: ["Des images", "qui restent."],
+        text: "Églises, entreprises, écoles, événements : faites défiler, puis parcourez tout le travail.",
+        prompt: "Faites défiler",
+      },
+      films: {
+        eyebrow: "Mariages · Clips · Reportages",
+        title: ["Moteur.", "Ça tourne."],
+        text: "Des cérémonies aux salons, chaque film raconte une journée. Faites défiler pour entrer dans la salle.",
+        prompt: "Faites défiler",
+      },
+    },
     work: {
       title: "Travaux",
       intro: "Affiches, visuels pour les réseaux, bannières et logos créés pour des églises, des entreprises, des écoles et des événements. Touchez une image pour l'agrandir.",
@@ -300,6 +314,20 @@ export const dict = {
         eyebrow: "Photo · Video · Design · Web",
         title: ["Step", "into the frame."],
         text: "Ceremonies, posters, films and websites: scroll, and the work comes to you.",
+        prompt: "Scroll",
+      },
+    },
+    tunnels: {
+      work: {
+        eyebrow: "Photos · Posters · Visuals",
+        title: ["Images", "that stay."],
+        text: "Churches, businesses, schools, events: scroll, then browse all the work.",
+        prompt: "Scroll",
+      },
+      films: {
+        eyebrow: "Weddings · Music videos · Coverage",
+        title: ["Rolling.", "Action."],
+        text: "From ceremonies to trade shows, each film tells a day. Scroll to step into the theatre.",
         prompt: "Scroll",
       },
     },

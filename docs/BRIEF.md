@@ -246,3 +246,6 @@ le projet n'utilise pas le CLI shadcn, l'alias `@/` pointe sur `src/`). Pas de d
   options : `captureWheel` (désactivée sur le site pour que la page défile) et `dragAxis="x"` (sur téléphone,
   glisser sur le côté fait basculer, glisser vers le haut fait défiler). Utilisé dans `/web/` › Réalisations,
   au-dessus des cartes, avec les 6 captures ordinateur. Touche, clic, flèches du clavier.
+- Le tunnel ouvre aussi **Travaux** (« Des images qui restent. », affiches et photos) et **Films**
+  (« Moteur. Ça tourne. », affiches des films), un peu plus court (2,4 écrans) ; textes dans `tunnels`.
+  Les liens directs `/travaux/#photos`, `#design`… sautent le tunnel et arrivent sur la galerie filtrée.
