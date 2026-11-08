@@ -15,7 +15,10 @@ const loop = (n: string): Slide => ({ src: `${base}/films/loop/${n}.webp`, w: 48
 const site = (n: string): Slide => ({ src: `${base}/web/real-${n}-face.webp`, w: 780, h: 1688 });
 
 /**
- * `image` is the picture the intro uses for each craft. `slides` is the slideshow of the hero
+ * Each animation of the site shows its own pictures, so the visitor sees as much of the work as
+ * possible: the prism (these slides), the intro pill, the stickers (HeroCollage), the three
+ * tunnels (WorkTunnel) and the craft cards (Disciplines) don't repeat one another.
+ * `image` is each craft's reference picture. `slides` is the slideshow of the hero
  * prism: each time a face comes back to the front it shows the next one (see Hero.tsx).
  */
 export const crafts: { key: CraftKey; href: string; image: string; w: number; h: number; slides: Slide[] }[] = [
@@ -26,7 +29,7 @@ export const crafts: { key: CraftKey; href: string; image: string; w: number; h:
     image: `${base}/work/photo-12.webp`,
     w: 934,
     h: 1400,
-    slides: [work("photo-12", 934, 1400), work("photo-17", 933, 1400), work("photo-04", 1051, 1400), work("photo-05", 960, 1280), work("photo-14", 933, 1400)],
+    slides: [work("photo-12", 934, 1400), work("photo-13", 933, 1400), work("photo-16", 933, 1400), work("photo-18", 933, 1400), work("photo-24", 933, 1400)],
   },
   {
     key: "video",
@@ -45,7 +48,7 @@ export const crafts: { key: CraftKey; href: string; image: string; w: number; h:
     image: `${base}/work/design-02.webp`,
     w: 1120,
     h: 1400,
-    slides: [work("design-02", 1120, 1400), work("design-37", 1120, 1400), work("design-19", 1400, 1400), work("design-03", 1080, 1080), work("design-07", 1104, 1058)],
+    slides: [work("design-37", 1120, 1400), work("design-07", 1104, 1058), work("design-03", 1080, 1080), work("design-20", 1400, 1400), work("design-32", 1080, 1080)],
   },
   {
     key: "web",

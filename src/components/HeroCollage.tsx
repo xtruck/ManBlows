@@ -7,7 +7,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLang } from "./LangProvider";
 import { onIntroDone } from "@/lib/intro";
 import { useMotionMode } from "@/lib/motion";
-import { crafts } from "@/content/crafts";
+// Pictures not used by any other animation (see crafts.ts)
+const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -148,7 +149,7 @@ export function HeroCollage() {
         <div>
           <div className="w-[7rem] rounded-md bg-white p-1.5 pb-5 shadow-xl shadow-black/40">
             <div className="relative aspect-[4/5] overflow-hidden rounded-sm">
-              <Image src={crafts[0].slides[1].src} alt="" fill sizes="7rem" className="object-cover" />
+              <Image src={`${base}/work/photo-17.webp`} alt="" fill sizes="7rem" className="object-cover" />
             </div>
           </div>
           <span className="absolute -top-3 -left-8 rounded-full bg-[#2f6bff] px-2.5 py-1 text-[11px] font-medium whitespace-nowrap text-white shadow-lg">{s.photo}</span>
@@ -159,7 +160,7 @@ export function HeroCollage() {
       <div data-sticker data-depth="0.9" className="sticker absolute -bottom-[2%] -left-[30%] hidden lg:block" style={{ "--r": "-6deg", "--d": "8s" } as React.CSSProperties}>
         <div>
           <div className="relative aspect-[4/5] w-[6.5rem] overflow-hidden rounded-md shadow-xl shadow-black/40">
-            <Image src={crafts[2].slides[1].src} alt="" fill sizes="6.5rem" className="object-cover" />
+            <Image src={`${base}/work/design-33.webp`} alt="" fill sizes="6.5rem" className="object-cover" />
           </div>
           <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-ink px-2.5 py-1 text-[11px] font-medium whitespace-nowrap text-paper shadow-lg ring-1 ring-paper/15">
             {s.poster}

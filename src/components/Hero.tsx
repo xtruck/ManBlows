@@ -355,11 +355,12 @@ export function Hero() {
                     href={c.href}
                     tabIndex={i === active ? 0 : -1}
                     aria-hidden={i !== active}
-                    aria-label={`${t.crafts[i].verb} : ${t.crafts[i].what}`}
                     data-craft={c.key}
                     className={`prism-face group overflow-hidden rounded-[1.4rem] bg-graphite shadow-2xl shadow-black/50 ${i === active && !dragging ? "is-front" : ""}`}
                     style={{ "--i": i } as React.CSSProperties}
                   >
+                    {/* The link's name comes from its content (no aria-label over the visible readout) */}
+                    <span className="sr-only">{`${t.crafts[i].verb} : ${t.crafts[i].what}`}</span>
                     {/* The slideshow: a new picture each time the face comes round (keyed, so the old
                         one is replaced while the face is at the back) */}
                     <Image

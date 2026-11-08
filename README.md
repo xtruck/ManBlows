@@ -22,7 +22,7 @@ npm run dev        # http://localhost:3000
 | `npm run typecheck` | Generates Next's route types, then runs TypeScript             |
 
 Stack: Next.js 16 (App Router, `output: "export"`), React 19, Tailwind CSS 4, GSAP, Motion and
-Lenis for animation. The home page's four-craft prism is pure CSS 3D (no WebGL).
+Lenis for animation. Everything 3D is pure CSS (no WebGL), so it stays light on phones.
 
 > This Next.js version differs from older ones. Check `node_modules/next/dist/docs/` before
 > relying on remembered APIs (see `AGENTS.md`).
@@ -32,14 +32,17 @@ Lenis for animation. The home page's four-craft prism is pure CSS 3D (no WebGL).
 | Path                         | Contents                                                              |
 | ---------------------------- | --------------------------------------------------------------------- |
 | `src/app/`                   | Pages: home, `travaux` (work), `films`, `web`, `a-propos` (about), `contact` |
-| `src/content/crafts.ts`      | The four crafts: order, links and the image on each prism face         |
+| `src/content/crafts.ts`      | The four crafts: order, links and the slideshow on each prism face     |
 | `src/components/`            | Sections and site-wide pieces (nav, preloader, page transitions…)     |
+| `src/components/ui/`         | Reusable effects: `perspective-tunnel-hero` (3D corridor driven by the page scroll) and `tumble-deck-showcase` (stack of site captures that tip over) |
 | `src/content/photos.ts`      | Photos shown in the Work gallery                                      |
 | `src/content/design.ts`      | Graphic design work, plus the studio's own price posters              |
 | `src/content/site.ts`        | Films, showreel, client list and contact details                      |
 | `src/i18n/dict.ts`           | Every interface text, in French and English                           |
 | `src/lib/motion.ts`          | Full / gentle animation modes                                         |
-| `public/work/`, `public/films/` | Optimised images (with 640px copies in `work/sm/`) and videos      |
+| `public/work/`, `public/films/` | Optimised images (640px copies in `work/sm/`, 400px in `work/xs/`, 480px film posters in `films/sm/`) and videos |
+| `public/films/loop/`         | 6-second silent loops (480 × 600) played on the prism's Video face     |
+| `public/web/`                | Captures of the sites the studio built (`real-<site>-desk/-phone/-face.webp`) and of this site (`site-*.webp`, case study only) |
 
 The language is chosen in the browser (stored in `localStorage`); the HTML is always rendered in
 French, and each page has a single URL for both languages.
@@ -52,10 +55,28 @@ French, and each page has a single URL for both languages.
 3. Add an entry in `photos.ts`, `design.ts` or the `films` list in `site.ts`.
 4. For new images, run `node scripts/make-thumbs.mjs` to create the 640px copies.
 
-## Captures of the site
+## Animations, at a glance
 
-`public/web/` holds screenshots of this site, used for the Web craft (prism face, card, `/web/`
-page). After a visible change, serve the build on port 8765 and run `node scripts/make-web-shots.mjs`.
+| Where | What | File |
+| --- | --- | --- |
+| First visit, every page | Intro after Square Kiosk: photo pill, yellow flood, giant "studio." built from merging bubbles, curtain lift | `Preloader.tsx` |
+| Home hero | Four-craft prism (drag to spin, per-face lighting, slideshow, film loop) with floating stickers | `Hero.tsx`, `HeroCollage.tsx` |
+| Home, Travaux, Films | 3D tunnel of work, driven by the page scroll | `WorkTunnel.tsx` → `ui/perspective-tunnel-hero.tsx` |
+| `/web/` | Tipping deck of site captures, then the project cards | `WebStudio.tsx` → `ui/tumble-deck-showcase.tsx` |
+| Between pages | Four-band curtain | `TransitionProvider.tsx` |
+
+Each animation shows **its own pictures** (no photo, poster or film appears in two of them), so a
+visitor sees as much of the work as possible: keep it that way when changing `crafts.ts`,
+`WorkTunnel.tsx`, `HeroCollage.tsx`, `Preloader.tsx` or the picks in `Disciplines.tsx`.
+Everything respects the "gentle" animation mode (footer switch, or the device's reduce-motion setting).
+
+## Captures of sites
+
+- Sites the studio built: `node scripts/make-real-shots.mjs [slug]` (Playwright, not a project
+  dependency; point `NODE_PATH` at it, `PW_CHANNEL=msedge` to use Edge). `SHOTS=face` makes the
+  sharp 780px phone captures used on the prism.
+- This site (case study on `/web/` only): serve the build on port 8765 and run
+  `node scripts/make-web-shots.mjs`.
 
 ## Share preview
 

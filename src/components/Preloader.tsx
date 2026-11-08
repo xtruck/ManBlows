@@ -6,8 +6,8 @@ import { gsap } from "gsap";
 import { useLang } from "./LangProvider";
 import { INTRO_SEEN_KEY, markIntroDone, markIntroLeaving } from "@/lib/intro";
 import { motionMode } from "@/lib/motion";
-import { crafts } from "@/content/crafts";
 
+const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const MAX_WAIT_MS = 3000; // never hold the visitor longer than this for the fonts
 
 // The bubbles that build the giant word: a grid over its box, each growing at its own moment.
@@ -165,7 +165,7 @@ export function Preloader() {
 
         {/* The pill, open on one of the studio's photos */}
         <div data-sq-pill className="sq-pill absolute top-1/2 left-1/2 overflow-hidden rounded-full bg-graphite">
-          <Image src={crafts[0].slides[1].src} alt="" fill sizes="10rem" preload className="sq-pill-photo object-cover" />
+          <Image src={`${base}/work/photo-25.webp`} alt="" fill sizes="10rem" preload className="sq-pill-photo object-cover" />
         </div>
 
         {/* Everything that lifts away at the end: the yellow and the giant word */}

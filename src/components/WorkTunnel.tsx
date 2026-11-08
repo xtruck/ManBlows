@@ -4,47 +4,48 @@ import PerspectiveTunnelHero, { type TunnelImage } from "./ui/perspective-tunnel
 import { useLang } from "./LangProvider";
 
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-// Small copies: the cards are at most 270 px wide.
+// Small copies: the cards are at most 270 px wide. None of these pictures is used by another
+// animation (prism, intro, stickers): see crafts.ts.
 const work = (n: string, title: string): TunnelImage => ({ src: `${base}/work/xs/${n}.webp`, title });
 const film = (n: string, title: string): TunnelImage => ({ src: `${base}/films/sm/${n}-poster.webp`, title });
-const site = (n: string, title: string): TunnelImage => ({ src: `${base}/web/real-${n}-face.webp`, title });
 
 const sets = {
   // Home: nine pieces across the four crafts
   home: [
-    work("photo-12", "Portrait"),
-    work("design-02", "Église Mesev"),
-    film("film-2476", "Mariage"),
-    site("anareka", "ANAREKA-CI"),
-    work("photo-17", "Cérémonie"),
-    work("design-37", "Skinnys"),
-    { src: `${base}/films/loop/showreel.webp`, title: "Showreel" },
-    site("graya", "Graya Holistic"),
-    work("design-19", "SII 2026"),
+    work("photo-26", "Portrait"),
+    work("design-34", "Église Mesev"),
+    film("film-1453", "Drone"),
+    { src: `${base}/web/real-mima-phone.webp`, title: "Espace Mima" },
+    work("photo-14", "Shooting"),
+    work("design-18", "SII 2026"),
+    film("film-2002", "Robe kente"),
+    { src: `${base}/web/real-bmtacademy-desk.webp`, title: "BMT Green Academy" },
+    work("photo-02", "Les Bols du Bonheur"),
   ],
   // Travaux: photos and posters
   work: [
-    work("design-02", "Église Mesev"),
-    work("photo-17", "Cérémonie"),
-    work("design-37", "Skinnys"),
-    work("photo-04", "Les Bols du Bonheur"),
-    work("design-19", "SII 2026"),
-    work("photo-05", "Salon"),
-    work("design-03", "Royaume de Lumière"),
-    work("photo-14", "Portrait"),
-    work("design-07", "Source d'Eau Vive"),
+    work("photo-27", "Portrait"),
+    work("design-01", "Javelot Bar Resto"),
+    work("photo-28", "Shooting"),
+    work("design-04", "Royaume de Lumière"),
+    work("photo-29", "Studio"),
+    work("design-06", "Source d'Eau Vive"),
+    work("photo-30", "Portrait"),
+    work("design-08", "KMK Collection"),
+    work("photo-15", "Séance"),
+    work("design-12", "Action de grâce"),
   ],
   // Films: posters of the films
   films: [
-    film("film-2476", "Henné"),
-    film("showreel", "Showreel"),
-    film("mariage-calebasse", "Mariage"),
-    film("bols-du-bonheur", "En cuisine"),
+    film("film-2172", "Henné"),
     film("archibat", "Archibat"),
-    film("film-2172", "Cérémonie"),
+    film("film-1440", "Danse"),
     film("maracana", "Maracana"),
+    film("film-1441", "Tournage"),
     film("clavier", "Au clavier"),
+    film("film-1451", "Drone"),
     film("agef-investir", "AGEF"),
+    film("film-1439", "Marche"),
   ],
 } satisfies Record<string, TunnelImage[]>;
 
@@ -64,7 +65,7 @@ export function WorkTunnel({ set = "home" }: { set?: keyof typeof sets }) {
       title={[...w.title]}
       text={w.text}
       prompt={w.prompt}
-      length={set === "home" ? 3 : 2.4}
+      length={set === "home" ? 2.6 : 2.4}
     />
   );
 }

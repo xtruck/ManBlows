@@ -15,15 +15,17 @@ const pick = (list: Shot[], ids: number[]) =>
   ids.map((id) => list.find((s) => s.id === id)).filter((s): s is Shot => Boolean(s));
 const photoPicks = pick(photos, [205, 201, 209, 203, 206]);
 const designPicks = pick(designs, [102, 109, 119, 126, 121]);
-const filmPicks = [6, 10, 9, 8, 7].map((id) => films.find((f) => f.id === id)).filter((f): f is (typeof films)[number] => Boolean(f));
+// Films that no other animation shows (the prism, the tunnels: see crafts.ts)
+const filmPicks = [22, 19, 23, 21].map((id) => films.find((f) => f.id === id)).filter((f): f is (typeof films)[number] => Boolean(f));
 // Sites the studio built, captured on a phone (scripts/make-real-shots.mjs), same order as /web/.
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const webPicks = [
-  ["anareka", "ANAREKA-CI"],
+  ["mima", "Espace Mima"],
+  ["vipgarage", "VIP Garage"],
+  ["kignon", "Espace Kignon"],
   ["bmtacademy", "BMT Green Academy"],
   ["graya", "Graya Holistic"],
-  ["kignon", "Espace Kignon"],
-  ["vipgarage", "VIP Garage"],
+  ["anareka", "ANAREKA-CI"],
 ].map(([slug, name]) => ({ src: `${base}/web/real-${slug}-phone.webp`, caption: name, top: true }));
 
 /**

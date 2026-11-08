@@ -249,3 +249,16 @@ le projet n'utilise pas le CLI shadcn, l'alias `@/` pointe sur `src/`). Pas de d
 - Le tunnel ouvre aussi **Travaux** (« Des images qui restent. », affiches et photos) et **Films**
   (« Moteur. Ça tourne. », affiches des films), un peu plus court (2,4 écrans) ; textes dans `tunnels`.
   Les liens directs `/travaux/#photos`, `#design`… sautent le tunnel et arrivent sur la galerie filtrée.
+
+## Images variées et audit final — version 1.0 (08/11)
+- **Une image, une animation** : le prisme, l'intro, les stickers, les trois tunnels et les cartes métiers de
+  l'accueil n'affichent plus jamais la même photo, affiche ou film (voir la règle dans le README). Seuls les
+  6 sites reviennent, sous des captures différentes (téléphone, ordinateur, pleine hauteur).
+- Tunnel de l'accueil un peu plus court (2,6 écrans).
+- Accessibilité : les faces du prisme prennent leur nom de leur contenu (plus d'`aria-label` qui masquait le texte visible).
+- Audit : 0 lien ou image cassé (531 liens, 1 146 tailles d'images), 0 débordement et 0 erreur JavaScript sur les
+  7 pages en ordinateur et en téléphone 360 px, textes FR/EN identiques (168 clés).
+  Lighthouse téléphone : accessibilité 100, bonnes pratiques 100, SEO 92 (le `robots.txt` doit être à la racine
+  du domaine : il le sera avec un nom de domaine à soi), performance 35 à 43 (l'intro et les vidéos).
+- Reste à faire plus tard : alléger `public/films/` (137 Mo), reconvertir `film-2585.mp4` (abîmé),
+  remplacer les coordonnées et contenus par ceux validés par Egu, nom de domaine.
