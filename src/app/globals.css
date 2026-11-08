@@ -589,6 +589,22 @@ html[data-intro="quick"] [data-pre-skip] {
 html[data-motion="gentle"] .sticker > div {
   animation: none;
 }
+/* Each turn of the prism: the stickers slide to a new spot and their words pop in */
+.sticker {
+  transition: translate 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.sticker-swap {
+  animation: sticker-swap 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes sticker-swap {
+  from { opacity: 0; transform: scale(0.6) rotate(-6deg); }
+  to { opacity: 1; transform: none; }
+}
+html[data-motion="gentle"] .sticker,
+html[data-motion="gentle"] .sticker-swap {
+  transition: none;
+  animation: none;
+}
 
 /* A soft light under the mouse */
 .hero-spot {

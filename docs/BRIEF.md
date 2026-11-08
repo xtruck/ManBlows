@@ -290,3 +290,5 @@ Bulle « Une question ? Écrivez-nous » en bas à gauche de toutes les pages (`
 (devis ou montant), détails, nom — puis ouvre WhatsApp vers le numéro d'Egu avec la demande complète, prête à envoyer.
 Il ne donne ni prix ni date : Egu confirme sous 24 h. À compléter avec Egu : zones de déplacement, délais types.
 Étape suivante possible : brancher une IA gratuite (Cloudflare Workers AI) pour les questions libres.
+
+- (08/11) Assistant : plus de question de budget ni de réponse sur les prix ou les zones ; il recueille seulement ce qu'il faut à Egu pour son devis. Stickers du hero : textes, formes et positions changent à chaque tour du prisme (un jeu par métier dans `hero.sticker.sets`).

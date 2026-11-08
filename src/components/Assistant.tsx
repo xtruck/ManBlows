@@ -6,16 +6,17 @@ import { onIntroDone } from "@/lib/intro";
 import { contact } from "@/content/site";
 
 type ServiceKey = "photo" | "video" | "design" | "web";
-type Step = "service" | "faq" | "kind" | "date" | "place" | "budget" | "budgetAmount" | "details" | "name" | "done";
+type Step = "service" | "faq" | "kind" | "date" | "place" | "details" | "name" | "done";
 type Msg = { from: "bot" | "me"; text: string };
-type Brief = { service?: string; serviceKey?: ServiceKey; kind?: string; date?: string; place?: string; budget?: string; details?: string; name?: string };
+type Brief = { service?: string; serviceKey?: ServiceKey; kind?: string; date?: string; place?: string; details?: string; name?: string };
 
-const TEXT_STEPS: Step[] = ["date", "place", "budgetAmount", "details", "name"];
+const TEXT_STEPS: Step[] = ["date", "place", "details", "name"];
 
 /**
  * Guided assistant: answers right away, asks one question at a time, then writes the full request
- * (service, type, date, place, budget, details, name) and opens WhatsApp with it, addressed to Egu.
- * No AI and no server: it runs in the page, so it is free and never invents a price or a date.
+ * (service, type, date, place, details, name) and opens WhatsApp with it, addressed to Egu.
+ * It never talks about money or travel zones: Egu sets those himself in his quote.
+ * No AI and no server: it runs in the page, so it is free.
  */
 export function Assistant() {
   const { t, lang } = useLang();
@@ -73,8 +74,7 @@ export function Assistant() {
     const v = value.trim();
     if (!v) return;
     if (step === "date") say(v, a.askPlace, "place", { date: v });
-    else if (step === "place") say(v, a.askBudget, "budget", { place: v });
-    else if (step === "budgetAmount") say(v, a.askDetails, "details", { budget: v });
+    else if (step === "place") say(v, a.askDetails, "details", { place: v });
     else if (step === "details") say(v, a.askName, "name", { details: v });
     else if (step === "name") say(v, a.recap, "done", { name: v });
   };
@@ -86,7 +86,6 @@ export function Assistant() {
     brief.kind && `• ${f.kind} : ${brief.kind}`,
     brief.date && `• ${f.date} : ${brief.date}`,
     brief.place && `• ${f.place} : ${brief.place}`,
-    brief.budget && `• ${f.budget} : ${brief.budget}`,
     brief.details && `• ${f.details} : ${brief.details}`,
     brief.name && `• ${f.name} : ${brief.name}`,
   ].filter(Boolean) as string[];
@@ -167,16 +166,6 @@ export function Assistant() {
                     {k}
                   </button>
                 ))}
-              {step === "budget" && (
-                <>
-                  <button type="button" className={chip} onClick={() => say(a.budgets[0], a.askDetails, "details", { budget: a.budgets[0] })}>
-                    {a.budgets[0]}
-                  </button>
-                  <button type="button" className={chip} onClick={() => say(a.budgets[1], a.askBudgetAmount, "budgetAmount")}>
-                    {a.budgets[1]}
-                  </button>
-                </>
-              )}
               {step === "details" && (
                 <button type="button" className={chip} onClick={() => say(a.skip, a.askName, "name")}>
                   {a.skip}

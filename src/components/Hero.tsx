@@ -315,7 +315,7 @@ export function Hero() {
 
           {/* Tips back as the page scrolls away (wrapper, so it doesn't fight the tilt and the spin) */}
           <div ref={wrap} className="prism-wrap relative">
-          <HeroCollage />
+          <HeroCollage active={active} />
           <div
             ref={scene}
             className="prism-scene"
