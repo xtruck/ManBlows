@@ -3,6 +3,7 @@ import { Bricolage_Grotesque, Geist, Instrument_Serif, Mrs_Saint_Delafield, Popp
 import { LangProvider } from "@/components/LangProvider";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { Preloader } from "@/components/Preloader";
+import { Assistant } from "@/components/Assistant";
 import { TransitionProvider } from "@/components/TransitionProvider";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
@@ -120,6 +121,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <MotionControl />
             <TitleSync />
             <WhatsAppButton />
+            <Assistant />
           </TransitionProvider>
         </LangProvider>
       </body>

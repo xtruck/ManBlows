@@ -282,3 +282,11 @@ Puis Bouchée Royale, Maison Awa, MASS Immobilier et Pharmacie Perusia (maquette
 
 - Précision (08/11) : le site est celui d'Egu, fondateur et patron. Le web est réalisé pour lui par un prestataire,
   présenté comme « l'équipe web d'EGC Studio » : Egu pilote, son équipe réalise. FAQ « Qui réalise mon site ? ».
+
+## Assistant de demande (08/11)
+Bulle « Une question ? Écrivez-nous » en bas à gauche de toutes les pages (`components/Assistant.tsx`, textes
+`assistant` en FR/EN). Assistant **guidé, sans IA ni serveur, gratuit** : il répond tout de suite, propose la FAQ
+(fonctionnement, devis, déplacements, délais) et pose une question à la fois — service, type, date, lieu, budget
+(devis ou montant), détails, nom — puis ouvre WhatsApp vers le numéro d'Egu avec la demande complète, prête à envoyer.
+Il ne donne ni prix ni date : Egu confirme sous 24 h. À compléter avec Egu : zones de déplacement, délais types.
+Étape suivante possible : brancher une IA gratuite (Cloudflare Workers AI) pour les questions libres.
