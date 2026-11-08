@@ -207,6 +207,10 @@ export const dict = {
         { name: "Under The Tree", kind: "Restaurant ivoirien, grillades", url: "real9-under-the-tree.vercel.app", desk: "real-underthetree-desk", phone: "real-underthetree-phone", concept: true },
         { name: "Miss Fatima Wigs", kind: "Coiffure, ongles et beauté, Angré", url: "real14-miss-fatima-wigs.vercel.app", desk: "real-missfatima-desk", phone: "real-missfatima-phone", concept: true },
         { name: "Pharmacie Ebena", kind: "Pharmacie, Cocody", url: "real19-pharmacie-ebena.vercel.app", desk: "real-ebena-desk", phone: "real-ebena-phone", concept: true },
+        { name: "Bouchée Royale", kind: "Crêperie et fast-food, livraison à Abidjan", url: "real8-bouchee-royale.vercel.app", desk: "real-boucheeroyale-desk", phone: "real-boucheeroyale-phone", concept: true },
+        { name: "Maison Awa", kind: "Maison de mode, pièces sur demande", url: "real16-maison-awa.vercel.app", desk: "real-maisonawa-desk", phone: "real-maisonawa-phone", concept: true },
+        { name: "MASS Immobilier", kind: "Agence immobilière et services", url: "real21-mass-immobilier.vercel.app", desk: "real-massimmo-desk", phone: "real-massimmo-phone", concept: true },
+        { name: "Pharmacie Perusia", kind: "Pharmacie de proximité, Abidjan", url: "real18-pharmacie-perusia.vercel.app", desk: "real-perusia-desk", phone: "real-perusia-phone", concept: true },
       ],
       offersTitle: "Ce que je crée",
       offers: [
@@ -484,6 +488,10 @@ export const dict = {
         { name: "Under The Tree", kind: "Ivorian grill restaurant", url: "real9-under-the-tree.vercel.app", desk: "real-underthetree-desk", phone: "real-underthetree-phone", concept: true },
         { name: "Miss Fatima Wigs", kind: "Hair, nails and beauty, Angré", url: "real14-miss-fatima-wigs.vercel.app", desk: "real-missfatima-desk", phone: "real-missfatima-phone", concept: true },
         { name: "Pharmacie Ebena", kind: "Pharmacy, Cocody", url: "real19-pharmacie-ebena.vercel.app", desk: "real-ebena-desk", phone: "real-ebena-phone", concept: true },
+        { name: "Bouchée Royale", kind: "Crêpes and fast food, delivered in Abidjan", url: "real8-bouchee-royale.vercel.app", desk: "real-boucheeroyale-desk", phone: "real-boucheeroyale-phone", concept: true },
+        { name: "Maison Awa", kind: "Fashion house, made-to-order pieces", url: "real16-maison-awa.vercel.app", desk: "real-maisonawa-desk", phone: "real-maisonawa-phone", concept: true },
+        { name: "MASS Immobilier", kind: "Real estate agency and services", url: "real21-mass-immobilier.vercel.app", desk: "real-massimmo-desk", phone: "real-massimmo-phone", concept: true },
+        { name: "Pharmacie Perusia", kind: "Neighbourhood pharmacy, Abidjan", url: "real18-pharmacie-perusia.vercel.app", desk: "real-perusia-desk", phone: "real-perusia-phone", concept: true },
       ],
       offersTitle: "What I build",
       offers: [

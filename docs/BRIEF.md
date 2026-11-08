@@ -268,3 +268,5 @@ Sandwish Republic, Agence W, D.Myr, Overstyle CI, Under The Tree, Miss Fatima Wi
 ordinateur et téléphone (`scripts/make-real-shots.mjs`), en FR/EN dans `webPage.works`. Tous affichent eux-mêmes
 « Maquette de démonstration… ni commandée ni validée » : ils portent le badge **Maquette**. `/web/` montre
 maintenant 13 sites (3 réalisations, 10 maquettes), dans la pile qui bascule et dans les cartes.
+
+Puis Bouchée Royale, Maison Awa, MASS Immobilier et Pharmacie Perusia (maquettes aussi) : 17 sites au total.

@@ -22,6 +22,10 @@ export const sites = [
   { slug: "underthetree", url: "https://real9-under-the-tree.vercel.app/" },
   { slug: "missfatima", url: "https://real14-miss-fatima-wigs.vercel.app/" },
   { slug: "ebena", url: "https://real19-pharmacie-ebena.vercel.app/" },
+  { slug: "boucheeroyale", url: "https://real8-bouchee-royale.vercel.app/" },
+  { slug: "maisonawa", url: "https://real16-maison-awa.vercel.app/" },
+  { slug: "massimmo", url: "https://real21-mass-immobilier.vercel.app/" },
+  { slug: "perusia", url: "https://real18-pharmacie-perusia.vercel.app/" },
 ];
 
 const only = process.argv.slice(2);
