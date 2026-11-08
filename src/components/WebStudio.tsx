@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import { useLang } from "./LangProvider";
 import { TransitionLink } from "./TransitionProvider";
@@ -50,7 +51,9 @@ function Devices() {
   );
 }
 
-type Work = { name: string; kind: string; url: string; desk: string; phone: string; concept: boolean };
+type Work = { name: string; kind: string; url: string; desk: string; phone: string; concept: boolean; sector: string };
+type Sector = "food" | "fashion" | "realestate" | "health" | "services";
+const SECTORS: Sector[] = ["food", "fashion", "realestate", "health", "services"];
 
 /**
  * One site the studio built: its desktop page in a browser frame, its phone version standing
@@ -136,6 +139,14 @@ export function WebStudio() {
   const { t } = useLang();
   const w = t.webPage;
   const wa = `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(w.whatsapp)}`;
+  // Sector filter for the project cards (the deck above always shows them all)
+  const [sector, setSector] = useState<Sector | "all">("all");
+  const shown = sector === "all" ? w.works : w.works.filter((work) => work.sector === sector);
+  // The cards below move up or down when the list changes: re-measure the scroll reveals
+  useEffect(() => {
+    const id = window.setTimeout(() => ScrollTrigger.refresh(), 300);
+    return () => window.clearTimeout(id);
+  }, [sector]);
 
   const toCase = () => {
     const el = document.getElementById("etude-de-cas");
@@ -167,6 +178,19 @@ export function WebStudio() {
                 {w.secondary}
               </button>
             </div>
+            {/* What every site comes with, at a glance (the count follows the list of projects) */}
+            <ul className="mt-10 grid max-w-[36rem] grid-cols-2 gap-x-6 gap-y-3 border-t border-paper/15 pt-6 text-sm text-paper/75 sm:grid-cols-4 sm:gap-x-4">
+              {w.trust.map((item, i) => (
+                <li key={item} className="flex flex-col gap-1">
+                  {i === 0 ? (
+                    <span className="font-display text-3xl leading-none font-semibold tracking-tight text-brand tabular-nums">{w.works.length}</span>
+                  ) : (
+                    <span aria-hidden className="size-2 rounded-full bg-brand" />
+                  )}
+                  <span className="leading-snug">{item}</span>
+                </li>
+              ))}
+            </ul>
           </div>
           <Devices />
         </div>
@@ -199,9 +223,29 @@ export function WebStudio() {
           />
           <p className="mt-3 text-center text-sm text-paper/55">{w.worksDeckHint}</p>
         </div>
+        {/* Sector filter */}
+        <div role="group" aria-label={w.worksFilter} className="mt-14 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:flex-wrap md:px-8">
+          {(["all", ...SECTORS] as const).map((key) => {
+            const count = key === "all" ? w.works.length : w.works.filter((work) => work.sector === key).length;
+            return (
+              <button
+                key={key}
+                type="button"
+                aria-pressed={sector === key}
+                onClick={() => setSector(key)}
+                className={`flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full px-4 text-sm transition-colors duration-300 active:scale-95 ${
+                  sector === key ? "bg-brand text-ink" : "border border-paper/20 text-paper/80 hover:border-paper/40"
+                }`}
+              >
+                {key === "all" ? w.worksAll : w.worksSectors[key]}
+                <span className={`tabular-nums ${sector === key ? "text-ink/60" : "text-paper/45"}`}>{count}</span>
+              </button>
+            );
+          })}
+        </div>
         {/* Phones: a row to swipe through. Wider screens: a grid. */}
-        <ul className="works-row mt-12 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 [scrollbar-width:none] md:grid md:snap-none md:grid-cols-2 md:gap-6 md:overflow-visible md:px-8 md:pb-0 xl:grid-cols-3">
-          {w.works.map((work) => (
+        <ul className="works-row mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-4 [scrollbar-width:none] md:grid md:snap-none md:grid-cols-2 md:gap-6 md:overflow-visible md:px-8 md:pb-0 xl:grid-cols-3">
+          {shown.map((work) => (
             <li key={work.name} data-reveal className="w-[84vw] max-w-[26rem] shrink-0 snap-center md:w-auto md:max-w-none">
               <WorkCard work={work} concept={w.worksConcept} visit={w.worksVisit} />
             </li>
@@ -209,7 +253,7 @@ export function WebStudio() {
         </ul>
       </section>
 
-      {/* What I build */}
+      {/* What we build */}
       <section className="bg-paper px-4 py-24 md:px-8 md:py-32">
         <h2 data-reveal className={h2}>
           {w.offersTitle}

@@ -270,3 +270,12 @@ ordinateur et téléphone (`scripts/make-real-shots.mjs`), en FR/EN dans `webPag
 maintenant 13 sites (3 réalisations, 10 maquettes), dans la pile qui bascule et dans les cartes.
 
 Puis Bouchée Royale, Maison Awa, MASS Immobilier et Pharmacie Perusia (maquettes aussi) : 17 sites au total.
+
+## Page Web plus professionnelle (08/11)
+- Le web est fait par **le pôle web d'EGC Studio** (un partenaire d'Egu, pas Egu lui-même) : la page parle
+  maintenant au **« nous »** (intro, offres, méthode, appel à l'action), en FR et EN.
+- Bandeau de confiance sous les boutons : nombre de sites conçus (calculé depuis la liste), pensés pour le
+  téléphone, FR/EN, WhatsApp intégré.
+- **Filtres par secteur** sur les réalisations, avec le nombre de sites : Restauration, Mode, Immobilier,
+  Santé & beauté, Services & formation (champ `sector` de chaque site dans `webPage.works`).
+- Étude de cas : « 100 référencement » retiré (mesure actuelle 92), remplacé par « 0 lien cassé » (vérifié).
