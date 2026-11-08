@@ -15,6 +15,13 @@ export const sites = [
   { slug: "mima", url: "https://real11-espace-mima.vercel.app/" },
   { slug: "kignon", url: "https://espace-kignon.vercel.app/" },
   { slug: "vipgarage", url: "https://real23-vip-garage.vercel.app/" },
+  { slug: "sandwish", url: "https://real7-sandwish-republic.vercel.app/" },
+  { slug: "agencew", url: "https://real22-agence-w.vercel.app/" },
+  { slug: "dmyr", url: "https://real15-d-myr.vercel.app/" },
+  { slug: "overstyle", url: "https://real12-overstyle-ci.vercel.app/" },
+  { slug: "underthetree", url: "https://real9-under-the-tree.vercel.app/" },
+  { slug: "missfatima", url: "https://real14-miss-fatima-wigs.vercel.app/" },
+  { slug: "ebena", url: "https://real19-pharmacie-ebena.vercel.app/" },
 ];
 
 const only = process.argv.slice(2);

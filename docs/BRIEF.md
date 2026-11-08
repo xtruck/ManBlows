@@ -262,3 +262,9 @@ le projet n'utilise pas le CLI shadcn, l'alias `@/` pointe sur `src/`). Pas de d
   du domaine : il le sera avec un nom de domaine à soi), performance 35 à 43 (l'intro et les vidéos).
 - Reste à faire plus tard : alléger `public/films/` (137 Mo), reconvertir `film-2585.mp4` (abîmé),
   remplacer les coordonnées et contenus par ceux validés par Egu, nom de domaine.
+
+## Sept sites de plus dans les Réalisations (08/11)
+Sandwish Republic, Agence W, D.Myr, Overstyle CI, Under The Tree, Miss Fatima Wigs et Pharmacie Ebena : captures
+ordinateur et téléphone (`scripts/make-real-shots.mjs`), en FR/EN dans `webPage.works`. Tous affichent eux-mêmes
+« Maquette de démonstration… ni commandée ni validée » : ils portent le badge **Maquette**. `/web/` montre
+maintenant 13 sites (3 réalisations, 10 maquettes), dans la pile qui bascule et dans les cartes.
