@@ -183,7 +183,7 @@ export const dict = {
     webPage: {
       title: "Des sites web",
       titleAccent: "qui travaillent pour vous.",
-      intro: "Votre site, c'est votre vitrine ouverte jour et nuit. Le pôle web d'EGC Studio le conçoit comme le studio soigne ses images : net, rapide, et fait pour donner envie de vous contacter.",
+      intro: "Votre site, c'est votre vitrine ouverte jour et nuit. Egu pilote chaque projet, épaulé par l'équipe web d'EGC Studio : le même regard que pour ses images, pour un site net, rapide et fait pour donner envie de vous contacter.",
       trust: ["sites conçus", "Pensés d'abord pour le téléphone", "Français et anglais", "WhatsApp intégré"],
       cta: "Parler de mon site",
       secondary: "Voir l'étude de cas",
@@ -250,6 +250,7 @@ export const dict = {
       ],
       faqTitle: "Questions fréquentes",
       faq: [
+        { q: "Qui réalise mon site ?", a: "Egu, fondateur d'EGC Studio, pilote votre projet du premier échange à la mise en ligne. Son équipe web s'occupe du design et du développement. Un seul interlocuteur, une équipe complète." },
         { q: "Combien de temps faut-il ?", a: "On fixe le délai ensemble dès le départ, selon la taille du projet et la disponibilité de vos contenus." },
         { q: "Pouvez-vous aussi faire les photos et les visuels ?", a: "Oui, c'est l'avantage d'un studio à quatre métiers : photos, vidéos et visuels peuvent être réalisés pour votre site." },
         { q: "Mon site sera-t-il visible sur Google ?", a: "Chaque site est préparé pour Google : titres, descriptions, plan du site et pages rapides." },
@@ -468,7 +469,7 @@ export const dict = {
     webPage: {
       title: "Websites",
       titleAccent: "that work for you.",
-      intro: "Your website is a shop window that never closes. EGC Studio's web team builds it the way the studio crafts its images: sharp, fast, and made to get people in touch with you.",
+      intro: "Your website is a shop window that never closes. Egu leads every project, backed by EGC Studio's web team: the same eye as for his images, for a site that is sharp, fast and made to get people in touch with you.",
       trust: ["sites built", "Designed for phones first", "French and English", "WhatsApp built in"],
       cta: "Talk about my site",
       secondary: "See the case study",
@@ -535,6 +536,7 @@ export const dict = {
       ],
       faqTitle: "Frequent questions",
       faq: [
+        { q: "Who builds my site?", a: "Egu, founder of EGC Studio, leads your project from the first conversation to launch. His web team handles design and development. One point of contact, a whole team behind it." },
         { q: "How long does it take?", a: "We set the timing together at the start, based on the size of the project and when your content is ready." },
         { q: "Can you also do the photos and visuals?", a: "Yes, that's the advantage of a four-craft studio: photos, videos and visuals can be made for your site." },
         { q: "Will my site show up on Google?", a: "Every site is prepared for Google: titles, descriptions, sitemap and fast pages." },

@@ -279,3 +279,6 @@ Puis Bouchée Royale, Maison Awa, MASS Immobilier et Pharmacie Perusia (maquette
 - **Filtres par secteur** sur les réalisations, avec le nombre de sites : Restauration, Mode, Immobilier,
   Santé & beauté, Services & formation (champ `sector` de chaque site dans `webPage.works`).
 - Étude de cas : « 100 référencement » retiré (mesure actuelle 92), remplacé par « 0 lien cassé » (vérifié).
+
+- Précision (08/11) : le site est celui d'Egu, fondateur et patron. Le web est réalisé pour lui par un prestataire,
+  présenté comme « l'équipe web d'EGC Studio » : Egu pilote, son équipe réalise. FAQ « Qui réalise mon site ? ».
