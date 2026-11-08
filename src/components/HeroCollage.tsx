@@ -28,12 +28,20 @@ const BURST = Array.from({ length: 32 }, (_, i) => {
 // Each turn of the prism moves the stickers a little and gives them another shape
 const NUDGE = ["0 0", "6% -5%", "-5% 7%", "4% 4%"];
 const BADGE_SHAPES = [`polygon(${BURST})`, "circle(50% at 50% 50%)", "polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%)", `polygon(${BURST})`];
+// A palette per craft (ticket, badge, heart, bubble), sliding from one to the next
+const PALETTES = [
+  { ticket: "#ffb3d6", badge: "#b8f53b", heart: "#ffffff", bubble: "#0e0e0e", bubbleText: "#ece8e1" },
+  { ticket: "#ffd23d", badge: "#ff5e5b", heart: "#ffe8d6", bubble: "#2f6bff", bubbleText: "#ffffff" },
+  { ticket: "#b9e3ff", badge: "#ffc400", heart: "#ffb3d6", bubble: "#ff5e5b", bubbleText: "#0e0e0e" },
+  { ticket: "#c9f7d4", badge: "#2f6bff", heart: "#ffd23d", bubble: "#1f7a4a", bubbleText: "#ffffff" },
+];
 const BUBBLE_SHAPES = ["9999px", "1.4rem 1.4rem 1.4rem 0.3rem", "9999px 9999px 9999px 0.6rem", "1rem"];
 
 export function HeroCollage({ active = 0 }: { active?: number }) {
   const { t } = useLang();
   const s = t.hero.sticker;
   const set = s.sets[active] ?? s.sets[0];
+  const pal = PALETTES[active] ?? PALETTES[0];
   // A sticker for each craft: new words in, with a little pop, every time the prism turns
   const swap = (text: string) => <span key={`${active}-${text}`} className="sticker-swap block">{text}</span>;
   const root = useRef<HTMLDivElement>(null);
@@ -104,7 +112,7 @@ export function HeroCollage({ active = 0 }: { active?: number }) {
       {/* Shot ticket, like a kitchen receipt */}
       <div data-sticker data-depth="1.4" className="sticker absolute -top-[3%] -left-[24%] lg:top-[4%] lg:-left-[44%]" style={{ translate: NUDGE[active], "--r": "-8deg", "--d": "7s" } as React.CSSProperties}>
         <div>
-          <div className="w-[6.4rem] rounded-md bg-[#ffb3d6] p-2.5 font-mono text-[9px] leading-snug text-ink shadow-xl shadow-black/30 lg:w-[9.5rem] lg:p-4 lg:text-xs">
+          <div style={{ background: pal.ticket }} className="w-[6.4rem] rounded-md transition-colors duration-700 p-2.5 font-mono text-[9px] leading-snug text-ink shadow-xl shadow-black/30 lg:w-[9.5rem] lg:p-4 lg:text-xs">
             <p className="text-lg font-bold lg:text-2xl">#24</p>
             {set.ticket.map((line) => (
               <p key={line} className="uppercase">
@@ -119,10 +127,10 @@ export function HeroCollage({ active = 0 }: { active?: number }) {
       {/* Speech bubble */}
       <div data-sticker data-depth="0.8" className="sticker absolute top-[52%] -left-[12%] lg:top-[44%] lg:-left-[36%]" style={{ translate: NUDGE[active], "--r": "-4deg", "--d": "8.5s" } as React.CSSProperties}>
         <div>
-          <div style={{ borderRadius: BUBBLE_SHAPES[active] }} className="flex size-[5.5rem] items-center justify-center bg-ink p-3 text-center transition-[border-radius] duration-700 text-[11px] leading-tight font-medium text-paper shadow-xl shadow-black/40 ring-1 ring-paper/15 lg:size-[7.5rem] lg:text-sm">
+          <div style={{ borderRadius: BUBBLE_SHAPES[active], background: pal.bubble, color: pal.bubbleText }} className="flex size-[5.5rem] items-center justify-center p-3 text-center transition-[border-radius,background-color,color] duration-700 text-[11px] leading-tight font-medium text-paper shadow-xl shadow-black/40 ring-1 ring-paper/15 lg:size-[7.5rem] lg:text-sm">
             {swap(set.ask)}
           </div>
-          <span className="absolute -bottom-1 left-4 size-4 rotate-45 bg-ink lg:left-6" />
+          <span style={{ background: pal.bubble }} className="absolute -bottom-1 left-4 size-4 rotate-45 transition-colors duration-700 lg:left-6" />
         </div>
       </div>
 
@@ -130,8 +138,8 @@ export function HeroCollage({ active = 0 }: { active?: number }) {
       <div data-sticker data-depth="1.2" className="sticker absolute -top-[6%] -right-[10%] lg:top-[0%] lg:-right-[24%]" style={{ translate: NUDGE[active], "--r": "12deg", "--d": "6.5s" } as React.CSSProperties}>
         <div>
           <div
-            className="flex size-[5.5rem] items-center justify-center bg-[#b8f53b] p-4 text-center font-display text-[11px] leading-tight font-semibold text-ink drop-shadow-xl lg:size-[7.5rem] lg:text-sm"
-            style={{ clipPath: BADGE_SHAPES[active], transition: "clip-path 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)" }}
+            className="flex size-[5.5rem] items-center justify-center p-4 text-center font-display text-[11px] leading-tight font-semibold text-ink drop-shadow-xl lg:size-[7.5rem] lg:text-sm"
+            style={{ clipPath: BADGE_SHAPES[active], background: pal.badge, color: active === 3 ? "#ffffff" : "#0e0e0e", transition: "clip-path 0.8s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.7s, color 0.7s" }}
           >
             {swap(set.badge)}
           </div>
@@ -143,7 +151,7 @@ export function HeroCollage({ active = 0 }: { active?: number }) {
         <div>
           <div className="relative w-[5.5rem] drop-shadow-xl lg:w-[8rem]">
             <svg viewBox="0 0 100 90" className="block w-full">
-              <path d="M50 88C20 66 2 50 2 28 2 13 14 2 28 2c9 0 17 5 22 13C55 7 63 2 72 2c14 0 26 11 26 26 0 22-18 38-48 60z" fill="#fff" />
+              <path d="M50 88C20 66 2 50 2 28 2 13 14 2 28 2c9 0 17 5 22 13C55 7 63 2 72 2c14 0 26 11 26 26 0 22-18 38-48 60z" fill={pal.heart} style={{ transition: "fill 0.7s" }} />
             </svg>
             <span className="absolute inset-0 flex items-center justify-center px-4 pb-3 text-center font-mono text-[9px] leading-tight font-bold text-ink uppercase lg:text-[11px]">
               {swap(set.heart)}
