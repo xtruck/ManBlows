@@ -358,3 +358,25 @@ Refonte de l'apparence du panneau (`Assistant.tsx`, `assistant/parts.tsx`, style
   la demande de site ; sur Contact, « Besoin d'aide pour votre demande ? » l'ouvre au début. Il ne revient pas si le visiteur
   a déjà ouvert l'assistant. Testé avec une horloge simulée : 20 s, 15 s, une seule fois par visite, absent des autres pages.
 
+## Intro d'accueil et vitrine des sites (09/11)
+**Intro** (`Preloader.tsx`) : analysée image par image (vidéo, téléphone et ordinateur, processeur ralenti) puis refaite.
+- Défauts trouvés : cercle jaune qui laissait un anneau noir autour de la pastille, mots (bulles) qui apparaissaient sur le
+  fond crème avant la fin du remplissage jaune, « egc » blanc illisible sur le jaune et posé sur le « s », 1,5 s à regarder le
+  mot terminé, 4,3 à 4,7 s au total, jaune animé en largeur/hauteur (recalcul de la mise en page à chaque image).
+- **Début : plus de photo** (elle n'avait pas de sens pour le visiteur et il fallait la télécharger). À la place, un
+  **viseur d'appareil photo** : coins qui se verrouillent, grille des tiers, point « REC », lecture « f/2.8 · 1/125 · ISO 400 »
+  (la même que sur l'accueil), carré de mise au point qui se cale puis s'allume en jaune ; l'**obturateur** s'ouvre alors en iris
+  jaune depuis ce point. Tout le viseur est en CSS (aucune image), donc visible tout de suite, même avant le JavaScript.
+- Durée : environ 3 s (au lieu de 4,3 à 4,7 s). Le mot se construit une fois l'écran jaune ; « egc » reprend la disposition du logo.
+- **Sécurités** : si les scripts ne se chargent pas, le voile disparaît tout seul (animation CSS à 7 s) ; sans JavaScript il n'apparaît
+  pas ; plafond de 9 s côté script ; bouton « Passer l'intro » (maintenant en haut au centre) et touche Échap ; la visite suivante dans
+  le même onglet garde le simple fondu de 0,4 s. Testé : scripts bloqués, JavaScript coupé, stockage bloqué, saut au clavier.
+
+**Page Web** : l'ancienne pile de captures à plat est remplacée par une **vitrine** (`SiteShowcase.tsx`) : un ordinateur portable
+argenté (cadre noir, webcam, charnière, socle, encoche) et un téléphone (cadre titane, île dynamique), dessinés en CSS
+(`ui/device-mockups.tsx`), qui présentent les 17 sites l'un après l'autre, avec une pastille « Site livré » ou « Maquette »,
+nom, secteur, flèches, pause, balayage tactile, flèches du clavier, barre de progression et lueur jaune de la marque. Chaque
+carte de projet est aussi sur son ordinateur avec son téléphone. Corrigés en cours de route : débordement horizontal de la
+section (maintenant `overflow-clip`) et colonne qui s'élargissait selon le nom du site (grille `minmax(0, 1fr)`).
+Vérifié : largeur stable pour les 17 sites à 320, 390, 768 et 1440 px.
+

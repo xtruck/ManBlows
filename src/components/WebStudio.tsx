@@ -6,12 +6,10 @@ import Image from "next/image";
 import { useLang } from "./LangProvider";
 import { TransitionLink } from "./TransitionProvider";
 import { LightLeaks } from "./LightLeaks";
-import TumbleDeckShowcase from "./ui/tumble-deck-showcase";
+import { LaptopMockup, PhoneMockup } from "./ui/device-mockups";
+import { SiteShowcase, shot, type Work } from "./SiteShowcase";
 import { getLenis } from "./SmoothScroll";
 import { contact } from "@/content/site";
-
-const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-const shot = (name: string) => `${base}/web/${name}.webp`;
 
 const Check = () => (
   <svg viewBox="0 0 24 24" aria-hidden className="mt-0.5 size-5 shrink-0 text-brand" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
@@ -19,39 +17,6 @@ const Check = () => (
   </svg>
 );
 
-/** A laptop and a phone showing a site the studio built (ANAREKA-CI), slightly turned in 3D. */
-function Devices() {
-  return (
-    <div aria-hidden className="relative mx-auto aspect-[16/11] w-full max-w-[44rem] [perspective:1800px]">
-      <div className="devices absolute inset-0 [transform-style:preserve-3d]">
-        {/* Laptop */}
-        <div className="absolute top-0 left-0 w-[86%]">
-          <div className="rounded-t-[1rem] border border-paper/15 bg-[#1b1a19] p-[1.6%] shadow-2xl shadow-black/60">
-            <div className="flex items-center gap-1.5 pb-[1.4%]">
-              <span className="size-2 rounded-full bg-[#ff5f57]" />
-              <span className="size-2 rounded-full bg-[#febc2e]" />
-              <span className="size-2 rounded-full bg-[#28c840]" />
-            </div>
-            <div className="relative aspect-[16/10] overflow-hidden rounded-[0.35rem] bg-paper">
-              <Image src={shot("real-anareka-desk")} alt="" fill sizes="(min-width: 1024px) 38rem, 86vw" className="object-cover object-top" preload />
-            </div>
-          </div>
-          <div className="mx-[-4%] h-[0.9rem] rounded-b-[1rem] bg-gradient-to-b from-[#3a3734] to-[#1b1a19]" />
-        </div>
-        {/* Phone */}
-        <div className="absolute right-0 bottom-0 w-[27%] [transform:translateZ(60px)]">
-          <div className="rounded-[1.4rem] border border-paper/20 bg-[#111] p-[4%] shadow-2xl shadow-black/70">
-            <div className="relative aspect-[9/19.5] overflow-hidden rounded-[1.05rem] bg-paper">
-              <Image src={shot("real-anareka-phone")} alt="" fill sizes="(min-width: 1024px) 12rem, 27vw" className="object-cover object-top" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-type Work = { name: string; kind: string; url: string; desk: string; phone: string; concept: boolean; sector: string };
 type Sector = "food" | "fashion" | "realestate" | "health" | "services";
 const SECTORS: Sector[] = ["food", "fashion", "realestate", "health", "services"];
 
@@ -85,33 +50,25 @@ function WorkCard({ work, concept, visit }: { work: Work; concept: string; visit
       aria-label={`${work.name}, ${work.kind}${work.concept ? ` (${concept})` : ""} : ${visit}`}
       className="work-card group block rounded-[1.6rem] border border-paper/10 bg-graphite/70 p-3 md:p-4"
     >
-      <div className="work-card-stage relative pr-[16%] pb-[9%]">
-        {/* Desktop page in a browser frame */}
-        <div className="overflow-hidden rounded-[0.9rem] border border-paper/10 bg-[#161514] shadow-2xl shadow-black/50">
-          <div className="flex items-center gap-1.5 px-3 py-2">
-            <span className="size-1.5 rounded-full bg-paper/25" />
-            <span className="size-1.5 rounded-full bg-paper/25" />
-            <span className="size-1.5 rounded-full bg-paper/25" />
-            <span className="ml-2 min-w-0 truncate rounded-full bg-paper/[0.06] px-2.5 py-0.5 text-[10px] text-paper/50">{work.url}</span>
-          </div>
-          <div className="relative aspect-[16/10] overflow-hidden">
-            <Image
-              src={shot(work.desk)}
-              alt={`${work.name}, ${work.kind}`}
-              fill
-              sizes="(min-width: 1280px) 26rem, (min-width: 768px) 42vw, 80vw"
-              className="object-cover object-top transition-transform duration-[1.2s] ease-out group-hover:scale-[1.03]"
-            />
-          </div>
-        </div>
+      <div className="work-card-stage relative pr-[14%] pb-[7%]">
+        {/* Desktop page on a laptop */}
+        <LaptopMockup className="drop-shadow-[0_1.2rem_1.4rem_rgb(0_0_0/0.5)]">
+          <Image
+            src={shot(work.desk)}
+            alt={`${work.name}, ${work.kind}`}
+            fill
+            sizes="(min-width: 1280px) 24rem, (min-width: 768px) 40vw, 76vw"
+            className="object-cover object-top transition-transform duration-[1.2s] ease-out group-hover:scale-[1.03]"
+          />
+        </LaptopMockup>
         {/* Phone version, standing in front */}
-        <div className="work-card-phone absolute right-0 bottom-0 w-[27%] rounded-[1rem] border border-paper/20 bg-[#0b0b0b] p-[3px] shadow-2xl shadow-black/70">
-          <div className="relative aspect-[420/855] overflow-hidden rounded-[0.8rem]">
-            <Image src={shot(work.phone)} alt="" fill sizes="(min-width: 768px) 9rem, 24vw" className="object-cover object-top" />
-          </div>
+        <div className="work-card-phone absolute right-0 bottom-0 w-[24%] [filter:drop-shadow(0_1rem_1rem_rgb(0_0_0/0.6))]">
+          <PhoneMockup>
+            <Image src={shot(work.phone)} alt="" fill sizes="(min-width: 768px) 8rem, 20vw" className="object-cover object-top" />
+          </PhoneMockup>
         </div>
         {work.concept && (
-          <span className="absolute top-11 left-3 rounded-full bg-ink/80 px-2.5 py-1 text-[11px] font-medium text-brand ring-1 ring-brand/40 backdrop-blur-sm">
+          <span className="absolute top-0 left-0 z-10 -rotate-3 rounded-full bg-ink/85 px-2.5 py-1 text-[11px] font-medium text-brand ring-1 ring-brand/40 backdrop-blur-sm">
             {concept}
           </span>
         )}
@@ -120,6 +77,7 @@ function WorkCard({ work, concept, visit }: { work: Work; concept: string; visit
         <div className="min-w-0">
           <h3 className="font-display text-2xl font-semibold tracking-[-0.03em]">{work.name}</h3>
           <p className="mt-0.5 text-sm text-paper/65">{work.kind}</p>
+          <p className="mt-1 truncate text-xs text-paper/45">{work.url}</p>
         </div>
         <span
           aria-hidden
@@ -161,9 +119,9 @@ export function WebStudio() {
   return (
     <>
       {/* Header */}
-      <section className="relative isolate overflow-hidden bg-ink px-4 pt-32 pb-20 text-paper md:px-8 md:pt-40 md:pb-28">
+      <section className="relative isolate overflow-clip bg-ink px-4 pt-32 pb-20 text-paper md:px-8 md:pt-40 md:pb-28">
         <LightLeaks className="opacity-60" />
-        <div className="mx-auto grid max-w-[110rem] items-center gap-14 lg:grid-cols-[1fr_1.1fr]">
+        <div className="mx-auto grid max-w-[110rem] grid-cols-[minmax(0,1fr)] items-center gap-14 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
           <div>
             <p className="text-xs font-medium tracking-[0.28em] text-paper/60 uppercase md:text-sm">04 · Web</p>
             <h1 className="mt-5 font-display text-[clamp(3rem,8vw,7rem)] leading-[0.9] font-semibold tracking-[-0.045em]">
@@ -192,7 +150,20 @@ export function WebStudio() {
               ))}
             </ul>
           </div>
-          <Devices />
+          <SiteShowcase
+            works={w.works}
+            labels={{
+              region: w.worksDeck,
+              prev: w.showcasePrev,
+              next: w.showcaseNext,
+              pause: w.showcasePause,
+              play: w.showcasePlay,
+              visit: w.worksVisit,
+              concept: w.worksConcept,
+              delivered: w.showcaseDelivered,
+              sectors: w.worksSectors,
+            }}
+          />
         </div>
       </section>
 
@@ -205,23 +176,6 @@ export function WebStudio() {
           <p data-reveal className="max-w-[44ch] text-lg leading-relaxed text-paper/70 md:col-span-6 md:justify-self-end">
             {w.worksIntro}
           </p>
-        </div>
-        {/* The sites as a deck of pages that tip over one after the other (tap, swipe sideways, arrows) */}
-        <div data-reveal className="mt-12 px-4 md:px-8">
-          <TumbleDeckShowcase
-            cards={w.works.map((work) => ({ src: shot(work.desk), alt: `${work.name}, ${work.kind}` }))}
-            height="min(78svh, 46rem)"
-            aspect={1.6}
-            depth={4}
-            captureWheel={false}
-            dragAxis="x"
-            background="transparent"
-            ariaLabel={w.worksDeck}
-            hint={w.worksDeckHint}
-            className="rounded-[1.6rem]"
-            style={{ "--color-foreground": "var(--paper)", "--color-background": "var(--ink)", "--color-primary": "var(--brand)" } as React.CSSProperties}
-          />
-          <p className="mt-3 text-center text-sm text-paper/55">{w.worksDeckHint}</p>
         </div>
         {/* Sector filter */}
         <div role="group" aria-label={w.worksFilter} className="mt-14 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:flex-wrap md:px-8">

@@ -34,7 +34,7 @@ Lenis for animation. Everything 3D is pure CSS (no WebGL), so it stays light on 
 | `src/app/`                   | Pages: home, `travaux` (work), `films`, `web`, `a-propos` (about), `contact` |
 | `src/content/crafts.ts`      | The four crafts: order, links and the slideshow on each prism face     |
 | `src/components/`            | Sections and site-wide pieces (nav, preloader, page transitions…)     |
-| `src/components/ui/`         | Reusable effects: `perspective-tunnel-hero` (3D corridor driven by the page scroll) and `tumble-deck-showcase` (stack of site captures that tip over) |
+| `src/components/ui/`         | Reusable pieces: `perspective-tunnel-hero` (3D corridor driven by the page scroll) and `device-mockups` (a laptop and a phone drawn in CSS, holding captures of the sites) |
 | `src/content/photos.ts`      | Photos shown in the Work gallery                                      |
 | `src/content/design.ts`      | Graphic design work, plus the studio's own price posters              |
 | `src/content/site.ts`        | Films, showreel, client list and contact details                      |
@@ -59,15 +59,15 @@ French, and each page has a single URL for both languages.
 
 | Where | What | File |
 | --- | --- | --- |
-| First visit, every page | Intro after Square Kiosk: photo pill, yellow flood, giant "studio." built from merging bubbles, curtain lift | `Preloader.tsx` |
+| First visit, every page | About 3 s: a camera viewfinder (brackets, focus square, exposure readout) locks, the shutter opens as a yellow iris, giant "studio." builds from merging bubbles, curtain lift. Skip button and Escape; CSS failsafe if scripts fail | `Preloader.tsx` |
 | Home hero | Four-craft prism (drag to spin, per-face lighting, slideshow, film loop) with floating stickers | `Hero.tsx`, `HeroCollage.tsx` |
 | Home, Travaux, Films | 3D tunnel of work, driven by the page scroll | `WorkTunnel.tsx` → `ui/perspective-tunnel-hero.tsx` |
-| `/web/` | Tipping deck of site captures, then the project cards | `WebStudio.tsx` → `ui/tumble-deck-showcase.tsx` |
+| `/web/` | A laptop and phone that walk through every site (auto, arrows, swipe, pause), then the project cards, each on its own laptop | `WebStudio.tsx` → `SiteShowcase.tsx`, `ui/device-mockups.tsx` |
 | Between pages | Four-band curtain | `TransitionProvider.tsx` |
 
 Each animation shows **its own pictures** (no photo, poster or film appears in two of them), so a
 visitor sees as much of the work as possible: keep it that way when changing `crafts.ts`,
-`WorkTunnel.tsx`, `HeroCollage.tsx`, `Preloader.tsx` or the picks in `Disciplines.tsx`.
+`WorkTunnel.tsx`, `HeroCollage.tsx` or the picks in `Disciplines.tsx` (the intro no longer shows a photo).
 Everything respects the "gentle" animation mode (footer switch, or the device's reduce-motion setting).
 
 ## Captures of sites

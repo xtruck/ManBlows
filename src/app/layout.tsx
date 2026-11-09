@@ -108,6 +108,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="grain min-h-full font-sans">
         <script dangerouslySetInnerHTML={{ __html: bootScript }} />
+        {/* Without JavaScript the intro cannot run, so it must not cover the page */}
+        <noscript>
+          <style>{"[data-preloader],[data-pre-skip]{display:none!important}"}</style>
+        </noscript>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
         <LangProvider>
           <SmoothScroll />

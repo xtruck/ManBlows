@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Worktrees that tools (QA agents) create inside the repo: never lint their copies
+    ".claude/**",
+    "worker/**/*.generated.mjs",
   ]),
 ]);
 

@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
 import { gsap } from "gsap";
 import { useLang } from "./LangProvider";
 import { INTRO_SEEN_KEY, markIntroDone, markIntroLeaving } from "@/lib/intro";
 import { motionMode } from "@/lib/motion";
 
-const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-const MAX_WAIT_MS = 3000; // never hold the visitor longer than this for the fonts
+const MAX_WAIT_MS = 2500; // never hold the visitor longer than this for the fonts
+const HARD_CAP_MS = 9000; // whatever happens (stalled timers, background tab), the cover is gone by then
+const IRIS_AT = 0.75; // seconds after navigation start when the shutter opens (the CSS viewfinder takes until then)
 
 // The bubbles that build the giant word: a grid over its box, each growing at its own moment.
 const COLS = 16;
@@ -22,11 +22,17 @@ const BUBBLES = Array.from({ length: COLS * ROWS }, (_, i) => {
 });
 
 /**
- * First load of a visit, after the Square Kiosk intro: a small pill opens on one of the
- * studio's photos and grows; a brand-yellow pill swells out of it and floods the screen; the
- * giant word "studio." builds itself out of merging bubbles (a "gooey" SVG filter), "egc" is
- * written in over it, and the yellow lifts like a curtain while the hero's prism rises from below.
- * Later loads in the same visit get a short fade (see layout.tsx).
+ * First load of a visit (about 3 s). It says what the studio is before a word is read: a camera
+ * viewfinder (corner brackets, thirds, a focus square that locks, the same exposure readout as the
+ * home hero) appears on the cream, then the shutter opens as a brand-yellow iris from the focus
+ * point and floods the screen (transform only, so it stays smooth on phones); the giant word
+ * "studio." builds itself out of merging bubbles (a "gooey" SVG filter), "egc" is written in, and
+ * the yellow lifts like a curtain while the hero's prism rises from below. The viewfinder is plain
+ * CSS, so it shows at once, with no image to download. Later loads in the same visit get a short
+ * fade (see layout.tsx).
+ *
+ * It can never trap the visitor: Skip button and Escape, a hard time cap, a CSS-only failsafe
+ * (see [data-preloader] in globals.css) and a no-script rule (layout.tsx).
  */
 export function Preloader() {
   const { t } = useLang();
@@ -45,7 +51,10 @@ export function Preloader() {
     window.scrollTo(0, 0);
     document.documentElement.style.overflow = "hidden";
 
+    let finished = false;
     const finish = () => {
+      if (finished) return;
+      finished = true;
       window.scrollTo(0, 0);
       document.documentElement.style.overflow = "";
       try {
@@ -53,6 +62,15 @@ export function Preloader() {
       } catch {}
       markIntroDone();
       setGone(true);
+    };
+    // Last resort: stalled timers (a background tab) or a script error must not keep the cover up
+    const hardCap = window.setTimeout(finish, HARD_CAP_MS);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && skipRef.current();
+    window.addEventListener("keydown", onKey);
+    const cleanup = () => {
+      window.clearTimeout(hardCap);
+      window.removeEventListener("keydown", onKey);
+      document.documentElement.style.overflow = "";
     };
 
     const fonts = document.fonts?.ready ?? Promise.resolve();
@@ -70,7 +88,7 @@ export function Preloader() {
       return () => {
         cancelled = true;
         tween?.kill();
-        document.documentElement.style.overflow = "";
+        cleanup();
       };
     }
 
@@ -82,7 +100,7 @@ export function Preloader() {
     if (reduced) {
       ctx.add(() => {
         gsap.set(q("[data-sq-paper], [data-sq-pill]"), { autoAlpha: 0 });
-        gsap.set(q("[data-sq-fill]"), { x: 0, y: 0, xPercent: -50, yPercent: -50, scale: 1, width: window.innerWidth, height: window.innerHeight, borderRadius: 0 });
+        gsap.set(q("[data-sq-fill]"), { x: 0, y: 0, xPercent: -50, yPercent: -50, scale: 1 });
         gsap.set(q("[data-sq-bubble]"), { attr: { r: 52 } });
         gsap.set(q("[data-sq-word]"), { autoAlpha: 1 });
         gsap.set(q("[data-sq-script]"), { clipPath: "inset(-30% 0% -30% 0)" });
@@ -90,13 +108,13 @@ export function Preloader() {
       fontsOrTimeout.then(() => {
         if (cancelled) return;
         ctx.add(() => {
-          gsap.to([el, skipBtn.current], { autoAlpha: 0, duration: 0.4, delay: 0.6, ease: "power1.out", onStart: markIntroLeaving, onComplete: finish });
+          gsap.to([el, skipBtn.current], { autoAlpha: 0, duration: 0.4, delay: 0.5, ease: "power1.out", onStart: markIntroLeaving, onComplete: finish });
         });
       });
       return () => {
         cancelled = true;
         ctx.revert();
-        document.documentElement.style.overflow = "";
+        cleanup();
       };
     }
 
@@ -110,8 +128,8 @@ export function Preloader() {
         .timeline({ onComplete: finish })
         .to(skipBtn.current, { autoAlpha: 0, duration: 0.2 }, 0)
         .add(markIntroLeaving, 0.05)
-        .to(q("[data-sq-stage]"), { yPercent: -100, duration: 0.95, ease: "expo.inOut" }, 0.05)
-        .to(q("[data-sq-word-wrap]"), { yPercent: 30, duration: 0.95, ease: "expo.inOut" }, 0.05);
+        .to(q("[data-sq-stage]"), { yPercent: -100, duration: 0.8, ease: "expo.inOut" }, 0.05)
+        .to(q("[data-sq-word-wrap]"), { yPercent: 30, duration: 0.8, ease: "expo.inOut" }, 0.05);
     };
     const startOutro = () => {
       if (outroStarted || cancelled) return;
@@ -121,23 +139,24 @@ export function Preloader() {
 
     ctx.add(() => {
       const fill = q("[data-sq-fill]")[0] as HTMLElement;
+      // The iris is a big circle (sized in CSS to cover any screen) that only ever scales
       gsap.set(fill, { x: 0, y: 0, xPercent: -50, yPercent: -50, scale: 0 });
-      // The pill opens in CSS (see .sq-pill in globals.css), so it shows even before this script
-      // arrives on a slow phone. From here on, everything is GSAP.
-      const lead = Math.max(0, 0.95 - performance.now() / 1000);
+      // The viewfinder plays in CSS (see .sq-vf in globals.css), so it shows even before this script
+      // arrives on a slow phone. From here on, everything is GSAP, starting when the focus has locked.
+      const lead = Math.max(0, IRIS_AT - performance.now() / 1000);
       main = gsap.timeline({ delay: lead, onComplete: () => void fontsOrTimeout.then(startOutro) });
       main
-        // A brand-yellow pill swells out of the photo pill...
-        .fromTo(fill, { scale: 0 }, { scale: 1, duration: 0.35, ease: "power3.out" }, 0)
-        // ...then floods the screen
-        .to(fill, { width: () => window.innerWidth, height: () => window.innerHeight, borderRadius: 0, duration: 0.6, ease: "expo.inOut" }, 0.32)
-        .set(q("[data-sq-paper], [data-sq-pill]"), { autoAlpha: 0 }, 0.95)
-        // The giant word builds itself out of bubbles that merge
-        .set(q("[data-sq-word]"), { autoAlpha: 1 }, 0.7)
-        .fromTo(q("[data-sq-bubble]"), { attr: { r: 0 } }, { attr: { r: 52 }, duration: 0.55, ease: "back.out(1.6)", stagger: { each: 0.008, from: "random" } }, 0.72)
+        // The shutter opens: a brand-yellow iris grows from the focus point and floods the screen
+        .fromTo(fill, { scale: 0 }, { scale: 1, duration: 0.8, ease: "power3.inOut" }, 0)
+        // The viewfinder fades under it; the cream goes once the yellow reaches every corner
+        .to(q("[data-sq-pill]"), { autoAlpha: 0, duration: 0.25 }, 0.4)
+        .set(q("[data-sq-paper]"), { autoAlpha: 0 }, 0.75)
+        // The giant word builds itself out of bubbles that merge, once the yellow is nearly everywhere
+        .set(q("[data-sq-word]"), { autoAlpha: 1 }, 0.5)
+        .fromTo(q("[data-sq-bubble]"), { attr: { r: 0 } }, { attr: { r: 52 }, duration: 0.45, ease: "back.out(1.6)", stagger: { each: 0.0045, from: "random" } }, 0.52)
         // "egc" is written in over it, like the logo
-        .fromTo(q("[data-sq-script]"), { clipPath: "inset(-30% 100% -30% 0)" }, { clipPath: "inset(-30% 0% -30% 0)", duration: 0.55, ease: "power2.inOut" }, 1.45)
-        .to({}, { duration: 0.35 });
+        .fromTo(q("[data-sq-script]"), { clipPath: "inset(-30% 100% -30% 0)" }, { clipPath: "inset(-30% 0% -30% 0)", duration: 0.5, ease: "power2.inOut" }, 1)
+        .to({}, { duration: 0.2 });
     });
 
     skipRef.current = () => {
@@ -148,7 +167,7 @@ export function Preloader() {
     return () => {
       cancelled = true;
       ctx.revert();
-      document.documentElement.style.overflow = "";
+      cleanup();
     };
   }, []);
 
@@ -163,9 +182,27 @@ export function Preloader() {
       <div ref={root} aria-hidden data-preloader className="fixed inset-0 z-[100] overflow-hidden">
         <div data-sq-paper className="absolute inset-0 bg-paper" />
 
-        {/* The pill, open on one of the studio's photos */}
-        <div data-sq-pill className="sq-pill absolute top-1/2 left-1/2 overflow-hidden rounded-full bg-graphite">
-          <Image src={`${base}/work/photo-25.webp`} alt="" fill sizes="10rem" preload className="sq-pill-photo object-cover" />
+        {/* The viewfinder: the studio is a camera. Decorative; all of it plays in CSS. */}
+        <div data-sq-pill className="sq-vf absolute inset-0 font-mono text-[10px] tracking-[0.18em] text-ink/70 uppercase md:text-xs">
+          <span className="sq-vf-thirds absolute" />
+          <span className="sq-vf-corner sq-vf-tl absolute" />
+          <span className="sq-vf-corner sq-vf-tr absolute" />
+          <span className="sq-vf-corner sq-vf-bl absolute" />
+          <span className="sq-vf-corner sq-vf-br absolute" />
+          <span className="sq-vf-hud absolute flex items-center gap-2" style={{ top: "var(--vf-pad)", left: "var(--vf-pad)", marginTop: "0.9rem", marginLeft: "0.9rem" }}>
+            <i className="sq-vf-rec block size-2 rounded-full bg-ink" />
+            REC
+          </span>
+          <span className="sq-vf-hud absolute" style={{ top: "var(--vf-pad)", right: "var(--vf-pad)", marginTop: "0.9rem", marginRight: "0.9rem" }}>
+            EGC · 001
+          </span>
+          <span className="sq-vf-hud absolute" style={{ bottom: "var(--vf-pad)", left: "var(--vf-pad)", marginBottom: "0.9rem", marginLeft: "0.9rem" }}>
+            f/2.8 · 1/125 · ISO 400
+          </span>
+          <span className="sq-vf-hud absolute" style={{ bottom: "var(--vf-pad)", right: "var(--vf-pad)", marginBottom: "0.9rem", marginRight: "0.9rem" }}>
+            Abidjan
+          </span>
+          <span className="sq-vf-focus absolute top-1/2 left-1/2" />
         </div>
 
         {/* Everything that lifts away at the end: the yellow and the giant word */}
@@ -203,8 +240,8 @@ export function Preloader() {
               </svg>
               <span
                 data-sq-script
-                className="font-script pointer-events-none absolute top-[-14%] left-[3%] text-[19cqw] leading-none text-white [clip-path:inset(-30%_100%_-30%_0)]"
-                style={{ transform: "rotate(-8deg)" }}
+                className="font-script pointer-events-none absolute top-[-30%] left-[2%] text-[21cqw] leading-none text-white [clip-path:inset(-30%_100%_-30%_0)]"
+                style={{ transform: "rotate(-8deg)", textShadow: "0 0.012em 0 rgb(14 14 14 / 0.55), 0 0 0.05em rgb(14 14 14 / 0.3)" }}
               >
                 egc
               </span>
@@ -218,7 +255,7 @@ export function Preloader() {
         type="button"
         data-pre-skip
         onClick={() => skipRef.current()}
-        className="fixed top-3 right-3 z-[101] h-10 cursor-pointer rounded-full border border-ink/15 bg-paper/70 px-4 text-xs text-ink/80 backdrop-blur-sm transition-colors hover:bg-paper md:top-6 md:right-8"
+        className="fixed top-3 left-1/2 z-[101] h-10 -translate-x-1/2 cursor-pointer rounded-full border border-ink/15 bg-paper/70 px-4 text-xs whitespace-nowrap text-ink/80 backdrop-blur-sm transition-colors hover:bg-paper md:top-5"
       >
         {t.a11y.skipIntro}
       </button>

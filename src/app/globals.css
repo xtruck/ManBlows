@@ -366,32 +366,80 @@ html[data-intro="quick"] [data-preloader] > * {
   display: none;
 }
 
-/* ---------- Intro (components/Preloader.tsx), after the Square Kiosk intro ---------- */
+/* ---------- Intro (components/Preloader.tsx) ---------- */
 [data-preloader] {
-  --pill-w: min(30vw, 10rem);
+  --vf-pad: max(1rem, 3.2vmin); /* the viewfinder's inset from the screen edge */
+  --vf-len: clamp(1.6rem, 6vmin, 3rem); /* length of a corner bracket */
 }
-/* The pill opens in CSS (transform and opacity only, so it moves even while scripts load) */
-.sq-pill {
-  width: var(--pill-w);
-  height: calc(var(--pill-w) * 2);
-  transform: translate(-50%, -50%) scale(1);
-  animation: sq-pill 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+/* Failsafe with no script involved: if the intro never finishes (script error, stalled timers),
+   the cover and the Skip button fade away on their own. The Preloader unmounts long before this. */
+[data-preloader],
+[data-pre-skip] {
+  animation: pre-failsafe 0.4s linear 7s forwards;
 }
-.sq-pill-photo {
-  animation: sq-pill-photo 1.3s cubic-bezier(0.33, 1, 0.68, 1) 0.1s backwards;
+@keyframes pre-failsafe {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
 }
+
+/* The viewfinder plays in CSS (transform and opacity only, so it moves even while scripts load):
+   corners snap in, the thirds fade up, the focus square locks, the REC dot blinks. */
+.sq-vf-corner {
+  width: var(--vf-len);
+  height: var(--vf-len);
+  border: 0 solid var(--ink);
+  animation: sq-vf-corner 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.05s backwards;
+}
+.sq-vf-tl { top: var(--vf-pad); left: var(--vf-pad); border-top-width: 2px; border-left-width: 2px; transform-origin: top left; }
+.sq-vf-tr { top: var(--vf-pad); right: var(--vf-pad); border-top-width: 2px; border-right-width: 2px; transform-origin: top right; }
+.sq-vf-bl { bottom: var(--vf-pad); left: var(--vf-pad); border-bottom-width: 2px; border-left-width: 2px; transform-origin: bottom left; }
+.sq-vf-br { bottom: var(--vf-pad); right: var(--vf-pad); border-bottom-width: 2px; border-right-width: 2px; transform-origin: bottom right; }
+.sq-vf-thirds {
+  inset: var(--vf-pad);
+  background:
+    linear-gradient(rgb(14 14 14 / 0.1), rgb(14 14 14 / 0.1)) 33.333% 0 / 1px 100% no-repeat,
+    linear-gradient(rgb(14 14 14 / 0.1), rgb(14 14 14 / 0.1)) 66.666% 0 / 1px 100% no-repeat,
+    linear-gradient(rgb(14 14 14 / 0.1), rgb(14 14 14 / 0.1)) 0 33.333% / 100% 1px no-repeat,
+    linear-gradient(rgb(14 14 14 / 0.1), rgb(14 14 14 / 0.1)) 0 66.666% / 100% 1px no-repeat;
+  animation: sq-vf-fade 0.5s ease-out 0.2s backwards;
+}
+.sq-vf-hud {
+  animation: sq-vf-fade 0.4s ease-out 0.3s backwards;
+}
+.sq-vf-rec {
+  animation: sq-vf-blink 0.9s steps(1, end) 0.3s infinite;
+}
+/* The focus square: appears large and soft, locks onto the centre, then flashes brand yellow */
+.sq-vf-focus {
+  width: clamp(3rem, 11vmin, 5rem);
+  height: clamp(3rem, 11vmin, 5rem);
+  margin: calc(clamp(3rem, 11vmin, 5rem) / -2) 0 0 calc(clamp(3rem, 11vmin, 5rem) / -2);
+  border: 2px solid var(--ink);
+  animation: sq-vf-focus 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.15s backwards;
+}
+/* The yellow iris: one circle big enough to cover any screen from its centre, only ever scaled */
 .sq-fill {
-  width: var(--pill-w);
-  height: calc(var(--pill-w) * 2);
+  width: calc(100vmax * 1.5);
+  height: calc(100vmax * 1.5);
   transform: translate(-50%, -50%) scale(0);
+  will-change: transform;
 }
-@keyframes sq-pill {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.12); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+@keyframes sq-vf-corner {
+  from { opacity: 0; transform: scale(2.2); }
+  to { opacity: 1; transform: scale(1); }
 }
-@keyframes sq-pill-photo {
-  from { transform: scale(1.35); }
-  to { transform: scale(1); }
+@keyframes sq-vf-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes sq-vf-blink {
+  0%, 60% { opacity: 1; }
+  61%, 100% { opacity: 0.15; }
+}
+@keyframes sq-vf-focus {
+  0% { opacity: 0; transform: scale(2.4); }
+  60% { opacity: 1; transform: scale(1); background-color: transparent; }
+  75% { background-color: rgb(255 196 0 / 0.9); }
+  100% { opacity: 1; transform: scale(1); background-color: rgb(255 196 0 / 0.9); }
 }
 
 /* Repeat load in the same visit: a dark cover only (the intro artwork is hidden, see above) */
@@ -702,16 +750,198 @@ html[data-motion="gentle"] .work-card-phone {
   transition: none;
 }
 
-/* /web/ page: the laptop and phone mock-up leans in, and straightens on hover */
-.devices {
-  transform: rotateY(-14deg) rotateX(6deg);
-  transition: transform 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+/* ---------- Device mock-ups (components/ui/device-mockups.tsx, SiteShowcase.tsx) ----------
+   Drawn in CSS so they weigh nothing and stay sharp at any size. Every measure is a share of the
+   device's own width (container units), so a laptop in a small card and a big one are the same. */
+.mk-laptop {
+  container-type: inline-size;
+  position: relative;
 }
-.devices:hover {
-  transform: rotateY(-4deg) rotateX(2deg);
+.mk-lid {
+  position: relative;
+  padding: 2.5cqw 1.6cqw 2.3cqw;
+  border-radius: 2.6cqw 2.6cqw 0.5cqw 0.5cqw;
+  background: linear-gradient(180deg, #2c2c2f 0%, #0c0c0d 100%);
+  box-shadow:
+    0 0 0 0.22cqw #707177,
+    0 0 0 0.36cqw #19191b,
+    inset 0 0.14cqw 0 rgb(255 255 255 / 0.14);
 }
-html[data-motion="gentle"] .devices {
+/* the webcam, in the top bezel */
+.mk-lid::before {
+  content: "";
+  position: absolute;
+  top: 0.95cqw;
+  left: 50%;
+  width: 0.6cqw;
+  height: 0.6cqw;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #3b4a66, #06080d 70%);
+  box-shadow: 0 0 0 0.12cqw #1b1c20;
+}
+.mk-screen {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 0.5cqw;
+  background: #0b0b0c;
+}
+/* light across the glass */
+.mk-glare {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background:
+    linear-gradient(115deg, rgb(255 255 255 / 0.16) 0%, rgb(255 255 255 / 0) 34%),
+    linear-gradient(295deg, rgb(255 255 255 / 0.06) 0%, rgb(255 255 255 / 0) 28%);
+}
+.mk-hinge {
+  height: 0.5cqw;
+  margin: 0 7%;
+  border-radius: 0 0 0.4cqw 0.4cqw;
+  background: linear-gradient(180deg, #040404, #2b2b2e);
+}
+.mk-base {
+  position: relative;
+  height: 2.6cqw;
+  margin: 0 -1.6cqw;
+  border-radius: 0 0 2.6cqw 2.6cqw / 0 0 1.5cqw 1.5cqw;
+  background: linear-gradient(180deg, #eceef1 0%, #c5c6cb 45%, #8d8e94 100%);
+  box-shadow:
+    inset 0 0.14cqw 0 rgb(255 255 255 / 0.95),
+    inset 0 -0.14cqw 0 rgb(0 0 0 / 0.25);
+}
+/* the thumb notch that lets you lift the lid */
+.mk-base::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 15cqw;
+  height: 1cqw;
+  transform: translateX(-50%);
+  border-radius: 0 0 1.1cqw 1.1cqw;
+  background: linear-gradient(180deg, #9fa0a6, #d1d2d6);
+  box-shadow: inset 0 0.12cqw 0.25cqw rgb(0 0 0 / 0.3);
+}
+.mk-floor {
+  pointer-events: none;
+  position: absolute;
+  right: 3%;
+  bottom: -2.2cqw;
+  left: 3%;
+  z-index: -1;
+  height: 4cqw;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 0.6), transparent);
+  filter: blur(0.8cqw);
+}
+
+.mk-phone {
+  container-type: inline-size;
+  position: relative;
+}
+.mk-phone-body {
+  position: relative;
+  padding: 3cqw;
+  border-radius: 15cqw;
+  background: linear-gradient(145deg, #9a9ba1 0%, #3d3e42 38%, #1a1a1c 60%, #74757b 100%);
+  box-shadow:
+    0 0 0 0.5cqw #09090a,
+    inset 0 0 0 0.4cqw rgb(255 255 255 / 0.16);
+}
+.mk-phone-screen {
+  position: relative;
+  aspect-ratio: 420 / 855;
+  overflow: hidden;
+  border-radius: 12cqw;
+  background: #000;
+  box-shadow: 0 0 0 1.6cqw #050505;
+}
+/* the dynamic island */
+.mk-island {
+  position: absolute;
+  top: 2.6cqw;
+  left: 50%;
+  z-index: 4;
+  width: 24cqw;
+  height: 6.6cqw;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background: #000;
+}
+/* side buttons */
+.mk-phone::before,
+.mk-phone::after {
+  content: "";
+  position: absolute;
+  width: 1.4cqw;
+  border-radius: 0.6cqw;
+  background: linear-gradient(90deg, #4b4c51, #1b1b1d);
+}
+.mk-phone::before {
+  top: 24%;
+  left: -1cqw;
+  height: 9%;
+}
+.mk-phone::after {
+  top: 18%;
+  right: -1cqw;
+  height: 15%;
+}
+
+/* The showcase: the sites pass through the laptop and the phone */
+.site-in {
+  animation: site-in 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.site-out {
+  animation: site-out 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes site-in {
+  from { opacity: 0; transform: translateY(5%) scale(1.04); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes site-out {
+  from { opacity: 1; transform: none; }
+  to { opacity: 0; transform: translateY(-4%) scale(0.98); }
+}
+.site-progress {
+  transform-origin: left;
+  animation: site-progress var(--site-ms, 5000ms) linear both;
+}
+@keyframes site-progress {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+.showcase-tilt {
+  --rx: 1deg;
+  --ry: -3deg;
+  transform: perspective(1800px) rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@media (min-width: 768px) {
+  .showcase-tilt {
+    --rx: 3deg;
+    --ry: -9deg;
+  }
+}
+html[data-motion="gentle"] .site-in,
+html[data-motion="gentle"] .site-out,
+html[data-motion="gentle"] .site-progress {
+  animation: none;
+}
+html[data-motion="gentle"] .showcase-tilt {
+  transform: none;
   transition: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .site-in,
+  .site-out,
+  .site-progress {
+    animation: none;
+  }
 }
 
 /* ---------- Assistant panel (components/Assistant.tsx) ---------- */
