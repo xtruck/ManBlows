@@ -414,3 +414,13 @@ Rapport complet : `docs/AUDIT.md` (méthode, 24 constats corrigés, constats ouv
 ## Salon International de l'Investissement 2026 (09/11)
 - **Design** (`design.ts`, n° 43 à 46) : kakémono du thème (1020 × 2400), « Merci pour votre participation », mur des partenaires et bandeau des partenaires (2000 px de large, pour que les logos restent lisibles). Ils sont rangés avec les autres visuels du SII.
 - **Films** : film d'invitation du SII 2026 (`films/sii-invitation.mp4`, source 4K de 29 s ramenée à 1280 × 692 avec le son, 7,7 Mo), avec son affiche et sa boucle de 6 s pour le prisme du hero.
+
+## Nouvelle intro : les quatre métiers (09/11)
+- **Une seule séquence d'environ 3,5 s**, dans un même cadre au centre, chaque métier avec son langage visuel (CSS et GSAP seulement, aucune image à télécharger) :
+  - **Photo** : viseur (coins, tiers, mise au point qui se verrouille en jaune, « f/2.8 · 1/125 · ISO 400 »), puis l'obturateur se ferme ;
+  - **Vidéo** : il s'ouvre sur une pellicule noire qui défile, REC, timecode qui tourne, barre de lecture jaune ;
+  - **Design** : plan de travail quadrillé, repères, une affiche qui se construit, sélection avec poignées, « 1080 × 1350 », curseur ;
+  - **Web** : fenêtre de navigateur, « egcstudio » tapé dans la barre d'adresse, une page qui se met en place.
+- Sous le cadre, le nom du métier (FR/EN, repris de `crafts` dans `dict.ts`) et « 01 / 04 · Je photographie ». En bas, une barre en quatre segments suit la progression.
+- **Fin** : les quatre segments montent en quatre panneaux jaunes (un par métier, comme les faces du prisme), le logo « egc studio. » s'écrit dessus, puis les panneaux se lèvent l'un après l'autre et le prisme du hero monte.
+- Inchangé : une fois par visite, fondu rapide ensuite, bouton « Passer l'intro » (même avant le JavaScript), Échap, limite de temps, filet de sécurité CSS, mode doux (image finale puis fondu).

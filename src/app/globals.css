@@ -367,10 +367,6 @@ html[data-intro="quick"] [data-preloader] > * {
 }
 
 /* ---------- Intro (components/Preloader.tsx) ---------- */
-[data-preloader] {
-  --vf-pad: max(1rem, 3.2vmin); /* the viewfinder's inset from the screen edge */
-  --vf-len: clamp(1.6rem, 6vmin, 3rem); /* length of a corner bracket */
-}
 /* Failsafe with no script involved: if the intro never finishes (script error, stalled timers),
    the cover and the Skip button fade away on their own. The Preloader unmounts long before this. */
 [data-preloader],
@@ -381,64 +377,140 @@ html[data-intro="quick"] [data-preloader] > * {
   to { opacity: 0; visibility: hidden; pointer-events: none; }
 }
 
-/* The viewfinder plays in CSS (transform and opacity only, so it moves even while scripts load):
-   corners snap in, the thirds fade up, the focus square locks, the REC dot blinks. */
-.sq-vf-corner {
-  width: var(--vf-len);
-  height: var(--vf-len);
-  border: 0 solid var(--ink);
-  animation: sq-vf-corner 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.05s backwards;
+/* Parts the script reveals (the other crafts, the panels, the logo): hidden until it takes over */
+.pl-later {
+  visibility: hidden;
 }
-.sq-vf-tl { top: var(--vf-pad); left: var(--vf-pad); border-top-width: 2px; border-left-width: 2px; transform-origin: top left; }
-.sq-vf-tr { top: var(--vf-pad); right: var(--vf-pad); border-top-width: 2px; border-right-width: 2px; transform-origin: top right; }
-.sq-vf-bl { bottom: var(--vf-pad); left: var(--vf-pad); border-bottom-width: 2px; border-left-width: 2px; transform-origin: bottom left; }
-.sq-vf-br { bottom: var(--vf-pad); right: var(--vf-pad); border-bottom-width: 2px; border-right-width: 2px; transform-origin: bottom right; }
-.sq-vf-thirds {
-  inset: var(--vf-pad);
+/* The frame the four crafts play in: 4:5 on phones (a poster), 4:3 on wider screens, always
+   leaving room for the word under it. */
+.pl-box {
+  width: min(80vw, 22rem, calc((100vh - 15rem) * 0.8));
+  width: min(80vw, 22rem, calc((100svh - 15rem) * 0.8));
+  aspect-ratio: 4 / 5;
+}
+@media (min-width: 768px) {
+  .pl-box {
+    width: min(60vw, 40rem, calc((100vh - 17rem) * 4 / 3));
+    width: min(60vw, 40rem, calc((100svh - 17rem) * 4 / 3));
+    aspect-ratio: 4 / 3;
+  }
+}
+
+/* 1. Photo, in CSS only (transform and opacity, so it plays even while scripts load): the
+   brackets snap in, the thirds fade up, the focus square locks and turns yellow. */
+.pl-photo {
+  --pl-c: clamp(1.1rem, 4.5vmin, 2.25rem);
+  background: rgb(14 14 14 / 0.045);
+}
+.pl-thirds {
+  inset: 7%;
   background:
-    linear-gradient(rgb(14 14 14 / 0.1), rgb(14 14 14 / 0.1)) 33.333% 0 / 1px 100% no-repeat,
-    linear-gradient(rgb(14 14 14 / 0.1), rgb(14 14 14 / 0.1)) 66.666% 0 / 1px 100% no-repeat,
-    linear-gradient(rgb(14 14 14 / 0.1), rgb(14 14 14 / 0.1)) 0 33.333% / 100% 1px no-repeat,
-    linear-gradient(rgb(14 14 14 / 0.1), rgb(14 14 14 / 0.1)) 0 66.666% / 100% 1px no-repeat;
-  animation: sq-vf-fade 0.5s ease-out 0.2s backwards;
+    linear-gradient(rgb(14 14 14 / 0.12), rgb(14 14 14 / 0.12)) 33.333% 0 / 1px 100% no-repeat,
+    linear-gradient(rgb(14 14 14 / 0.12), rgb(14 14 14 / 0.12)) 66.666% 0 / 1px 100% no-repeat,
+    linear-gradient(rgb(14 14 14 / 0.12), rgb(14 14 14 / 0.12)) 0 33.333% / 100% 1px no-repeat,
+    linear-gradient(rgb(14 14 14 / 0.12), rgb(14 14 14 / 0.12)) 0 66.666% / 100% 1px no-repeat;
+  animation: pl-fade 0.5s ease-out 0.15s backwards;
 }
-.sq-vf-hud {
-  animation: sq-vf-fade 0.4s ease-out 0.3s backwards;
+.pl-corner {
+  width: var(--pl-c);
+  height: var(--pl-c);
+  border: 0 solid var(--ink);
+  animation: pl-corner 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.02s backwards;
 }
-.sq-vf-rec {
-  animation: sq-vf-blink 0.9s steps(1, end) 0.3s infinite;
-}
-/* The focus square: appears large and soft, locks onto the centre, then flashes brand yellow */
-.sq-vf-focus {
-  width: clamp(3rem, 11vmin, 5rem);
-  height: clamp(3rem, 11vmin, 5rem);
-  margin: calc(clamp(3rem, 11vmin, 5rem) / -2) 0 0 calc(clamp(3rem, 11vmin, 5rem) / -2);
+.pl-tl { top: 7%; left: 7%; border-top-width: 2px; border-left-width: 2px; transform-origin: top left; }
+.pl-tr { top: 7%; right: 7%; border-top-width: 2px; border-right-width: 2px; transform-origin: top right; }
+.pl-bl { bottom: 7%; left: 7%; border-bottom-width: 2px; border-left-width: 2px; transform-origin: bottom left; }
+.pl-br { bottom: 7%; right: 7%; border-bottom-width: 2px; border-right-width: 2px; transform-origin: bottom right; }
+.pl-focus {
+  --pl-f: clamp(2.6rem, 10vmin, 4.5rem);
+  width: var(--pl-f);
+  height: var(--pl-f);
+  margin: calc(var(--pl-f) / -2) 0 0 calc(var(--pl-f) / -2);
   border: 2px solid var(--ink);
-  animation: sq-vf-focus 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.15s backwards;
+  background: rgb(255 196 0 / 0.9);
+  animation: pl-focus 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.08s backwards;
 }
-/* The yellow iris: one circle big enough to cover any screen from its centre, only ever scaled */
-.sq-fill {
-  width: calc(100vmax * 1.5);
-  height: calc(100vmax * 1.5);
-  transform: translate(-50%, -50%) scale(0);
-  will-change: transform;
+.pl-fade {
+  animation: pl-fade 0.4s ease-out 0.2s backwards;
 }
-@keyframes sq-vf-corner {
+/* The first word and its line rise into place */
+.pl-rise {
+  animation: pl-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+}
+/* The first progress segment fills while the photo scene plays */
+.pl-fill-1 {
+  animation: pl-fill 0.5s linear 0.05s backwards;
+}
+
+/* 2. Video: sprocket holes along the edges of the film */
+.pl-strip {
+  height: 9%;
+}
+.pl-holes {
+  background: repeating-linear-gradient(90deg, rgb(243 236 220 / 0.85) 0 10px, transparent 10px 24px) 0 50% / 100% 46% repeat-x;
+}
+.pl-rec {
+  animation: pl-blink 0.6s steps(1, end) infinite;
+}
+
+/* 3. Design: a layout grid on the canvas, two dashed guides, a 4:5 artboard */
+.pl-grid {
+  background-image:
+    linear-gradient(rgb(14 14 14 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(14 14 14 / 0.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-position: center;
+}
+.pl-guide-h {
+  height: 1px;
+  background: repeating-linear-gradient(90deg, rgb(14 14 14 / 0.45) 0 5px, transparent 5px 9px);
+}
+.pl-guide-v {
+  width: 1px;
+  background: repeating-linear-gradient(rgb(14 14 14 / 0.45) 0 5px, transparent 5px 9px);
+}
+.pl-art {
+  height: 62%;
+  aspect-ratio: 4 / 5;
+  transform: translate(-50%, -50%);
+}
+
+/* 4. Web: the caret in the address bar */
+.pl-caret {
+  animation: pl-blink 0.7s steps(1, end) infinite;
+}
+
+/* The logo over the panels: "studio." moves as a block, "egc" keeps a soft shadow on the yellow */
+.pl-logo [data-logo-word] {
+  display: inline-block;
+}
+.pl-logo [data-logo-script] {
+  text-shadow: 0 0.012em 0 rgb(14 14 14 / 0.55), 0 0 0.05em rgb(14 14 14 / 0.3);
+}
+
+@keyframes pl-corner {
   from { opacity: 0; transform: scale(2.2); }
   to { opacity: 1; transform: scale(1); }
 }
-@keyframes sq-vf-fade {
+@keyframes pl-fade {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes sq-vf-blink {
-  0%, 60% { opacity: 1; }
-  61%, 100% { opacity: 0.15; }
+@keyframes pl-rise {
+  from { opacity: 0; transform: translateY(60%); }
+  to { opacity: 1; transform: none; }
 }
-@keyframes sq-vf-focus {
-  0% { opacity: 0; transform: scale(2.4); }
-  60% { opacity: 1; transform: scale(1); background-color: transparent; }
-  75% { background-color: rgb(255 196 0 / 0.9); }
+@keyframes pl-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes pl-blink {
+  0%, 55% { opacity: 1; }
+  56%, 100% { opacity: 0.15; }
+}
+@keyframes pl-focus {
+  0% { opacity: 0; transform: scale(2.4); background-color: transparent; }
+  65% { opacity: 1; transform: scale(1); background-color: transparent; }
   100% { opacity: 1; transform: scale(1); background-color: rgb(255 196 0 / 0.9); }
 }
 
