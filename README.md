@@ -61,7 +61,7 @@ French, and each page has a single URL for both languages.
 
 | Where | What | File |
 | --- | --- | --- |
-| First visit, every page | About 3 s: a camera viewfinder (brackets, focus square, exposure readout) locks, the shutter opens as a yellow iris, giant "studio." builds from merging bubbles, curtain lift. Skip button and Escape; CSS failsafe if scripts fail | `Preloader.tsx` |
+| First visit, every page | About 3.7 s: a camera viewfinder (brackets, focus square, exposure readout) locks, the shutter opens as a yellow iris, giant "studio." builds from merging bubbles, curtain lift. Skip button and Escape; CSS failsafe if scripts fail | `Preloader.tsx` |
 | Home hero | Four-craft prism (drag to spin, per-face lighting, slideshow, film loop) with floating stickers | `Hero.tsx`, `HeroCollage.tsx` |
 | Home, Travaux, Films | 3D tunnel of work, driven by the page scroll | `WorkTunnel.tsx` → `ui/perspective-tunnel-hero.tsx` |
 | `/web/` | A laptop and phone that walk through every site (auto, arrows, swipe, pause), then the project cards, each on its own laptop | `WebStudio.tsx` → `SiteShowcase.tsx`, `ui/device-mockups.tsx` |

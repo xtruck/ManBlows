@@ -31,9 +31,9 @@ const BADGE_SHAPES = [`polygon(${BURST})`, "circle(50% at 50% 50%)", "polygon(25
 // A palette per craft (ticket, badge, heart, bubble), sliding from one to the next
 const PALETTES = [
   { ticket: "#ffb3d6", badge: "#b8f53b", heart: "#ffffff", bubble: "#0e0e0e", bubbleText: "#ece8e1" },
-  { ticket: "#ffd23d", badge: "#ff5e5b", heart: "#ffe8d6", bubble: "#2f6bff", bubbleText: "#ffffff" },
+  { ticket: "#ffd23d", badge: "#ff5e5b", heart: "#ffe8d6", bubble: "#2e69fa", bubbleText: "#ffffff" },
   { ticket: "#b9e3ff", badge: "#ffc400", heart: "#ffb3d6", bubble: "#ff5e5b", bubbleText: "#0e0e0e" },
-  { ticket: "#c9f7d4", badge: "#2f6bff", heart: "#ffd23d", bubble: "#1f7a4a", bubbleText: "#ffffff" },
+  { ticket: "#c9f7d4", badge: "#2e69fa", heart: "#ffd23d", bubble: "#1f7a4a", bubbleText: "#ffffff" },
 ];
 const BUBBLE_SHAPES = ["9999px", "1.4rem 1.4rem 1.4rem 0.3rem", "9999px 9999px 9999px 0.6rem", "1rem"];
 
@@ -168,7 +168,7 @@ export function HeroCollage({ active = 0 }: { active?: number }) {
               <Image src={`${base}/work/photo-17.webp`} alt="" fill sizes="7rem" className="object-cover" />
             </div>
           </div>
-          <span className="absolute -top-3 -left-8 rounded-full bg-[#2f6bff] px-2.5 py-1 text-[11px] font-medium whitespace-nowrap text-white shadow-lg">{s.photo}</span>
+          <span className="absolute -top-3 -left-8 rounded-full bg-[#2e69fa] px-2.5 py-1 text-[11px] font-medium whitespace-nowrap text-white shadow-lg">{s.photo}</span>
         </div>
       </div>
 

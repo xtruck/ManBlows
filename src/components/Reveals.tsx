@@ -36,7 +36,9 @@ function focusPull(el: HTMLElement, delay: number, scrollTrigger: ScrollTrigger.
 
 /**
  * Scroll reveals for every page, driven by data attributes so they work the same
- * on touch screens (no hover needed):
+ * on touch screens (no hover needed). They fade with opacity only, never visibility: a block that is
+ * visibility:hidden until scrolled to is missing for screen readers and keyboards (the page's only
+ * <h1> sits below the tunnel on /travaux/ and /films/):
  *   data-reveal         text and blocks rise and fade in
  *   data-reveal="image" images unveil from the bottom edge
  */
@@ -53,24 +55,39 @@ export function Reveals() {
     // while the cover dissolves, instead of showing, hiding, and showing again.
     const off = onIntroLeaving(() => {
       raf = requestAnimationFrame(() => {
-        ctx = gsap.context(() => {
-          gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {
-            // Things already on screen wait for the page curtain to lift.
-            const delay = ScrollTrigger.isInViewport(el) ? 0.35 : 0;
-            // Plays once. Not `once: true`: a trigger that deletes itself while GSAP is refreshing the others
-            // leaves a hole in its list and the refresh throws (seen when switching animations on /travaux/).
-            const scrollTrigger = { trigger: el, start: "top 92%", toggleActions: "play none none none" };
-            if (gentle) {
-              // Soft mode: a plain fade, with no movement, clipping or blur.
-              gsap.from(el, { autoAlpha: 0, duration: 0.6, ease: "power1.out", delay, scrollTrigger });
-            } else if (el.dataset.reveal === "image") {
-              focusPull(el, delay, scrollTrigger);
-            } else {
-              gsap.from(el, { y: 36, autoAlpha: 0, duration: 0.9, ease: "power3.out", delay, scrollTrigger });
-            }
+        ctx = gsap.context(() => {});
+        const make = (el: HTMLElement) => {
+          // Things already on screen wait for the page curtain to lift.
+          const delay = ScrollTrigger.isInViewport(el) ? 0.35 : 0;
+          // Plays once. Not `once: true`: a trigger that deletes itself while GSAP is refreshing the others
+          // leaves a hole in its list and the refresh throws (seen when switching animations on /travaux/).
+          const scrollTrigger = { trigger: el, start: "top 92%", toggleActions: "play none none none" };
+          if (gentle) {
+            // Soft mode: a plain fade, with no movement, clipping or blur.
+            gsap.from(el, { opacity: 0, duration: 0.6, ease: "power1.out", delay, scrollTrigger });
+          } else if (el.dataset.reveal === "image") {
+            focusPull(el, delay, scrollTrigger);
+          } else {
+            gsap.from(el, { y: 36, opacity: 0, duration: 0.9, ease: "power3.out", delay, scrollTrigger });
+          }
+        };
+        // What is on screen is set up at once; the rest a few at a time, one batch a frame. Setting up
+        // dozens of triggers in one go (82 on /travaux/) is a single long task that freezes a slow phone
+        // right as the intro lifts.
+        const all = gsap.utils.toArray<HTMLElement>("[data-reveal]");
+        const visible = all.filter((el) => ScrollTrigger.isInViewport(el));
+        const rest = all.filter((el) => !visible.includes(el));
+        ctx.add(() => visible.forEach(make));
+        let next = 0;
+        const batch = () => {
+          const end = Math.min(next + 8, rest.length);
+          ctx?.add(() => {
+            for (; next < end; next++) make(rest[next]);
           });
-          refreshScrollTriggers();
-        });
+          if (next < rest.length) raf = requestAnimationFrame(batch);
+          else refreshScrollTriggers();
+        };
+        raf = requestAnimationFrame(batch);
       });
     });
 

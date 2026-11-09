@@ -28,7 +28,7 @@ const BUBBLES = Array.from({ length: COLS * ROWS }, (_, i) => {
 });
 
 /**
- * First load of a visit (about 3 s). It says what the studio is before a word is read: a camera
+ * First load of a visit (about 3.7 s). It says what the studio is before a word is read: a camera
  * viewfinder (corner brackets, thirds, a focus square that locks, the same exposure readout as the
  * home hero) appears on the cream, then the shutter opens as a brand-yellow iris from the focus
  * point and floods the screen (transform only, so it stays smooth on phones); the giant word
@@ -164,12 +164,15 @@ export function Preloader() {
         // The viewfinder fades under it; the cream goes once the yellow reaches every corner
         .to(q("[data-sq-pill]"), { autoAlpha: 0, duration: 0.25 }, 0.4)
         .set(q("[data-sq-paper]"), { autoAlpha: 0 }, 0.75)
-        // The giant word builds itself out of bubbles that merge, once the yellow is nearly everywhere
+        // The giant word builds itself out of bubbles that merge, once the yellow is nearly everywhere.
+        // Keep the bubbles spread out (stagger 0.008, 0.55 s each): packed tighter (0.0045, 0.45 s) the
+        // SVG filter work lands as long tasks while a big page is still loading (blocking time on
+        // /travaux/ went from about 60 ms to 300-440 ms in Lighthouse).
         .set(q("[data-sq-word]"), { autoAlpha: 1 }, 0.5)
-        .fromTo(q("[data-sq-bubble]"), { attr: { r: 0 } }, { attr: { r: 52 }, duration: 0.45, ease: "back.out(1.6)", stagger: { each: 0.0045, from: "random" } }, 0.52)
+        .fromTo(q("[data-sq-bubble]"), { attr: { r: 0 } }, { attr: { r: 52 }, duration: 0.55, ease: "back.out(1.6)", stagger: { each: 0.008, from: "random" } }, 0.52)
         // "egc" is written in over it, like the logo
         .fromTo(q("[data-sq-script]"), { clipPath: "inset(-30% 100% -30% 0)" }, { clipPath: "inset(-30% 0% -30% 0)", duration: 0.5, ease: "power2.inOut" }, 1)
-        .to({}, { duration: 0.2 });
+        .to({}, { duration: 0.1 });
     });
 
     skipRef.current = () => {

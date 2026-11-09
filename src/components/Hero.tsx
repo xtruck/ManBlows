@@ -263,7 +263,7 @@ export function Hero() {
                   data-hero-in
                   onClick={() => pick(i)}
                   aria-pressed={i === active}
-                  className={`group relative w-fit cursor-pointer text-left transition-colors duration-500 ${i === active ? "text-paper" : "text-paper/22 hover:text-paper/55"}`}
+                  className={`group relative min-h-11 w-fit cursor-pointer text-left transition-colors duration-500 ${i === active ? "text-paper" : "text-paper/22 hover:text-paper/55"}`}
                 >
                   {c.name}
                   <span className={i === active ? "text-brand" : ""}>.</span>

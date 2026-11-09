@@ -367,7 +367,7 @@ Refonte de l'apparence du panneau (`Assistant.tsx`, `assistant/parts.tsx`, style
   **viseur d'appareil photo** : coins qui se verrouillent, grille des tiers, point « REC », lecture « f/2.8 · 1/125 · ISO 400 »
   (la même que sur l'accueil), carré de mise au point qui se cale puis s'allume en jaune ; l'**obturateur** s'ouvre alors en iris
   jaune depuis ce point. Tout le viseur est en CSS (aucune image), donc visible tout de suite, même avant le JavaScript.
-- Durée : environ 3 s (au lieu de 4,3 à 4,7 s). Le mot se construit une fois l'écran jaune ; « egc » reprend la disposition du logo.
+- Durée : 3,6 à 3,8 s (au lieu de 4,3 à 4,7 s). Le mot se construit une fois l'écran jaune ; « egc » reprend la disposition du logo.
 - **Sécurités** : si les scripts ne se chargent pas, le voile disparaît tout seul (animation CSS à 7 s) ; sans JavaScript il n'apparaît
   pas ; plafond de 9 s côté script ; bouton « Passer l'intro » (maintenant en haut au centre) et touche Échap ; la visite suivante dans
   le même onglet garde le simple fondu de 0,4 s. Testé : scripts bloqués, JavaScript coupé, stockage bloqué, saut au clavier.
@@ -379,4 +379,18 @@ nom, secteur, flèches, pause, balayage tactile, flèches du clavier, barre de p
 carte de projet est aussi sur son ordinateur avec son téléphone. Corrigés en cours de route : débordement horizontal de la
 section (maintenant `overflow-clip`) et colonne qui s'élargissait selon le nom du site (grille `minmax(0, 1fr)`).
 Vérifié : largeur stable pour les 17 sites à 320, 390, 768 et 1440 px.
+
+## Audit approfondi et corrections (09/11)
+Rapport complet : `docs/AUDIT.md` (méthode, 24 constats corrigés, constats ouverts avec preuves, plan).
+- Un agent a parcouru tout le site (6 largeurs, FR/EN, animations activées ou non) : 21 constats, dont 2 « élevés ». Tous les vrais
+  défauts sont corrigés (plantage de ScrollTrigger au changement d'animations sur Travaux, formulaire de contact, légendes de la
+  galerie en anglais, titres et descriptions de chaque page, boutons flottants, cibles tactiles de 44 px, etc.).
+- Trouvé en vérifiant : les animations d'apparition cachaient les blocs avec `visibility: hidden`, donc le seul `<h1>` de Films et
+  Travaux n'existait pas pour un lecteur d'écran avant le défilement. Elles n'utilisent plus que l'opacité (axe : 0 violation sur
+  48 vues).
+- Régression de performance que j'avais introduite sur Travaux (temps de blocage 60 à 300-440 ms) : les 82 déclencheurs d'apparition
+  sont maintenant créés par lots de 8 par image. Mesuré avant/après sur la même machine.
+- Nouveau : `npm run smoke` (toutes les pages, 3 tailles, FR et EN), `npm run test:worker` (22 tests), Dependabot, `engines`.
+- **Ouvert, à décider avec Egu** : « 17 sites conçus » alors que 14 sont des maquettes ; confidentialité de l'assistant IA ; domaine
+  personnel derrière Cloudflare (cache, en-têtes de sécurité, `robots.txt` utile) ; poids des vidéos dans le dépôt (145 Mo).
 
