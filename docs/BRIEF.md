@@ -112,7 +112,8 @@ dès le premier défilement.
   dans la rue, marche de groupe, arrivée de l'équipe, caméraman, séance photo en robe kente (type passé à
   « Portrait »), réception sous chapiteau, salon professionnel. À valider avec lui.
 - **Vidéo abîmée : `film-2585.mp4` (réception sous chapiteau, logo « MO Events »).** Seules 592 images sur
-  1 570 se décodent, la lecture saute. Il faut la reconvertir depuis l'original (IMG_2585) dans son dossier.
+  1 570 se décodaient. Réparée le 09/11 : on a gardé les deux passages intacts (0 à 6,4 s et 39,3 s à la fin)
+  collés en un film de 20 s qui se lit sans saut. Pour retrouver les 53 s, reconvertir l'original (IMG_2585).
 - Le salon (n° 22) semble être « Brand Icons Africa » d'après un panneau : à confirmer.
 - Aperçu de partage (WhatsApp, Facebook, X) en français et en anglais : texte et image `og.png`
   (refaite avec `node scripts/make-og.mjs`). La description de la page suit aussi la langue choisie.
@@ -260,7 +261,7 @@ le projet n'utilise pas le CLI shadcn, l'alias `@/` pointe sur `src/`). Pas de d
   7 pages en ordinateur et en téléphone 360 px, textes FR/EN identiques (168 clés).
   Lighthouse téléphone : accessibilité 100, bonnes pratiques 100, SEO 92 (le `robots.txt` doit être à la racine
   du domaine : il le sera avec un nom de domaine à soi), performance 35 à 43 (l'intro et les vidéos).
-- Reste à faire plus tard : alléger `public/films/` (137 Mo), reconvertir `film-2585.mp4` (abîmé),
+- Reste à faire plus tard : alléger `public/films/` (137 Mo), reconvertir `film-2585.mp4` depuis l'original (version réduite à 20 s),
   remplacer les coordonnées et contenus par ceux validés par Egu, nom de domaine.
 
 ## Sept sites de plus dans les Réalisations (08/11)

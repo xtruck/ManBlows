@@ -177,7 +177,7 @@ export const films = [
     id: 21,
     title: { fr: "Réception sous chapiteau, le buffet", en: "Marquee reception, the buffet" },
     kind: { fr: "Événement", en: "Event" },
-    duration: "00:53",
+    duration: "00:20",
     poster: `${base}/films/film-2585-poster.webp`,
     video: `${base}/films/film-2585.mp4`,
   },
