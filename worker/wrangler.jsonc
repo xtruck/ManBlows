@@ -1,0 +1,11 @@
+{
+  "name": "egc-assistant",
+  "main": "index.mjs",
+  "compatibility_date": "2026-11-01",
+  "ai": { "binding": "AI" },
+  "vars": {
+    // Pages allowed to call the Worker (the live site, and the dev server for local tests)
+    "ALLOWED_ORIGINS": "https://xtruck.github.io,http://localhost:3000",
+    "MODEL": "@cf/meta/llama-3.1-8b-instruct"
+  }
+}

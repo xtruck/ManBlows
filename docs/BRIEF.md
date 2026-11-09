@@ -290,7 +290,7 @@ Bulle « Une question ? Écrivez-nous » en bas à gauche de toutes les pages (`
 (fonctionnement, devis, déplacements, délais) et pose une question à la fois — service, type, date, lieu, budget
 (devis ou montant), détails, nom — puis ouvre WhatsApp vers le numéro d'Egu avec la demande complète, prête à envoyer.
 Il ne donne ni prix ni date : Egu confirme sous 24 h. À compléter avec Egu : zones de déplacement, délais types.
-Étape suivante possible : brancher une IA gratuite (Cloudflare Workers AI) pour les questions libres.
+IA pour les questions libres (Cloudflare Workers AI) : voir la section « Assistant IA » plus bas.
 
 - (08/11) Assistant : plus de question de budget ni de réponse sur les prix ou les zones ; il recueille seulement ce qu'il faut à Egu pour son devis. Stickers du hero : textes, formes et positions changent à chaque tour du prisme (un jeu par métier dans `hero.sticker.sets`).
 
@@ -301,3 +301,17 @@ l'écran, et à 1024 px trois paires d'autocollants se chevauchaient (le prisme 
 - Les autocollants suivent la taille du prisme sur ordinateur : `--sticker-k` (0,72 à 1024 px, 0,8 dès 1100,
   0,9 dès 1260, 1 dès 1440) appliqué en `zoom` dans `globals.css`. Résultat : aucun chevauchement ni débordement,
   au moins 14 px de marge au bord de l'écran.
+
+## Assistant IA (Cloudflare Workers AI) (09/11)
+- `worker/` : petit Worker Cloudflare (`index.mjs`, `wrangler.jsonc`, `README.md` avec le déploiement). Il reçoit la
+  question, appelle un modèle Workers AI et renvoie la réponse. Consignes strictes : jamais de prix, de délai, de
+  disponibilité ni de zone de déplacement (Egu les donne dans son devis) ; réponses courtes, en français ou en anglais ;
+  il renvoie vers la demande guidée ou WhatsApp. Seules les origines de `ALLOWED_ORIGINS` peuvent l'appeler.
+- Site : une zone « Posez votre question… » apparaît dans l'assistant (écran d'accueil et FAQ) **seulement si** le site
+  est construit avec `NEXT_PUBLIC_ASSISTANT_URL` (variable GitHub `ASSISTANT_URL`, lue par `pages.yml`). Sans elle, rien
+  ne change. Une mention indique que les réponses sont générées par une IA. En cas d'erreur (quota gratuit dépassé,
+  Worker hors ligne), le visiteur est renvoyé vers WhatsApp.
+- Testé : Worker (origines, rôles falsifiés, messages trop longs, limite de débit, erreurs de l'IA) avec une IA simulée ;
+  page dans un navigateur avec un faux Worker (réponses, historique, erreur, zone masquée sans URL).
+- **À faire par Egu / le propriétaire** : compte Cloudflare, `npx wrangler deploy` dans `worker/`, variable `ASSISTANT_URL`
+  dans GitHub, relancer le déploiement. Vérifier l'identifiant du modèle (`MODEL`) dans la liste de Cloudflare.

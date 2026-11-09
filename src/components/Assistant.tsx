@@ -11,12 +11,16 @@ type Msg = { from: "bot" | "me"; text: string };
 type Brief = { service?: string; serviceKey?: ServiceKey; kind?: string; date?: string; place?: string; details?: string; name?: string };
 
 const TEXT_STEPS: Step[] = ["date", "place", "details", "name"];
+// Optional: URL of the Cloudflare Worker (see worker/). Without it the free-question box stays hidden.
+const AI_URL = process.env.NEXT_PUBLIC_ASSISTANT_URL ?? "";
+type AiMsg = { role: "user" | "assistant"; content: string };
 
 /**
  * Guided assistant: answers right away, asks one question at a time, then writes the full request
  * (service, type, date, place, details, name) and opens WhatsApp with it, addressed to Egu.
  * It never talks about money or travel zones: Egu sets those himself in his quote.
- * No AI and no server: it runs in the page, so it is free.
+ * The guided flow runs in the page (no server, free). When NEXT_PUBLIC_ASSISTANT_URL is set, free
+ * questions go to a Cloudflare Workers AI Worker (worker/index.mjs) that never discusses money.
  */
 export function Assistant() {
   const { t, lang } = useLang();
@@ -28,6 +32,8 @@ export function Assistant() {
   const [brief, setBrief] = useState<Brief>({});
   const [input, setInput] = useState("");
   const [shownLang, setShownLang] = useState(lang);
+  const [asking, setAsking] = useState(false);
+  const [aiHistory, setAiHistory] = useState<AiMsg[]>([]);
   const list = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLInputElement>(null);
 
@@ -39,6 +45,7 @@ export function Assistant() {
     setBrief({});
     setStep("service");
     setInput("");
+    setAiHistory([]);
     setShownLang(lang);
   };
   const toggle = () => {
@@ -79,6 +86,30 @@ export function Assistant() {
     else if (step === "name") say(v, a.recap, "done", { name: v });
   };
 
+  // A free question, answered by the AI Worker; any failure points to WhatsApp instead
+  const askAi = async (value: string) => {
+    const v = value.trim();
+    if (!v || asking || !AI_URL) return;
+    let history: AiMsg[] = [...aiHistory, { role: "user" as const, content: v }].slice(-5);
+    while (history.length > 1 && history[0].role === "assistant") history = history.slice(1);
+    setMsgs((m) => [...m, { from: "me", text: v }]);
+    setInput("");
+    setAsking(true);
+    try {
+      const res = await fetch(AI_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: history, lang }) });
+      if (!res.ok) throw new Error(String(res.status));
+      const data: { reply?: unknown } = await res.json();
+      if (typeof data.reply !== "string" || !data.reply.trim()) throw new Error("empty");
+      const reply = data.reply.trim();
+      setAiHistory([...history, { role: "assistant" as const, content: reply }].slice(-5));
+      setMsgs((m) => [...m, { from: "bot", text: reply }]);
+    } catch {
+      setMsgs((m) => [...m, { from: "bot", text: a.aiError }]);
+    } finally {
+      setAsking(false);
+    }
+  };
+
   const f = a.fields;
   const lines = [
     a.msgIntro,
@@ -91,6 +122,7 @@ export function Assistant() {
   ].filter(Boolean) as string[];
   const waLink = `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(lines.join("\n"))}`;
   const textStep = TEXT_STEPS.includes(step);
+  const aiStep = !!AI_URL && (step === "service" || step === "faq");
 
   const chip = "rounded-full border border-ink/15 bg-white px-3.5 py-2 text-left text-sm text-ink transition-colors hover:border-ink/40 active:scale-95";
 
@@ -185,26 +217,31 @@ export function Assistant() {
             </div>
           </div>
 
-          {textStep && (
+          {(textStep || aiStep) && (
             <form
-              className="flex gap-2 border-t border-ink/10 bg-paper p-3"
+              className="border-t border-ink/10 bg-paper p-3"
               onSubmit={(e) => {
                 e.preventDefault();
-                submitText(input);
+                if (textStep) submitText(input);
+                else askAi(input);
               }}
             >
-              <input
-                ref={field}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder={a.placeholder}
-                aria-label={a.placeholder}
-                maxLength={300}
-                className="h-11 min-w-0 flex-1 rounded-full border border-ink/15 bg-white px-4 text-base outline-none focus:border-ink/40"
-              />
-              <button type="submit" className="h-11 shrink-0 rounded-full bg-ink px-4 text-sm font-medium text-paper active:scale-95">
-                {a.submit}
-              </button>
+              {aiStep && <p className="px-1 pb-2 text-[11px] leading-snug text-ink/60">{a.aiNote}</p>}
+              <div className="flex gap-2">
+                <input
+                  ref={field}
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder={textStep ? a.placeholder : a.askAi}
+                  aria-label={textStep ? a.placeholder : a.askAi}
+                  maxLength={300}
+                  disabled={asking}
+                  className="h-11 min-w-0 flex-1 rounded-full border border-ink/15 bg-white px-4 text-base outline-none focus:border-ink/40 disabled:opacity-60"
+                />
+                <button type="submit" disabled={asking} className="h-11 shrink-0 rounded-full bg-ink px-4 text-sm font-medium text-paper active:scale-95 disabled:opacity-60">
+                  {asking ? "…" : a.submit}
+                </button>
+              </div>
             </form>
           )}
         </div>

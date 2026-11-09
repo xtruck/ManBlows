@@ -316,6 +316,9 @@ export const dict = {
       send: "Envoyer à Egu sur WhatsApp",
       restart: "Recommencer",
       placeholder: "Votre réponse…",
+      askAi: "Posez votre question…",
+      aiNote: "Réponses générées par une IA ; Egu confirme tout sous 24 h.",
+      aiError: "Je n'ai pas pu répondre à l'instant. Écrivez à Egu sur WhatsApp, il répond sous 24 h.",
       submit: "Envoyer",
       faqIntro: "Voici les réponses aux questions qu'on nous pose le plus :",
       faq: [
@@ -648,6 +651,9 @@ export const dict = {
       send: "Send to Egu on WhatsApp",
       restart: "Start over",
       placeholder: "Your answer…",
+      askAi: "Ask a question…",
+      aiNote: "Answers are written by an AI; Egu confirms everything within 24 h.",
+      aiError: "I couldn't answer just now. Message Egu on WhatsApp, he replies within 24 h.",
       submit: "Send",
       faqIntro: "Here are the answers to the questions we hear most:",
       faq: [
