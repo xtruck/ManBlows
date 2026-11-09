@@ -8,6 +8,7 @@
 import { CONTACT, KNOWLEDGE_FR } from "./knowledge.generated.mjs";
 import { finalize, violations } from "./guard.mjs";
 import { BRIEF_SYSTEM, normalizeBrief, parseJsonObject } from "./brief.mjs";
+import { record, topicOf } from "./insights.mjs";
 
 const DEFAULT_MODEL = "@cf/meta/llama-3.1-8b-instruct"; // set MODEL in wrangler.jsonc to change it
 const DEFAULT_ORIGINS = "https://xtruck.github.io";
@@ -15,6 +16,7 @@ const MAX_MESSAGES = 6;
 const MAX_CHARS = 300;
 const MAX_BRIEF_CHARS = 500;
 const LIMIT_PER_MINUTE = 12;
+const DEFAULT_DAILY_BUDGET = 500; // AI answers a day, when the optional USAGE store is set up
 const HOLD = 14; // characters held back while streaming, so a rule-breaking word is never half shown
 
 function systemPrompt(lang) {
@@ -33,7 +35,7 @@ function systemPrompt(lang) {
 ${KNOWLEDGE_FR}`;
 }
 
-// Best-effort limiter (per Worker instance). Add a Cloudflare rate-limiting rule for a hard cap.
+// Fallback limiter (per Worker instance), used only when Cloudflare's rate limiter is not bound.
 const hits = new Map();
 function limited(ip) {
   const now = Date.now();
@@ -42,6 +44,36 @@ function limited(ip) {
   hits.set(ip, recent);
   if (hits.size > 5000) hits.clear();
   return recent.length > LIMIT_PER_MINUTE;
+}
+
+// The hard limit: Cloudflare's rate limiter (the LIMITER binding in wrangler.jsonc), per visitor
+async function overLimit(request, env) {
+  const ip = request.headers.get("CF-Connecting-IP") ?? "anon";
+  if (typeof env.LIMITER?.limit === "function") {
+    try {
+      const { success } = await env.LIMITER.limit({ key: ip });
+      return !success;
+    } catch {
+      // fall through to the local limiter
+    }
+  }
+  return limited(ip);
+}
+
+// A daily cap on AI answers, to protect the free allowance. Needs the optional USAGE store
+// (Workers KV, see worker/README.md); without it there is no daily cap. Approximate by design.
+async function overBudget(env) {
+  if (!env.USAGE) return false;
+  const budget = Number(env.DAILY_BUDGET) || DEFAULT_DAILY_BUDGET;
+  const key = `ai:${new Date().toISOString().slice(0, 10)}`;
+  try {
+    const used = Number(await env.USAGE.get(key)) || 0;
+    if (used >= budget) return true;
+    await env.USAGE.put(key, String(used + 1), { expirationTtl: 172800 });
+  } catch {
+    // a failing store must not take the assistant down
+  }
+  return false;
 }
 
 function json(body, status, cors) {
@@ -87,7 +119,7 @@ function tokenOf(line) {
  * { done, reply } event holding the checked final text (or { error }). The site replaces what it
  * showed with that final text, so a rule-breaking answer never stays on screen.
  */
-function toEvents(upstream, lang) {
+function toEvents(upstream, lang, onEnd) {
   const dec = new TextDecoder();
   const enc = new TextEncoder();
   let buf = "";
@@ -120,8 +152,14 @@ function toEvents(upstream, lang) {
       },
       flush(ctrl) {
         if (buf) line(ctrl, buf);
-        if (!full.trim()) send(ctrl, { error: "empty" });
-        else send(ctrl, { done: true, reply: finalize(full, lang).text });
+        if (!full.trim()) {
+          send(ctrl, { error: "empty" });
+          onEnd({ outcome: "error" });
+        } else {
+          const final = finalize(full, lang);
+          send(ctrl, { done: true, reply: final.text });
+          onEnd({ outcome: final.flagged.length ? "guarded" : "ok", flagged: final.flagged });
+        }
       },
     }),
   );
@@ -130,6 +168,14 @@ function toEvents(upstream, lang) {
 async function chat(env, body, lang, cors) {
   const messages = parseMessages(body.messages);
   if (!messages) return json({ error: "bad request" }, 400, cors);
+  const topic = topicOf(messages[messages.length - 1].content);
+  const started = Date.now();
+  const streamed = body.stream === true;
+  const log = (outcome, flagged) => record("chat", { lang, topic, outcome, flagged, streamed, ms: Date.now() - started });
+  if (await overBudget(env)) {
+    record("budget", { lang, topic });
+    return json({ error: "budget" }, 429, cors);
+  }
   const input = {
     messages: [{ role: "system", content: systemPrompt(lang) }, ...messages],
     max_tokens: 260,
@@ -137,16 +183,22 @@ async function chat(env, body, lang, cors) {
   };
   const model = env.MODEL || DEFAULT_MODEL;
   try {
-    const out = await env.AI.run(model, body.stream === true ? { ...input, stream: true } : input);
+    const out = await env.AI.run(model, streamed ? { ...input, stream: true } : input);
     if (typeof ReadableStream !== "undefined" && out instanceof ReadableStream) {
-      return new Response(toEvents(out, lang), {
+      return new Response(toEvents(out, lang, ({ outcome, flagged }) => log(outcome, flagged)), {
         headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-store", ...cors },
       });
     }
     const raw = textOf(out);
-    if (!raw.trim()) return json({ error: "empty" }, 502, cors);
-    return json({ reply: finalize(raw, lang).text }, 200, cors);
+    if (!raw.trim()) {
+      log("error");
+      return json({ error: "empty" }, 502, cors);
+    }
+    const final = finalize(raw, lang);
+    log(final.flagged.length ? "guarded" : "ok", final.flagged);
+    return json({ reply: final.text }, 200, cors);
   } catch {
+    log("error");
     return json({ error: "unavailable" }, 502, cors);
   }
 }
@@ -154,6 +206,11 @@ async function chat(env, body, lang, cors) {
 async function brief(env, body, cors) {
   const text = typeof body.text === "string" ? body.text.trim().slice(0, MAX_BRIEF_CHARS) : "";
   if (!text) return json({ error: "bad request" }, 400, cors);
+  if (await overBudget(env)) {
+    record("budget", { lang: body.lang === "en" ? "en" : "fr", topic: "brief" });
+    return json({ error: "budget" }, 429, cors);
+  }
+  const started = Date.now();
   let obj = null;
   try {
     const out = await env.AI.run(env.MODEL || DEFAULT_MODEL, {
@@ -165,7 +222,9 @@ async function brief(env, body, cors) {
   } catch {
     // the keyword fallback in normalizeBrief still finds the service
   }
-  return json({ brief: normalizeBrief(obj, text), ai: obj !== null }, 200, cors);
+  const found = normalizeBrief(obj, text);
+  record("brief", { lang: body.lang === "en" ? "en" : "fr", topic: "brief", outcome: obj !== null ? "ok" : "fallback", found: Object.keys(found).length, ms: Date.now() - started });
+  return json({ brief: found, ai: obj !== null }, 200, cors);
 }
 
 const worker = {
@@ -179,7 +238,10 @@ const worker = {
     if (request.method === "OPTIONS") return new Response(null, { status: cors ? 204 : 403, headers: cors ?? {} });
     if (!cors) return json({ error: "forbidden" }, 403, {});
     if (request.method !== "POST") return json({ error: "method" }, 405, cors);
-    if (limited(request.headers.get("CF-Connecting-IP") ?? "anon")) return json({ error: "slow down" }, 429, cors);
+    if (await overLimit(request, env)) {
+      record("rate_limited");
+      return json({ error: "slow down" }, 429, cors);
+    }
 
     let body;
     try {

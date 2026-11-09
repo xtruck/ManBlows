@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useLang } from "./LangProvider";
 import { Avatar, Icon, Progress, RequestCard, TypingDots, type IconName } from "./assistant/parts";
 import { onIntroDone } from "@/lib/intro";
 import { contact } from "@/content/site";
 import { useFocusTrap } from "@/lib/useFocusTrap";
 import { useMedia } from "@/lib/useMedia";
+import { normalize } from "@/lib/routes";
 
 type ServiceKey = "photo" | "video" | "design" | "web";
 type Step = "service" | "faq" | "describe" | "kind" | "date" | "place" | "details" | "name" | "done";
@@ -21,6 +23,11 @@ const AI_URL = process.env.NEXT_PUBLIC_ASSISTANT_URL ?? "";
 type AiMsg = { role: "user" | "assistant"; content: string };
 type ApiBrief = { service?: string; kind?: string; date?: string; place?: string; details?: string; name?: string };
 const SERVICE_KEYS: ServiceKey[] = ["photo", "video", "design", "web"];
+// A gentle prompt, once per visit, where a visitor is most likely about to ask for something
+const TEASER_PAGES: Record<string, "web" | "contact"> = { "/web/": "web", "/contact/": "contact" };
+const TEASER_AFTER_MS = 20_000;
+const TEASER_FOR_MS = 15_000;
+const TEASER_KEY = "egc-assistant-teaser";
 const norm = (v: string) => v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 
 /**
@@ -54,6 +61,16 @@ export function Assistant() {
   const launcher = useRef<HTMLButtonElement>(null);
   const wasOpen = useRef(false);
   const wide = useMedia("(min-width: 768px)");
+  const pathname = normalize(usePathname());
+  const teaserTopic = TEASER_PAGES[pathname];
+  const [teaserOn, setTeaserOn] = useState<string | null>(null); // the page the prompt is showing on
+  const markTeaser = () => {
+    try {
+      sessionStorage.setItem(TEASER_KEY, "1");
+    } catch {
+      // private mode: the prompt may show again, that is all
+    }
+  };
 
   useEffect(() => onIntroDone(() => setReady(true)), []);
 
@@ -70,8 +87,31 @@ export function Assistant() {
   };
   const toggle = () => {
     if (!open && (msgs.length === 0 || shownLang !== lang)) reset();
+    if (!open) {
+      markTeaser();
+      setTeaserOn(null);
+    }
     setOpen((o) => !o);
   };
+
+  // The prompt: after a while on the Web or Contact page, if the visitor has not met it or opened the assistant
+  useEffect(() => {
+    if (!ready || !teaserTopic || open) return;
+    try {
+      if (sessionStorage.getItem(TEASER_KEY)) return;
+    } catch {
+      // no storage: show it anyway
+    }
+    const show = setTimeout(() => {
+      markTeaser();
+      setTeaserOn(pathname);
+    }, TEASER_AFTER_MS);
+    const hide = setTimeout(() => setTeaserOn(null), TEASER_AFTER_MS + TEASER_FOR_MS);
+    return () => {
+      clearTimeout(show);
+      clearTimeout(hide);
+    };
+  }, [ready, teaserTopic, open, pathname]);
 
   // On a phone the sheet traps focus (it is modal); on a larger screen the page stays usable
   useFocusTrap(panel, open && !wide);
@@ -245,6 +285,18 @@ export function Assistant() {
   const inFlow = flowIndex >= 0 || step === "done";
   const placeholder = textStep ? a.placeholder : describeStep ? a.describePlaceholder : a.askAi;
   const close = () => setOpen(false);
+  const teaserVisible = !open && teaserTopic !== undefined && teaserOn === pathname;
+  // From the prompt: the Web page goes straight to a website request, the Contact page to the start
+  const openFromTeaser = () => {
+    reset();
+    if (teaserTopic === "web") {
+      const label = a.services.find((x) => x.key === "web")?.label ?? "";
+      say(label, a.askKind, "kind", { service: label, serviceKey: "web" });
+    }
+    markTeaser();
+    setTeaserOn(null);
+    setOpen(true);
+  };
 
   const chip = "rounded-full bg-white px-3.5 py-2 text-left text-sm text-ink shadow-sm ring-1 ring-ink/10 transition hover:ring-ink/35 active:scale-95 disabled:opacity-50";
   const tile = "group flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left text-sm font-medium text-ink shadow-sm ring-1 ring-ink/10 transition hover:ring-ink/35 active:scale-[0.98] disabled:opacity-50";
@@ -270,6 +322,18 @@ export function Assistant() {
           <span className="hidden sm:inline">{a.open}</span>
           <span className="sm:hidden">{lang === "en" ? "Ask" : "Questions"}</span>
         </button>
+      )}
+
+      {teaserVisible && teaserTopic && (
+        <div className="assistant-msg fixed bottom-20 left-4 z-[60] max-w-[min(17rem,calc(100vw-2rem))] md:bottom-24 md:left-6">
+          <button type="button" onClick={openFromTeaser} className="block w-full rounded-2xl rounded-bl-md bg-white px-4 py-3 text-left text-ink shadow-xl ring-1 ring-ink/10 transition hover:ring-ink/30 active:scale-[0.98]">
+            <span className="block pr-4 text-sm font-semibold">{a.teaser[teaserTopic].title}</span>
+            <span className="mt-0.5 block text-xs leading-snug text-muted">{AI_URL ? a.teaser[teaserTopic].ai : a.teaser[teaserTopic].plain}</span>
+          </button>
+          <button type="button" onClick={() => setTeaserOn(null)} aria-label={a.teaser.dismiss} title={a.teaser.dismiss} className="absolute -top-2 -right-2 flex size-6 items-center justify-center rounded-full bg-ink text-paper shadow-md ring-1 ring-paper/20 transition active:scale-90">
+            <Icon name="close" className="size-3.5" />
+          </button>
+        </div>
       )}
 
       {open && (

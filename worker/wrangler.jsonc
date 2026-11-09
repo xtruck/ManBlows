@@ -3,9 +3,18 @@
   "main": "index.mjs",
   "compatibility_date": "2026-11-01",
   "ai": { "binding": "AI" },
+  // Workers Logs: one anonymous line per request (topic and outcome only, see insights.mjs)
+  "observability": { "enabled": true },
+  // A hard limit enforced by Cloudflare itself: 12 requests a minute per visitor
+  "ratelimits": [{ "name": "LIMITER", "namespace_id": "1001", "simple": { "limit": 12, "period": 60 } }],
+  // Optional daily cap on AI answers, to protect the free allowance. Create the store once with
+  //   npx wrangler kv namespace create USAGE
+  // then uncomment this with the id it prints. DAILY_BUDGET (below) is the cap.
+  // "kv_namespaces": [{ "binding": "USAGE", "id": "<id printed by the command above>" }],
   "vars": {
     // Pages allowed to call the Worker (the live site, and the dev server for local tests)
     "ALLOWED_ORIGINS": "https://xtruck.github.io,http://localhost:3000",
-    "MODEL": "@cf/meta/llama-3.1-8b-instruct"
+    "MODEL": "@cf/meta/llama-3.1-8b-instruct",
+    "DAILY_BUDGET": "500"
   }
 }

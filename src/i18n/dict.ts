@@ -330,6 +330,11 @@ export const dict = {
       back: "Retour",
       trust: "Egu confirme chaque devis sous 24 h.",
       aiBadge: "IA",
+      teaser: {
+        web: { title: "Un projet de site web ?", ai: "Décrivez-le en une phrase, je prépare la demande.", plain: "Je prépare votre demande pour Egu." },
+        contact: { title: "Besoin d'aide pour votre demande ?", ai: "Décrivez votre projet en une phrase, ou répondez à quelques questions.", plain: "Je la prépare avec vous en quelques questions." },
+        dismiss: "Masquer ce message",
+      },
       human: "Écrire à Egu",
       humanMsg: "Bonjour Egu, je viens du site EGC Studio et j'aimerais vous parler.",
       yourRequest: "Votre demande",
@@ -685,6 +690,11 @@ export const dict = {
       back: "Back",
       trust: "Egu confirms every quote within 24 h.",
       aiBadge: "AI",
+      teaser: {
+        web: { title: "A website project?", ai: "Describe it in one sentence and I'll prepare the request.", plain: "I'll prepare your request for Egu." },
+        contact: { title: "Need a hand with your request?", ai: "Describe your project in one sentence, or answer a few questions.", plain: "I'll prepare it with you in a few questions." },
+        dismiss: "Hide this message",
+      },
       human: "Message Egu",
       humanMsg: "Hello Egu, I'm writing from the EGC Studio website and would like to talk to you.",
       yourRequest: "Your request",

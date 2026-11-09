@@ -343,3 +343,18 @@ Refonte de l'apparence du panneau (`Assistant.tsx`, `assistant/parts.tsx`, style
 - Animations coupées en mode « doux » et avec « réduire les animations ». Textes FR et EN (`assistant` dans `dict.ts`).
 - Vérifié (Playwright) : 390 et 1440 px, FR et EN, avec et sans IA, tous les écrans ; clavier ; aucune erreur dans la console.
 
+## Limites, statistiques et message d'accueil de l'assistant (09/11)
+- **Limite stricte par visiteur** : le limiteur de Cloudflare (`LIMITER` dans `wrangler.jsonc`, 12 requêtes par minute et par
+  visiteur), avec une limite locale de secours. **Plafond quotidien** facultatif (`DAILY_BUDGET`, 500 réponses d'IA par jour,
+  à activer avec un petit stockage KV, voir `worker/README.md`) : une fois atteint, le site renvoie vers WhatsApp au lieu
+  d'épuiser le quota gratuit.
+- **Savoir ce que les visiteurs demandent, sans le stocker** : une ligne anonyme par requête dans les journaux Cloudflare (sujet
+  approximatif : prix, dates, déplacements, contact, site web, vidéo… ; résultat : ok, réponse remplacée par le garde-fou, erreur).
+  Jamais la question, la réponse, le nom, le numéro, l'adresse IP ni le navigateur (un test le vérifie). Si « prix », « dates »
+  ou « déplacements » reviennent souvent, ajouter la réponse d'Egu à la FAQ du site. À voir avec Egu : une phrase de
+  confidentialité (les messages sont traités par l'IA de Cloudflare).
+- **Message d'accueil** (une fois par visite, après 20 s, seulement sur les pages Web et Contact, masqué après 15 s, avec
+  une croix pour le fermer ; ne s'ouvre jamais tout seul) : sur Web, « Un projet de site web ? » ouvre l'assistant directement sur
+  la demande de site ; sur Contact, « Besoin d'aide pour votre demande ? » l'ouvre au début. Il ne revient pas si le visiteur
+  a déjà ouvert l'assistant. Testé avec une horloge simulée : 20 s, 15 s, une seule fois par visite, absent des autres pages.
+
