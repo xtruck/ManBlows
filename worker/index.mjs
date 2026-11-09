@@ -1,7 +1,7 @@
 // EGC Studio assistant: a Cloudflare Worker that answers visitors with Workers AI.
 // The site (GitHub Pages) calls it with POST and a JSON body:
 //   { mode: "chat",  messages: [{ role, content }], lang, stream? }  -> a reply (JSON, or a stream of events)
-//   { mode: "brief", text, lang }                                    -> the fields of a service request
+//   { mode: "brief", text, lang }                                    -> the fields of a request (one or several services)
 // It never gives money, dates or travel zones (Egu sets those in his quote): the prompt says so, and
 // guard.mjs enforces it on every reply, whatever the model writes.
 
@@ -231,7 +231,7 @@ async function brief(env, body, cors) {
   try {
     const out = await env.AI.run(env.MODEL || DEFAULT_MODEL, {
       messages: [{ role: "system", content: BRIEF_SYSTEM }, { role: "user", content: text }],
-      max_tokens: 220,
+      max_tokens: 400,
       temperature: 0,
     });
     obj = parseJsonObject(textOf(out));

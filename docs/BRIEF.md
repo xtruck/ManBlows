@@ -414,3 +414,18 @@ Rapport complet : `docs/AUDIT.md` (méthode, 24 constats corrigés, constats ouv
 ## Salon International de l'Investissement 2026 (09/11)
 - **Design** (`design.ts`, n° 43 à 46) : kakémono du thème (1020 × 2400), « Merci pour votre participation », mur des partenaires et bandeau des partenaires (2000 px de large, pour que les logos restent lisibles). Ils sont rangés avec les autres visuels du SII.
 - **Films** : film d'invitation du SII 2026 (`films/sii-invitation.mp4`, source 4K de 29 s ramenée à 1280 × 692 avec le son, 7,7 Mo), avec son affiche et sa boucle de 6 s pour le prisme du hero.
+
+## Assistant : plusieurs services dans une même demande (09/11)
+
+- **Le problème** : un client qui voulait photo + vidéo + design pour le même événement ne pouvait choisir qu'un service, et toutes les catégories recevaient les mêmes questions.
+- **Choix des services** : les tuiles Photo, Vidéo, Design graphique et Site web se cochent (une ou plusieurs), puis « Continuer ». « Poser une question » reste une entrée à part. Un bouton qui ouvre l'assistant sur un service (page Web) le coche d'avance ; on peut en ajouter d'autres.
+- **Questions communes, posées une seule fois** : le projet (mariage, anniversaire, église, entreprise, produits… : les choix suivent les services cochés), la date (ou « pour quand » pour un design ou un site seuls), le lieu et le nombre de personnes (seulement avec photo ou vidéo), le nom.
+- **Questions par service** (choix rapides, texte libre possible, « Passer » sur les questions facultatives) :
+  - Photo : ce qu'il faut couvrir (cérémonie, réception, portraits, produits…), la livraison (sélection retouchée, album, tirages) ;
+  - Vidéo : le format (film complet, clip des temps forts, reels, drone), la durée ;
+  - Design graphique : les supports (affiche, logo, posts, kakémono, invitation, carte de visite) avec nombre et usage en texte libre, et si les textes et le logo existent déjà ;
+  - Site web : le type de site, ce qui est déjà prêt (domaine, logo, textes, site actuel), les pages ou fonctions et le lien du site actuel.
+- **Progression** : la barre compte les vraies questions de la demande (7 pour une photo seule, 11 pour photo + vidéo + design, 5 pour un site seul).
+- **Message WhatsApp et récapitulatif** : regroupés par service (« Services : Photo, Vidéo, Design graphique », puis un bloc par service, puis les infos pratiques : date, lieu, personnes, nom), en texte simple avec des puces.
+- **Jamais d'argent** : aucune question de budget, de prix ou de zone de déplacement ; Egu les traite dans son devis.
+- **IA (« Décrire mon projet en une phrase »)** : `worker/brief.mjs` renvoie maintenant une liste de services et des détails par service, toujours vérifiés contre les mots du visiteur ; l'assistant ne pose ensuite que les questions manquantes. Tests du Worker : 24 (`npm run test:worker`).

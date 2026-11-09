@@ -3,27 +3,94 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useLang } from "./LangProvider";
-import { Avatar, Icon, Progress, RequestCard, TypingDots, type IconName } from "./assistant/parts";
+import { Avatar, Icon, Progress, RequestCard, TypingDots, type IconName, type RequestSection } from "./assistant/parts";
 import { onIntroDone } from "@/lib/intro";
 import { contact } from "@/content/site";
 import { useFocusTrap } from "@/lib/useFocusTrap";
 import { useMedia } from "@/lib/useMedia";
 import { normalize } from "@/lib/routes";
-import { onAssistantOpen, type AssistantOpen } from "@/lib/assistant";
+import { onAssistantOpen, type AssistantOpen, type AssistantService } from "@/lib/assistant";
 
-type ServiceKey = "photo" | "video" | "design" | "web";
-type Step = "service" | "faq" | "describe" | "kind" | "date" | "place" | "details" | "name" | "done";
+type ServiceKey = AssistantService;
+type Mode = "service" | "faq" | "describe" | "ask" | "done";
 type Msg = { from: "bot" | "me"; text: string };
-type Brief = { service?: string; serviceKey?: ServiceKey; kind?: string; date?: string; place?: string; details?: string; name?: string };
+type QId =
+  | "kind"
+  | "date"
+  | "place"
+  | "guests"
+  | "photoCover"
+  | "photoDelivery"
+  | "videoType"
+  | "videoLength"
+  | "designItems"
+  | "designMaterial"
+  | "webType"
+  | "webHave"
+  | "webPages"
+  | "name";
+type Answers = Partial<Record<QId, string>>;
+type Row = [string, string];
 
-const TEXT_STEPS: Step[] = ["date", "place", "details", "name"];
-// The steps shown in the progress bar, in order
-const FLOW: Step[] = ["kind", "date", "place", "details", "name"];
+const SERVICE_KEYS: ServiceKey[] = ["photo", "video", "design", "web"];
+/**
+ * Every question the request can ask, in the order they come. Which ones a visitor sees depends on
+ * the services chosen (see applies): the shared ones (project, date, place, people, name) once, then
+ * at most two or three quick ones per service. multi: several chips can be ticked; optional: "Passer";
+ * typed: the answer is usually written, so the field takes the focus.
+ */
+const QUESTIONS: { id: QId; group: "shared" | ServiceKey; multi?: boolean; optional?: boolean; typed?: boolean }[] = [
+  { id: "kind", group: "shared" },
+  { id: "date", group: "shared", typed: true },
+  { id: "place", group: "shared", typed: true },
+  { id: "guests", group: "shared", optional: true },
+  { id: "photoCover", group: "photo", multi: true },
+  { id: "photoDelivery", group: "photo", multi: true, optional: true },
+  { id: "videoType", group: "video", multi: true },
+  { id: "videoLength", group: "video", optional: true },
+  { id: "designItems", group: "design", multi: true },
+  { id: "designMaterial", group: "design", optional: true },
+  { id: "webType", group: "web" },
+  { id: "webHave", group: "web", multi: true, optional: true },
+  { id: "webPages", group: "web", optional: true, typed: true },
+  { id: "name", group: "shared", typed: true },
+];
+const Q = Object.fromEntries(QUESTIONS.map((q) => [q.id, q])) as Record<QId, (typeof QUESTIONS)[number]>;
+// Photo and video happen on site: only they need a place and a number of people
+const onSite = (s: ServiceKey[]) => s.includes("photo") || s.includes("video");
+const applies = (id: QId, s: ServiceKey[]) => {
+  const g = Q[id].group;
+  if (g !== "shared") return s.includes(g);
+  if (id === "kind") return s.some((k) => k !== "web"); // a website alone is described by its type
+  if (id === "place" || id === "guests") return onSite(s);
+  return true;
+};
+// The questions still to ask for these services, given what is already known
+const planFor = (s: ServiceKey[], known: Answers) => QUESTIONS.filter((q) => applies(q.id, s) && !known[q.id]).map((q) => q.id);
+const PER_SERVICE: Record<ServiceKey, QId[]> = {
+  photo: ["photoCover", "photoDelivery"],
+  video: ["videoType", "videoLength"],
+  design: ["designItems", "designMaterial"],
+  web: ["webType", "webHave", "webPages"],
+};
+
 // Optional: URL of the Cloudflare Worker (see worker/). Without it the AI features stay hidden.
 const AI_URL = process.env.NEXT_PUBLIC_ASSISTANT_URL ?? "";
 type AiMsg = { role: "user" | "assistant"; content: string };
-type ApiBrief = { service?: string; kind?: string; date?: string; place?: string; details?: string; name?: string };
-const SERVICE_KEYS: ServiceKey[] = ["photo", "video", "design", "web"];
+type ApiBrief = {
+  services?: unknown;
+  service?: unknown; // older Workers answered a single service
+  kind?: unknown;
+  date?: unknown;
+  place?: unknown;
+  guests?: unknown;
+  name?: unknown;
+  details?: unknown;
+  photo?: { cover?: unknown };
+  video?: { type?: unknown; length?: unknown };
+  design?: { items?: unknown };
+  web?: { type?: unknown; pages?: unknown };
+};
 // A gentle prompt, once per visit, where a visitor is most likely about to ask for something
 const TEASER_PAGES: Record<string, "web" | "contact"> = { "/web/": "web", "/contact/": "contact" };
 const TEASER_AFTER_MS = 20_000;
@@ -33,15 +100,20 @@ const norm = (v: string) => v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCa
 
 /**
  * Guided assistant: answers right away, asks one question at a time, then writes the full request
- * (service, type, date, place, details, name) and opens WhatsApp with it, addressed to Egu.
- * It never talks about money or travel zones: Egu sets those himself in his quote.
+ * and opens WhatsApp with it, addressed to Egu.
+ * The visitor picks one or several services (photo, video, graphic design, website). The questions
+ * follow that choice: the shared ones once (project, date, place for on-site work, number of people,
+ * name), then a couple of quick ones per service. The message and the recap card are grouped by service.
+ * It never talks about money, budget or travel zones: Egu sets those himself in his quote.
  * The guided flow runs in the page (no server, free). When NEXT_PUBLIC_ASSISTANT_URL is set, the
  * visitor can also ask free questions (answered word by word) and describe a project in one
- * sentence, which pre-fills the request. Both go to a Cloudflare Workers AI Worker
- * (worker/index.mjs) that never discusses money; the guided flow keeps working if it is down.
+ * sentence, which pre-fills the request (several services included) so only what is missing is
+ * asked. Both go to a Cloudflare Workers AI Worker (worker/index.mjs) that never discusses money;
+ * the guided flow keeps working if it is down.
  *
  * It has no button of its own: the WhatsApp button and the WhatsApp calls to action open it
- * (lib/assistant.ts), so a WhatsApp message reaches Egu as a complete brief.
+ * (lib/assistant.ts), so a WhatsApp message reaches Egu as a complete brief. A caller can pre-select
+ * a service (the Web page pre-selects "Site web"); the visitor can still add others.
  *
  * On phones it is a bottom sheet over a dimmed page (focus stays inside); on larger screens a
  * floating card beside the page. A human is always one tap away ("Écrire à Egu").
@@ -51,9 +123,14 @@ export function Assistant() {
   const a = t.assistant;
   const [ready, setReady] = useState(false);
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState<Step>("service");
+  const [mode, setMode] = useState<Mode>("service");
   const [msgs, setMsgs] = useState<Msg[]>([]);
-  const [brief, setBrief] = useState<Brief>({});
+  const [services, setServices] = useState<ServiceKey[]>([]);
+  const [answers, setAnswers] = useState<Answers>({});
+  const [note, setNote] = useState(""); // anything else the visitor said in a one-sentence description
+  const [plan, setPlan] = useState<QId[]>([]);
+  const [qi, setQi] = useState(0);
+  const [sel, setSel] = useState<string[]>([]); // ticked chips of a multiple-choice question
   const [input, setInput] = useState("");
   const [shownLang, setShownLang] = useState(lang);
   const [asking, setAsking] = useState(false);
@@ -78,29 +155,40 @@ export function Assistant() {
 
   useEffect(() => onIntroDone(() => setReady(true)), []);
 
-  // Start (or restart) the conversation, in the current language
-  const reset = () => {
-    setMsgs([{ from: "bot", text: a.hello }]);
-    setBrief({});
-    setStep("service");
+  const serviceLabel = (k: ServiceKey) => a.services.find((x) => x.key === k)?.label ?? k;
+  const labelsOf = (s: ServiceKey[]) => s.map(serviceLabel).join(", ");
+  const questionOf = (id: QId, s: ServiceKey[]) => (id === "date" && !onSite(s) ? a.questions.deadline : a.questions[id]);
+  const optionsOf = (id: QId, s: ServiceKey[]): readonly string[] => {
+    if (id === "kind") return a.kinds.filter((k) => s.some((x) => (k.for as readonly string[]).includes(x))).map((k) => k.label);
+    if (id === "date") return onSite(s) ? a.options.date : a.options.deadline;
+    if (id === "place" || id === "webPages" || id === "name") return [];
+    return a.options[id];
+  };
+
+  // Start (or restart) the conversation, in the current language, with a service already chosen when the caller knows it
+  const reset = (preset?: ServiceKey) => {
+    setMsgs([{ from: "bot", text: a.hello }, ...(preset ? [{ from: "bot" as const, text: a.preset.replace("{service}", serviceLabel(preset)) }] : [])]);
+    setServices(preset ? [preset] : []);
+    setAnswers({});
+    setNote("");
+    setPlan([]);
+    setQi(0);
+    setSel([]);
+    setMode("service");
     setInput("");
     setAiHistory([]);
     rid.current++;
     setAsking(false);
     setShownLang(lang);
   };
-  // Opened from the WhatsApp button or a call to action (lib/assistant.ts), straight on the
-  // service when the caller knows it
+  // Opened from the WhatsApp button or a call to action (lib/assistant.ts)
   const handle = useRef<(d: AssistantOpen) => void>(() => {});
   useEffect(() => {
     handle.current = ({ service, toggle }) => {
       if (toggle && open) return setOpen(false);
       opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      const label = service && a.services.find((x) => x.key === service)?.label;
-      if (label) {
-        reset();
-        say(label, a.askKind, "kind", { service: label, serviceKey: service });
-      } else if (msgs.length === 0 || shownLang !== lang) reset();
+      if (service && SERVICE_KEYS.includes(service)) reset(service);
+      else if (msgs.length === 0 || shownLang !== lang) reset();
       markTeaser();
       setTeaserOn(null);
       setOpen(true);
@@ -137,12 +225,16 @@ export function Assistant() {
     wasOpen.current = open;
   }, [open]);
 
+  const current: QId | undefined = mode === "ask" ? plan[qi] : undefined;
+  const started = msgs.some((m) => m.from === "me"); // after the first answer the big start menu gives way to quick replies
+
   useEffect(() => {
     // The start screen is read from the top; once the conversation runs, the newest message stays in view
-    const atStart = step === "service" && msgs.length <= 1;
+    const atStart = mode === "service" && !started;
     list.current?.scrollTo({ top: atStart ? 0 : list.current.scrollHeight, behavior: atStart || asking ? "auto" : "smooth" });
-    if (TEXT_STEPS.includes(step) || step === "describe") field.current?.focus();
-  }, [msgs, step, asking, open]);
+    // Only questions usually answered in words take the focus (on a phone, the keyboard would hide the chips)
+    if ((current && Q[current].typed) || mode === "describe") field.current?.focus();
+  }, [msgs, mode, current, asking, open, started]);
 
   useEffect(() => {
     if (!open) return;
@@ -152,25 +244,47 @@ export function Assistant() {
   }, [open]);
 
   // `me` is what the visitor said (null when it is already on screen)
-  const say = (me: string | null, bot: string | string[], next: Step, patch: Brief = {}) => {
-    setBrief((b) => ({ ...b, ...patch }));
+  const say = (me: string | null, bot: string | string[], next: Mode) => {
     setMsgs((m) => [...m, ...(me === null ? [] : [{ from: "me" as const, text: me }]), ...[bot].flat().map((text) => ({ from: "bot" as const, text }))]);
-    setStep(next);
+    setMode(next);
     setInput("");
+    setSel([]);
   };
 
-  const pickService = (key: string, label: string) => {
-    if (key === "question") say(label, [a.faqIntro, ...a.faq.map((f) => `${f.q}\n${f.a}`), a.faqThen], "faq");
-    else say(label, a.askKind, "kind", { service: label, serviceKey: key as ServiceKey });
+  // The questions for these services, minus what is already known; straight to the recap when nothing is missing
+  const startPlan = (me: string | null, s: ServiceKey[], known: Answers, before: string[] = []) => {
+    const p = planFor(s, known);
+    setPlan(p);
+    setQi(0);
+    if (p.length === 0) say(me, [...before, a.recap], "done");
+    else say(me, [...before, questionOf(p[0], s)], "ask");
   };
 
-  const submitText = (value: string) => {
-    const v = value.trim();
-    if (!v) return;
-    if (step === "date") say(v, a.askPlace, "place", { date: v });
-    else if (step === "place") say(v, a.askDetails, "details", { place: v });
-    else if (step === "details") say(v, a.askName, "name", { details: v });
-    else if (step === "name") say(v, a.recap, "done", { name: v });
+  const toggleService = (k: ServiceKey) => setServices((s) => (s.includes(k) ? s.filter((x) => x !== k) : SERVICE_KEYS.filter((x) => x === k || s.includes(x))));
+  const confirmServices = () => {
+    if (services.length === 0 || asking) return;
+    startPlan(labelsOf(services), services, answers);
+  };
+  const openFaq = (labelText: string) => say(labelText, [a.faqIntro, ...a.faq.map((f) => `${f.q}\n${f.a}`), a.faqThen], "faq");
+
+  // One answer (null: skipped), then the next question or the recap
+  const answer = (value: string | null) => {
+    if (!current) return;
+    const v = value?.trim() ?? "";
+    if (!v && !Q[current].optional) return;
+    if (v) setAnswers((x) => ({ ...x, [current]: v }));
+    const next = qi + 1;
+    setQi(next);
+    if (next >= plan.length) say(v || a.skip, a.recap, "done");
+    else say(v || a.skip, questionOf(plan[next], services), "ask");
+  };
+  // A multiple-choice answer: the ticked chips, plus anything typed
+  const multiValue = () => [...sel, input.trim()].filter(Boolean).join(", ");
+
+  const submitText = () => {
+    if (!current) return;
+    if (Q[current].multi) answer(multiValue());
+    else answer(input);
   };
 
   // A free question, answered by the AI Worker word by word; any failure points to WhatsApp instead
@@ -237,19 +351,26 @@ export function Assistant() {
     }
   };
 
+  // The request, grouped: services and project, one block per service, then the practical details
   const f = a.fields;
-  const rows = (b: Brief): [string, string][] =>
-    (
-      [
-        [f.service, b.service],
-        [f.kind, b.kind],
-        [f.date, b.date],
-        [f.place, b.place],
-        [f.details, b.details],
-        [f.name, b.name],
-      ] as [string, string | undefined][]
-    ).filter((r): r is [string, string] => !!r[1]);
-  const lines = [a.msgIntro, ...rows(brief).map(([k, v]) => `• ${k} : ${v}`)];
+  const sectionsOf = (s: ServiceKey[], x: Answers, extra: string): RequestSection[] => {
+    const rowsOf = (ids: QId[]) => ids.filter((id) => x[id]).map((id): Row => [id === "date" && !onSite(s) ? f.deadline : f[id], x[id] ?? ""]);
+    const head: Row[] = [];
+    if (s.length > 0) head.push([f.services, labelsOf(s)]);
+    if (x.kind) head.push([f.kind, x.kind]);
+    const practical = rowsOf(["date", "place", "guests", "name"]);
+    if (extra) practical.push([f.details, extra]);
+    return [
+      { rows: head },
+      ...s.map((k): RequestSection => ({ title: serviceLabel(k), icon: k as IconName, rows: rowsOf(PER_SERVICE[k]) })),
+      { title: a.practical, icon: "info" as IconName, rows: practical },
+    ].filter((sec) => sec.rows.length > 0);
+  };
+  const sections = sectionsOf(services, answers, note);
+  const sep = lang === "fr" ? " : " : ": ";
+  const bullets = (rows: Row[]) => rows.map(([k, v]) => `• ${k}${sep}${v}`);
+  // Plain text for WhatsApp: a bullet per answer, a *bold* title per block
+  const lines = [a.msgIntro, ...sections.flatMap((sec) => ["", ...(sec.title ? [`*${sec.title}*`] : []), ...bullets(sec.rows)])];
 
   // "Describe my project": the AI fills in what the visitor already said; the flow asks only what is missing
   const describeProject = async (value: string) => {
@@ -264,7 +385,7 @@ export function Assistant() {
       const res = await fetch(AI_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "brief", text: v, lang }) });
       if (!res.ok) throw new Error(String(res.status));
       const data: { brief?: ApiBrief } = await res.json();
-      found = data.brief ?? {};
+      found = data.brief && typeof data.brief === "object" ? data.brief : {};
     } catch {
       found = null;
     }
@@ -272,50 +393,65 @@ export function Assistant() {
     setAsking(false);
     setMsgs((m) => m.slice(0, -1)); // the typing bubble
     if (found === null) return say(null, a.describeFail, "service");
-    const key = SERVICE_KEYS.find((k) => k === found.service);
-    const patch: Brief = {};
-    if (key) {
-      patch.serviceKey = key;
-      patch.service = a.services.find((x) => x.key === key)?.label;
-    }
-    // Snap the type to one of the offered choices when it matches; otherwise keep the visitor's words
-    if (found.kind) patch.kind = (key && a.kinds[key].find((k) => norm(k) === norm(found.kind ?? ""))) || found.kind;
-    for (const field of ["date", "place", "details", "name"] as const) if (found[field]) patch[field] = found[field];
-    const noted = rows(patch);
+    const named = [found.services, found.service].flat();
+    const s = SERVICE_KEYS.filter((k) => named.includes(k));
+    const known: Answers = {};
+    // Snap a value to one of the offered choices when it matches; otherwise keep the visitor's words
+    const put = (q: QId, raw: unknown) => {
+      if (typeof raw !== "string" || !raw.trim()) return;
+      const w = raw.trim().slice(0, 120);
+      known[q] = optionsOf(q, s).find((o) => norm(o) === norm(w)) ?? w;
+    };
+    // A website alone has no "project" question: what the AI calls its type is the type of site
+    put(s.length === 1 && s[0] === "web" ? "webType" : "kind", found.kind);
+    put("date", found.date);
+    put("place", found.place);
+    put("guests", found.guests);
+    put("name", found.name);
+    put("photoCover", found.photo?.cover);
+    put("videoType", found.video?.type);
+    put("videoLength", found.video?.length);
+    put("designItems", found.design?.items);
+    put("webType", found.web?.type);
+    put("webPages", found.web?.pages);
+    const extra = typeof found.details === "string" ? found.details.trim().slice(0, 200) : "";
+    setAnswers(known);
+    setNote(extra);
+    setServices(s);
+    const noted = sectionsOf(s, known, extra);
     if (noted.length === 0) return say(null, a.describeNone, "service");
-    const next: Step = !key ? "service" : !patch.kind ? "kind" : !patch.date ? "date" : !patch.place ? "place" : !patch.details ? "details" : !patch.name ? "name" : "done";
-    const asks: Record<string, string> = { service: a.askService, kind: a.askKind, date: a.askDate, place: a.askPlace, details: a.askDetails, name: a.askName, done: a.recap };
-    say(null, [`${a.understood}\n${noted.map(([k, x]) => `• ${k} : ${x}`).join("\n")}`, asks[next]], next, patch);
+    const summary = `${a.understood}\n${noted.map((sec) => [...(sec.title ? [sec.title] : []), ...bullets(sec.rows)].join("\n")).join("\n")}`;
+    if (s.length === 0) return say(null, [summary, a.askService], "service");
+    startPlan(null, s, known, [summary]);
   };
 
   const waLink = `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(lines.join("\n"))}`;
   const humanLink = `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(a.humanMsg)}`;
-  const textStep = TEXT_STEPS.includes(step);
-  const aiStep = !!AI_URL && (step === "service" || step === "faq");
-  const describeStep = !!AI_URL && step === "describe";
-  const showForm = textStep || aiStep || describeStep;
-  const started = msgs.length > 1; // after the first exchange the big start menu gives way to quick replies
-  const flowIndex = FLOW.indexOf(step);
-  const inFlow = flowIndex >= 0 || step === "done";
-  const placeholder = textStep ? a.placeholder : describeStep ? a.describePlaceholder : a.askAi;
+  const askStep = mode === "ask" && !!current;
+  const aiStep = !!AI_URL && (mode === "service" || mode === "faq");
+  const describeStep = !!AI_URL && mode === "describe";
+  const showForm = askStep || aiStep || describeStep;
+  const options = current ? optionsOf(current, services) : [];
+  const total = Math.max(plan.length, 1);
+  const inFlow = mode === "ask" || (mode === "done" && plan.length > 0);
+  const placeholder = askStep ? (options.length > 0 ? a.orType : a.placeholder) : describeStep ? a.describePlaceholder : a.askAi;
   const close = () => setOpen(false);
   const teaserVisible = !open && teaserTopic !== undefined && teaserOn === pathname;
-  // From the prompt: the Web page goes straight to a website request, the Contact page to the start
+  // From the prompt: the Web page pre-selects a website, the Contact page goes to the start
   const openFromTeaser = () => {
-    reset();
-    if (teaserTopic === "web") {
-      const label = a.services.find((x) => x.key === "web")?.label ?? "";
-      say(label, a.askKind, "kind", { service: label, serviceKey: "web" });
-    }
+    reset(teaserTopic === "web" ? "web" : undefined);
     markTeaser();
     setTeaserOn(null);
     setOpen(true);
   };
 
   const chip = "rounded-full bg-white px-3.5 py-2 text-left text-sm text-ink shadow-sm ring-1 ring-ink/10 transition hover:ring-ink/35 active:scale-95 disabled:opacity-50";
+  const chipOn = "!bg-ink !text-paper !ring-ink";
   const tile = "group flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left text-sm font-medium text-ink shadow-sm ring-1 ring-ink/10 transition hover:ring-ink/35 active:scale-[0.98] disabled:opacity-50";
   const label = "px-0.5 text-[11px] font-semibold tracking-[0.12em] text-muted uppercase";
   const questionLabel = a.services.find((s) => s.key === "question")?.label ?? "";
+  const continueLabel = services.length > 1 ? `${a.continue} (${services.length})` : a.continue;
+  const canGo = mode === "ask" && current && Q[current].multi ? sel.length > 0 || !!input.trim() : false;
 
   return (
     <>
@@ -357,14 +493,20 @@ export function Assistant() {
                     {a.subtitle}
                   </p>
                 </div>
-                <button type="button" onClick={reset} aria-label={a.restart} title={a.restart} className="flex size-9 items-center justify-center rounded-full text-paper/80 transition hover:bg-paper/10 hover:text-paper">
+                <button type="button" onClick={() => reset()} aria-label={a.restart} title={a.restart} className="flex size-9 items-center justify-center rounded-full text-paper/80 transition hover:bg-paper/10 hover:text-paper">
                   <Icon name="restart" className="size-[18px]" />
                 </button>
                 <button type="button" onClick={close} aria-label={a.close} className="flex size-9 items-center justify-center rounded-full text-paper/80 transition hover:bg-paper/10 hover:text-paper">
                   <Icon name="close" className="size-[18px]" />
                 </button>
               </div>
-              {inFlow && <Progress step={step === "done" ? FLOW.length : flowIndex + 1} total={FLOW.length} label={step === "done" ? a.ready : a.progress.replace("{n}", String(flowIndex + 1)).replace("{total}", String(FLOW.length))} />}
+              {inFlow && (
+                <Progress
+                  step={mode === "done" ? total : qi + 1}
+                  total={total}
+                  label={mode === "done" ? a.ready : a.progress.replace("{n}", String(qi + 1)).replace("{total}", String(total))}
+                />
+              )}
             </header>
 
             <div ref={list} role="log" aria-label={a.title} aria-live="polite" aria-busy={asking} data-lenis-prevent className="flex-1 space-y-2 overflow-y-auto overscroll-contain px-4 py-4">
@@ -385,8 +527,8 @@ export function Assistant() {
                 );
               })}
 
-              {/* The start screen: three clear ways in */}
-              {step === "service" && !started && (
+              {/* The start screen: describe, pick one or several services, or ask a question */}
+              {mode === "service" && !started && (
                 <div className="assistant-msg space-y-4 pt-2">
                   {AI_URL && (
                     <button type="button" disabled={asking} onClick={() => say(a.describeCta, a.describeAsk, "describe")} className="flex w-full items-center gap-3 rounded-2xl bg-brand p-3.5 text-left text-ink shadow-md transition hover:brightness-95 active:scale-[0.98] disabled:opacity-50">
@@ -401,24 +543,43 @@ export function Assistant() {
                     </button>
                   )}
                   <section aria-label={a.groupRequest} className="space-y-2">
-                    <p className={label}>{a.groupRequest}</p>
+                    <p className={label}>
+                      {a.groupRequest} <span className="font-normal tracking-normal normal-case">· {a.pickHint}</span>
+                    </p>
                     <div className="grid grid-cols-2 gap-2">
-                      {a.services
-                        .filter((s) => s.key !== "question")
-                        .map((s) => (
-                          <button key={s.key} type="button" disabled={asking} onClick={() => pickService(s.key, s.label)} className={tile}>
-                            <span aria-hidden className="flex size-8 shrink-0 items-center justify-center rounded-full bg-paper-2 text-ink transition group-hover:bg-brand">
-                              <Icon name={s.key as IconName} className="size-[18px]" />
+                      {SERVICE_KEYS.map((k) => {
+                        const on = services.includes(k);
+                        return (
+                          <button
+                            key={k}
+                            type="button"
+                            aria-pressed={on}
+                            disabled={asking}
+                            onClick={() => toggleService(k)}
+                            className={`${tile} ${on ? "!ring-2 !ring-ink" : ""}`}
+                          >
+                            <span aria-hidden className={`flex size-8 shrink-0 items-center justify-center rounded-full transition ${on ? "bg-brand text-ink" : "bg-paper-2 text-ink group-hover:bg-brand"}`}>
+                              <Icon name={on ? "check" : (k as IconName)} className="size-[18px]" />
                             </span>
-                            {s.label}
+                            <span className="min-w-0">{serviceLabel(k)}</span>
                           </button>
-                        ))}
+                        );
+                      })}
                     </div>
+                    <button
+                      type="button"
+                      disabled={asking || services.length === 0}
+                      onClick={confirmServices}
+                      className="flex h-11 w-full items-center justify-center gap-2 rounded-full bg-ink text-sm font-semibold text-paper shadow-md transition active:scale-[0.98] disabled:bg-ink/25 disabled:shadow-none"
+                    >
+                      {continueLabel}
+                      <Icon name="chevron" className="size-4" />
+                    </button>
                   </section>
                   <section aria-label={a.groupAsk} className="space-y-2">
                     <p className={label}>{a.groupAsk}</p>
                     <div className="space-y-1.5">
-                      <button type="button" disabled={asking} onClick={() => pickService("question", questionLabel)} className={`${tile} !py-2.5 font-normal`}>
+                      <button type="button" disabled={asking} onClick={() => openFaq(questionLabel)} className={`${tile} !py-2.5 font-normal`}>
                         <Icon name="question" className="size-[18px] shrink-0 text-muted" />
                         <span className="min-w-0 flex-1">{questionLabel}</span>
                         <Icon name="chevron" className="size-4 shrink-0 text-muted" />
@@ -437,55 +598,83 @@ export function Assistant() {
               )}
 
               {/* Later in the conversation: the same choices, as compact quick replies */}
-              {step === "service" && started && (
+              {mode === "service" && started && (
                 <div className="assistant-msg flex flex-wrap gap-2 pt-1">
+                  {SERVICE_KEYS.map((k) => {
+                    const on = services.includes(k);
+                    return (
+                      <button key={k} type="button" aria-pressed={on} disabled={asking} onClick={() => toggleService(k)} className={`${chip} flex items-center gap-1.5 ${on ? chipOn : ""}`}>
+                        {on && <Icon name="check" className="size-4" />}
+                        {serviceLabel(k)}
+                      </button>
+                    );
+                  })}
+                  <button type="button" disabled={asking || services.length === 0} onClick={confirmServices} className={`${chip} flex items-center gap-1 !bg-brand font-semibold !ring-0`}>
+                    {continueLabel}
+                    <Icon name="chevron" className="size-4" />
+                  </button>
+                  <span className="basis-full" aria-hidden />
                   {AI_URL && (
-                    <button type="button" disabled={asking} onClick={() => say(a.describeCta, a.describeAsk, "describe")} className={`${chip} flex items-center gap-1.5 !bg-brand font-medium !ring-0`}>
+                    <button type="button" disabled={asking} onClick={() => say(a.describeCta, a.describeAsk, "describe")} className={`${chip} flex items-center gap-1.5`}>
                       <Icon name="sparkle" className="size-4" />
                       {a.describeCta}
                     </button>
                   )}
-                  {a.services.map((s) => (
-                    <button key={s.key} type="button" disabled={asking} onClick={() => pickService(s.key, s.label)} className={chip}>
-                      {s.label}
-                    </button>
-                  ))}
+                  <button type="button" disabled={asking} onClick={() => openFaq(questionLabel)} className={chip}>
+                    {questionLabel}
+                  </button>
                 </div>
               )}
 
               {/* Choices for the other steps */}
-              {step !== "service" && (
+              {mode !== "service" && (
                 <div className="flex flex-wrap gap-2 pt-1">
-                  {step === "faq" && (
-                    <button type="button" className={`${chip} !bg-brand !ring-0 font-medium`} onClick={() => say(a.startRequest, a.hello, "service")}>
+                  {mode === "faq" && (
+                    <button type="button" className={`${chip} !bg-brand font-medium !ring-0`} onClick={() => say(a.startRequest, a.hello, "service")}>
                       {a.startRequest}
                     </button>
                   )}
-                  {step === "describe" && (
+                  {mode === "describe" && (
                     <button type="button" className={chip} onClick={() => say(a.back, a.hello, "service")}>
                       {a.back}
                     </button>
                   )}
-                  {step === "kind" &&
-                    brief.serviceKey &&
-                    a.kinds[brief.serviceKey].map((k) => (
-                      <button key={k} type="button" className={chip} onClick={() => say(k, a.askDate, "date", { kind: k })}>
-                        {k}
-                      </button>
-                    ))}
-                  {step === "details" && (
-                    <button type="button" className={chip} onClick={() => say(a.skip, a.askName, "name")}>
+                  {askStep &&
+                    current &&
+                    options.map((o) => {
+                      if (!Q[current].multi)
+                        return (
+                          <button key={o} type="button" className={chip} onClick={() => answer(o)}>
+                            {o}
+                          </button>
+                        );
+                      const on = sel.includes(o);
+                      return (
+                        <button key={o} type="button" aria-pressed={on} className={`${chip} flex items-center gap-1.5 ${on ? chipOn : ""}`} onClick={() => setSel((x) => (on ? x.filter((y) => y !== o) : [...x, o]))}>
+                          {on && <Icon name="check" className="size-4" />}
+                          {o}
+                        </button>
+                      );
+                    })}
+                  {askStep && current && Q[current].multi && (
+                    <button type="button" disabled={!canGo} className={`${chip} flex items-center gap-1 !bg-brand font-semibold !ring-0`} onClick={() => answer(multiValue())}>
+                      {a.continue}
+                      <Icon name="chevron" className="size-4" />
+                    </button>
+                  )}
+                  {askStep && current && Q[current].optional && (
+                    <button type="button" className={`${chip} text-muted`} onClick={() => answer(null)}>
                       {a.skip}
                     </button>
                   )}
-                  {step === "done" && (
+                  {mode === "done" && (
                     <div className="w-full space-y-3 pt-1">
-                      <RequestCard title={a.yourRequest} rows={rows(brief)} />
+                      <RequestCard title={a.yourRequest} sections={sections} />
                       <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#25d366] text-sm font-semibold text-ink shadow-md transition hover:brightness-95 active:scale-95">
                         <Icon name="whatsapp" className="size-5" />
                         {a.send}
                       </a>
-                      <button type="button" className="w-full text-center text-xs text-muted underline-offset-4 hover:underline" onClick={reset}>
+                      <button type="button" className="w-full text-center text-xs text-muted underline-offset-4 hover:underline" onClick={() => reset()}>
                         {a.restart}
                       </button>
                     </div>
@@ -499,7 +688,7 @@ export function Assistant() {
                 className="border-t border-ink/10 bg-paper px-3 pt-3 pb-2"
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (textStep) submitText(input);
+                  if (askStep) submitText();
                   else if (describeStep) describeProject(input);
                   else askAi(input);
                 }}
@@ -510,12 +699,12 @@ export function Assistant() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder={placeholder}
-                    aria-label={placeholder}
+                    aria-label={askStep && current ? questionOf(current, services) : placeholder}
                     maxLength={describeStep ? 500 : 300}
                     disabled={asking}
                     className="h-11 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted/80 disabled:opacity-60"
                   />
-                  <button type="submit" disabled={asking || !input.trim()} aria-label={a.submit} title={a.submit} className="flex size-9 shrink-0 items-center justify-center rounded-full bg-ink text-paper transition active:scale-90 disabled:bg-ink/25">
+                  <button type="submit" disabled={asking || !(input.trim() || (askStep && sel.length > 0))} aria-label={a.submit} title={a.submit} className="flex size-9 shrink-0 items-center justify-center rounded-full bg-ink text-paper transition active:scale-90 disabled:bg-ink/25">
                     <Icon name="send" className="size-[18px]" />
                   </button>
                 </div>
