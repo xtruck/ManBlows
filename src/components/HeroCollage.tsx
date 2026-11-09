@@ -111,7 +111,7 @@ export function HeroCollage({ active = 0 }: { active?: number }) {
   return (
     <div ref={root} aria-hidden className="hero-collage pointer-events-none absolute inset-0 z-10">
       {/* Shot ticket, like a kitchen receipt */}
-      <div data-sticker data-depth="1.4" className="sticker absolute -top-[3%] -left-[24%] lg:top-[4%] lg:-left-[44%]" style={{ translate: NUDGE[active], "--r": "-8deg", "--d": "7s" } as React.CSSProperties}>
+      <div data-sticker data-depth="1.4" className="sticker absolute -top-[3%] -left-[15%] lg:top-[4%] lg:-left-[44%]" style={{ translate: NUDGE[active], "--r": "-8deg", "--d": "7s" } as React.CSSProperties}>
         <div>
           <div style={{ background: pal.ticket, color: pal.ticketText }} className="w-[6.4rem] rounded-md transition-colors duration-700 p-2.5 font-mono text-[9px] leading-snug shadow-xl shadow-black/30 lg:w-[9.5rem] lg:p-4 lg:text-xs">
             <p className="text-lg font-bold lg:text-2xl">#24</p>

@@ -16,9 +16,10 @@ export function TitleSync() {
 
   useEffect(() => {
     const route = routes.find((r) => r.href === pathname);
-    if (!route) return; // the "not found" page keeps its own title
-    const title = route.key === "home" ? t.meta.home : `${t.nav[route.key]} | EGC Studio`;
-    const description = t.meta.description;
+    // Same texts as the French HTML (src/app/*/page.tsx reads dict.fr.meta), in the chosen language
+    const page = route && route.key !== "home" ? t.meta.pages[route.key] : null;
+    const title = !route ? `${t.meta.notFound} | EGC Studio` : page ? `${page.title} | EGC Studio` : t.meta.home;
+    const description = page ? page.description : t.meta.description;
     const apply = () => {
       if (document.title !== title) document.title = title;
       const meta = document.querySelector<HTMLMetaElement>('meta[name="description"]');

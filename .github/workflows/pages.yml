@@ -26,9 +26,11 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run test:worker
       - run: npm run build
         env:
           NEXT_PUBLIC_BASE_PATH: /ManBlows
+          NEXT_PUBLIC_ASSISTANT_URL: ${{ vars.ASSISTANT_URL }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: out

@@ -8,7 +8,7 @@
 - Puis photographe et vidéaste : mariages, baptêmes, événements, portraits.
 
 ## Contenu du site (tout est de lui, plus aucune maquette)
-- **Travaux** (`/travaux/`) : 35 créations graphiques (`src/content/design.ts`) et 11 photos
+- **Travaux** (`/travaux/`) : 35 créations graphiques (`src/content/design.ts`) et 41 photos
   (`src/content/photos.ts`), chacune avec le client et le type (église, entreprise, école, événement).
   Filtres : Tout, Design (avec un sous-filtre par type de client), Produits, Événements.
   Images optimisées dans `public/work/`.
@@ -16,11 +16,11 @@
   (forfaits réseaux sociaux, création de design, services, grille tarifaire) sont **à part** du travail
   client, dans un carrousel avec agrandissement. Elles sont dans `design.ts` (catégorie `studio`,
   exportées en `offerShots`) et ne s'affichent pas dans la galerie.
-- **Films** (`/films/`) : 8 vidéos (3 mariages en vertical, un montage Les Bols du Bonheur, un plan serré au clavier, une vidéo AGEF, un reportage Archibat, un reportage Maracana) dans `public/films/`, plus le **showreel**.
+- **Films** (`/films/`) : 18 vidéos (à l'origine 8 : 3 mariages en vertical, un montage Les Bols du Bonheur, un plan serré au clavier, une vidéo AGEF, un reportage Archibat, un reportage Maracana) dans `public/films/`, plus le **showreel**.
 - **Showreel** : sa vidéo de reportage d'événement de 25 s, en 1080×1920 (`public/films/showreel.mp4`).
 - **Trois métiers** (accueil, `components/Disciplines.tsx` + `Deck.tsx`) : la sélection du début de
   l'accueil est fusionnée ici. Chaque carte montre un paquet de ses vraies images qui défilent
-  (compteur « 11 photos », « 5 vidéos », « 35 créations ») et mène directement à `/travaux/#photos`,
+  (compteurs calculés depuis les données : 41 photos, 18 vidéos, 35 créations au 09/11) et mène directement à `/travaux/#photos`,
   `/films/` ou `/travaux/#design` (le filtre est choisi par le lien). La carte Design a aussi
   « Voir les tarifs ». Les images de chaque paquet se choisissent par numéro dans `Disciplines.tsx`.
 - Clients identifiés : Église Mesev, Assemblée Internationale Royaume de Lumière, Mission Évangélique
@@ -112,7 +112,8 @@ dès le premier défilement.
   dans la rue, marche de groupe, arrivée de l'équipe, caméraman, séance photo en robe kente (type passé à
   « Portrait »), réception sous chapiteau, salon professionnel. À valider avec lui.
 - **Vidéo abîmée : `film-2585.mp4` (réception sous chapiteau, logo « MO Events »).** Seules 592 images sur
-  1 570 se décodent, la lecture saute. Il faut la reconvertir depuis l'original (IMG_2585) dans son dossier.
+  1 570 se décodaient. Réparée le 09/11 : on a gardé les deux passages intacts (0 à 6,4 s et 39,3 s à la fin)
+  collés en un film de 20 s qui se lit sans saut. Pour retrouver les 53 s, reconvertir l'original (IMG_2585).
 - Le salon (n° 22) semble être « Brand Icons Africa » d'après un panneau : à confirmer.
 - Aperçu de partage (WhatsApp, Facebook, X) en français et en anglais : texte et image `og.png`
   (refaite avec `node scripts/make-og.mjs`). La description de la page suit aussi la langue choisie.
@@ -260,7 +261,7 @@ le projet n'utilise pas le CLI shadcn, l'alias `@/` pointe sur `src/`). Pas de d
   7 pages en ordinateur et en téléphone 360 px, textes FR/EN identiques (168 clés).
   Lighthouse téléphone : accessibilité 100, bonnes pratiques 100, SEO 92 (le `robots.txt` doit être à la racine
   du domaine : il le sera avec un nom de domaine à soi), performance 35 à 43 (l'intro et les vidéos).
-- Reste à faire plus tard : alléger `public/films/` (137 Mo), reconvertir `film-2585.mp4` (abîmé),
+- Reste à faire plus tard : alléger `public/films/` (137 Mo), reconvertir `film-2585.mp4` depuis l'original (version réduite à 20 s),
   remplacer les coordonnées et contenus par ceux validés par Egu, nom de domaine.
 
 ## Sept sites de plus dans les Réalisations (08/11)
@@ -289,9 +290,110 @@ Bulle « Une question ? Écrivez-nous » en bas à gauche de toutes les pages (`
 (fonctionnement, devis, déplacements, délais) et pose une question à la fois — service, type, date, lieu, budget
 (devis ou montant), détails, nom — puis ouvre WhatsApp vers le numéro d'Egu avec la demande complète, prête à envoyer.
 Il ne donne ni prix ni date : Egu confirme sous 24 h. À compléter avec Egu : zones de déplacement, délais types.
-Étape suivante possible : brancher une IA gratuite (Cloudflare Workers AI) pour les questions libres.
+IA pour les questions libres (Cloudflare Workers AI) : voir la section « Assistant IA » plus bas.
 
 - (08/11) Assistant : plus de question de budget ni de réponse sur les prix ou les zones ; il recueille seulement ce qu'il faut à Egu pour son devis. Stickers du hero : textes, formes et positions changent à chaque tour du prisme (un jeu par métier dans `hero.sticker.sets`).
+
+## Autocollants de l'accueil : tailles et bords (09/11)
+Mesuré (Playwright) à 9 largeurs, de 320 à 2560 px : sur téléphone le ticket rose dépassait de 5 px à gauche de
+l'écran, et à 1024 px trois paires d'autocollants se chevauchaient (le prisme rétrécit avec la fenêtre, pas eux).
+- Ticket : décalage à gauche réduit sur téléphone (`HeroCollage.tsx`), avec de la marge pour le déplacement à chaque tour.
+- Les autocollants suivent la taille du prisme sur ordinateur : `--sticker-k` (0,72 à 1024 px, 0,8 dès 1100,
+  0,9 dès 1260, 1 dès 1440) appliqué en `zoom` dans `globals.css`. Résultat : aucun chevauchement ni débordement,
+  au moins 14 px de marge au bord de l'écran.
+
+## Assistant IA (Cloudflare Workers AI) (09/11)
+- `worker/` : Worker Cloudflare (`index.mjs`, `guard.mjs`, `brief.mjs`, `knowledge.generated.mjs`, `wrangler.jsonc`,
+  `README.md` avec le déploiement). Sans l'URL du Worker, l'assistant garde sa demande guidée seule.
+- **Questions libres** : réponses affichées mot à mot, à partir des vraies informations du studio
+  (`npm run knowledge` les extrait de `dict.ts` et `site.ts`, à relancer puis redéployer après une modification de la FAQ,
+  des services, du processus ou des coordonnées). Trois questions types sont proposées en un geste.
+- **« Décrire mon projet en une phrase »** : l'IA remplit service, type, date, lieu, détails et nom d'après le texte du
+  visiteur ; l'assistant ne pose que les questions restantes, puis ouvre WhatsApp avec la demande complète. Tout ce que le
+  visiteur n'a pas écrit est écarté, rien n'est inventé. Si l'IA est en panne, le service est quand même deviné par mots-clés.
+- **Règles appliquées par le code** (`guard.mjs`), quelle que soit la réponse du modèle : aucun prix ni montant, aucun
+  « gratuit » ou remise, aucun numéro, e-mail ou lien autre que ceux du studio, aucune fuite des consignes. Une réponse
+  fautive est remplacée par « Egu confirme lui-même les prix, les dates… » (FR ou EN). Pendant l'affichage mot à mot, le
+  texte est retenu de quelques caractères et le texte final contrôlé remplace ce qui était affiché.
+- Une mention indique que les réponses sont générées par une IA. En cas d'erreur (quota gratuit dépassé, Worker hors
+  ligne), le visiteur est renvoyé vers WhatsApp ou la demande guidée.
+- Testé sans compte Cloudflare : 15 tests (`npm run test:worker`, lancés aussi par `pages.yml`) avec une IA simulée :
+  origines, rôles falsifiés, messages trop longs, limite de débit, règles du garde-fou, flux coupé n'importe où, prix
+  jamais envoyé même en morceaux, extraction du projet ; page dans un navigateur contre un faux Worker (mot à mot,
+  prix bloqué, description complète puis partielle, URL de WhatsApp, Worker hors ligne). `wrangler deploy --dry-run` valide.
+- **Pas testé : la vraie IA.** Après le déploiement, `node worker/eval.mjs <url du Worker> --show` pose 20 questions
+  pièges (prix, « ignore tes consignes », hors sujet, anglais) et lit les réponses.
+- **À faire par Egu / le propriétaire** : compte Cloudflare, `npx wrangler deploy` dans `worker/`, variable `ASSISTANT_URL`
+  dans GitHub, relancer le déploiement, vérifier l'identifiant du modèle (`MODEL`) dans la liste de Cloudflare.
+
+## Présentation de l'assistant (09/11)
+Refonte de l'apparence du panneau (`Assistant.tsx`, `assistant/parts.tsx`, styles `.assistant-*` dans `globals.css`) :
+- **En-tête** : pastille EGC, titre, badge « IA » (seulement si l'IA est branchée), état « Réponse immédiate » (plus de texte coupé
+  sur téléphone), boutons Recommencer et Fermer. Une barre de progression en 5 étapes apparaît pendant la demande.
+- **Écran d'accueil** à trois entrées claires : carte jaune « Décrire mon projet en une phrase » (IA), quatre tuiles avec
+  icônes (Photo, Vidéo, Design, Site web), puis « Poser une question ». Après le premier échange, les mêmes choix passent en
+  petites réponses rapides sous la conversation (avant, le grand menu repoussait la réponse hors de vue).
+- **Conversation** : avatar sur les messages de l'assistant, apparition douce, indicateur de saisie (trois points) pendant
+  qu'il écrit, défilement vers le dernier message (vers le haut sur l'écran d'accueil).
+- **Demande prête** : fiche « Votre demande » (Service, Type, Date, Lieu, Détails, Nom) et gros bouton WhatsApp vert.
+- **Pied toujours visible** : « Réponses générées par une IA. Egu confirme chaque devis sous 24 h. » (sans IA : « Egu confirme
+  chaque devis sous 24 h. ») et un bouton **« Écrire à Egu »** : un humain est toujours à un geste.
+- **Téléphone** : feuille en bas de l'écran, page assombrie derrière, clic à côté pour fermer, focus gardé dans le panneau.
+  **Ordinateur** : carte flottante, la page reste utilisable. Échap ferme et rend le focus au bouton d'ouverture.
+- Animations coupées en mode « doux » et avec « réduire les animations ». Textes FR et EN (`assistant` dans `dict.ts`).
+- Vérifié (Playwright) : 390 et 1440 px, FR et EN, avec et sans IA, tous les écrans ; clavier ; aucune erreur dans la console.
+
+## Limites, statistiques et message d'accueil de l'assistant (09/11)
+- **Limite stricte par visiteur** : le limiteur de Cloudflare (`LIMITER` dans `wrangler.jsonc`, 12 requêtes par minute et par
+  visiteur), avec une limite locale de secours. **Plafond quotidien** facultatif (`DAILY_BUDGET`, 500 réponses d'IA par jour,
+  à activer avec un petit stockage KV, voir `worker/README.md`) : une fois atteint, le site renvoie vers WhatsApp au lieu
+  d'épuiser le quota gratuit.
+- **Savoir ce que les visiteurs demandent, sans le stocker** : une ligne anonyme par requête dans les journaux Cloudflare (sujet
+  approximatif : prix, dates, déplacements, contact, site web, vidéo… ; résultat : ok, réponse remplacée par le garde-fou, erreur).
+  Jamais la question, la réponse, le nom, le numéro, l'adresse IP ni le navigateur (un test le vérifie). Si « prix », « dates »
+  ou « déplacements » reviennent souvent, ajouter la réponse d'Egu à la FAQ du site. À voir avec Egu : une phrase de
+  confidentialité (les messages sont traités par l'IA de Cloudflare).
+- **Message d'accueil** (une fois par visite, après 20 s, seulement sur les pages Web et Contact, masqué après 15 s, avec
+  une croix pour le fermer ; ne s'ouvre jamais tout seul) : sur Web, « Un projet de site web ? » ouvre l'assistant directement sur
+  la demande de site ; sur Contact, « Besoin d'aide pour votre demande ? » l'ouvre au début. Il ne revient pas si le visiteur
+  a déjà ouvert l'assistant. Testé avec une horloge simulée : 20 s, 15 s, une seule fois par visite, absent des autres pages.
+
+## Intro d'accueil et vitrine des sites (09/11)
+**Intro** (`Preloader.tsx`) : analysée image par image (vidéo, téléphone et ordinateur, processeur ralenti) puis refaite.
+- Défauts trouvés : cercle jaune qui laissait un anneau noir autour de la pastille, mots (bulles) qui apparaissaient sur le
+  fond crème avant la fin du remplissage jaune, « egc » blanc illisible sur le jaune et posé sur le « s », 1,5 s à regarder le
+  mot terminé, 4,3 à 4,7 s au total, jaune animé en largeur/hauteur (recalcul de la mise en page à chaque image).
+- **Début : plus de photo** (elle n'avait pas de sens pour le visiteur et il fallait la télécharger). À la place, un
+  **viseur d'appareil photo** : coins qui se verrouillent, grille des tiers, point « REC », lecture « f/2.8 · 1/125 · ISO 400 »
+  (la même que sur l'accueil), carré de mise au point qui se cale puis s'allume en jaune ; l'**obturateur** s'ouvre alors en iris
+  jaune depuis ce point. Tout le viseur est en CSS (aucune image), donc visible tout de suite, même avant le JavaScript.
+- Durée : 3,6 à 3,8 s (au lieu de 4,3 à 4,7 s). Le mot se construit une fois l'écran jaune ; « egc » reprend la disposition du logo.
+- **Sécurités** : si les scripts ne se chargent pas, le voile disparaît tout seul (animation CSS à 7 s) ; sans JavaScript il n'apparaît
+  pas ; plafond de 9 s côté script ; bouton « Passer l'intro » (maintenant en haut au centre) et touche Échap ; la visite suivante dans
+  le même onglet garde le simple fondu de 0,4 s. Testé : scripts bloqués, JavaScript coupé, stockage bloqué, saut au clavier.
+
+**Page Web** : l'ancienne pile de captures à plat est remplacée par une **vitrine** (`SiteShowcase.tsx`) : un ordinateur portable
+argenté (cadre noir, webcam, charnière, socle, encoche) et un téléphone (cadre titane, île dynamique), dessinés en CSS
+(`ui/device-mockups.tsx`), qui présentent les 17 sites l'un après l'autre, avec une pastille « Site livré » ou « Maquette »,
+nom, secteur, flèches, pause, balayage tactile, flèches du clavier, barre de progression et lueur jaune de la marque. Chaque
+carte de projet est aussi sur son ordinateur avec son téléphone. Corrigés en cours de route : débordement horizontal de la
+section (maintenant `overflow-clip`) et colonne qui s'élargissait selon le nom du site (grille `minmax(0, 1fr)`).
+Vérifié : largeur stable pour les 17 sites à 320, 390, 768 et 1440 px.
+
+## Audit approfondi et corrections (09/11)
+Rapport complet : `docs/AUDIT.md` (méthode, 24 constats corrigés, constats ouverts avec preuves, plan).
+- Un agent a parcouru tout le site (6 largeurs, FR/EN, animations activées ou non) : 21 constats, dont 2 « élevés ». Tous les vrais
+  défauts sont corrigés (plantage de ScrollTrigger au changement d'animations sur Travaux, formulaire de contact, légendes de la
+  galerie en anglais, titres et descriptions de chaque page, boutons flottants, cibles tactiles de 44 px, etc.).
+- Trouvé en vérifiant : les animations d'apparition cachaient les blocs avec `visibility: hidden`, donc le seul `<h1>` de Films et
+  Travaux n'existait pas pour un lecteur d'écran avant le défilement. Elles n'utilisent plus que l'opacité (axe : 0 violation sur
+  48 vues).
+- Régression de performance que j'avais introduite sur Travaux (temps de blocage 60 à 300-440 ms) : les 82 déclencheurs d'apparition
+  sont maintenant créés par lots de 8 par image. Mesuré avant/après sur la même machine.
+- Nouveau : `npm run smoke` (toutes les pages, 3 tailles, FR et EN), `npm run test:worker` (22 tests), Dependabot, `engines`.
+- **Ouvert, à décider avec Egu** : « 17 sites conçus » alors que 14 sont des maquettes ; confidentialité de l'assistant IA ; domaine
+  personnel derrière Cloudflare (cache, en-têtes de sécurité, `robots.txt` utile) ; poids des vidéos dans le dépôt (145 Mo).
+
 
 ## Hero vivant, trois couleurs et WhatsApp guidé (09/11)
 

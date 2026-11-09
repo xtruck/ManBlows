@@ -2,12 +2,18 @@
   "name": "egu-studio",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "test:worker": "node --test \"worker/*.test.mjs\"",
+    "knowledge": "node scripts/make-knowledge.mjs",
+    "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "gsap": "^3.15.0",
@@ -26,5 +32,10 @@
     "eslint-config-next": "16.4.3",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@typescript-eslint/typescript-estree": {
+      "minimatch": "^11.0.5"
+    }
   }
 }

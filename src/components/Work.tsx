@@ -3,12 +3,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useFocusTrap } from "@/lib/useFocusTrap";
+import { refreshScrollTriggers } from "@/lib/scroll";
 import { useLang } from "./LangProvider";
 import { getLenis } from "./SmoothScroll";
 import { useMedia } from "@/lib/useMedia";
-import { shots, thumb, type Category, type Kind, type Shot } from "@/content/site";
+import { placeOf, shots, thumb, type Category, type Kind, type Shot } from "@/content/site";
 
 type Filter = "all" | "photos" | Category;
 // Only offer filters that have something in them: when photos or films are added later,
@@ -33,7 +33,7 @@ const frameNo = (id: number) => String(id).padStart(2, "0");
 
 /** The founder's work: filter chips, a balanced masonry grid and a keyboard / swipe lightbox. */
 export function Work() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [filter, setFilter] = useState<Filter>("all");
   const [kind, setKind] = useState<KindFilter>("all");
   const [index, setIndex] = useState<number | null>(null);
@@ -78,7 +78,7 @@ export function Work() {
       firstFilter.current = false;
       return;
     }
-    const id = window.setTimeout(() => ScrollTrigger.refresh(), 450);
+    const id = window.setTimeout(() => refreshScrollTriggers(), 450);
     return () => window.clearTimeout(id);
   }, [filter, kind]);
 
@@ -103,9 +103,9 @@ export function Work() {
   }, [visible, colCount]);
   // Accessible name of an image: who it was made for and what it is (frame number for photos).
   const label = (s: Shot) =>
-    s.real ? `${s.client ? `${s.client}, ` : ""}${s.place}` : `${t.work.frame} ${frameNo(s.id)}, ${s.place}`;
+    s.real ? `${s.client ? `${s.client}, ` : ""}${placeOf(s, lang)}` : `${t.work.frame} ${frameNo(s.id)}, ${placeOf(s, lang)}`;
   const altOf = (s: Shot) =>
-    s.category === "design" ? `${s.place}, ${t.a11y.realDesign}` : s.client ? `${s.place}, ${s.client}` : s.place;
+    s.category === "design" ? `${placeOf(s, lang)}, ${t.a11y.realDesign}` : s.client ? `${placeOf(s, lang)}, ${s.client}` : placeOf(s, lang);
   const current = index === null ? null : visible[index];
 
   const close = useCallback(() => {
@@ -161,7 +161,7 @@ export function Work() {
                     setFilter(f);
                     setKind("all");
                   }}
-                  className={`h-10 shrink-0 cursor-pointer rounded-full px-4 text-sm transition-all duration-300 active:scale-95 ${
+                  className={`h-11 shrink-0 cursor-pointer rounded-full px-4 text-sm transition-all duration-300 active:scale-95 ${
                     filter === f ? "bg-ink text-paper shadow-lg shadow-ink/20" : "liquid-glass text-ink"
                   }`}
                 >
@@ -231,10 +231,10 @@ export function Work() {
               {shot.real ? (
                 // Real work: say who it was made for, and what kind of client it is.
                 <figcaption className="flex flex-col gap-0.5 pt-2 text-xs md:text-sm">
-                  <span className="truncate font-medium">{shot.client ?? shot.place}</span>
+                  <span className="truncate font-medium">{shot.client ?? placeOf(shot, lang)}</span>
                   <span className="truncate text-muted">
                     {shot.kind ? t.work.kinds[shot.kind] : ""}
-                    {shot.client ? ` · ${shot.place}` : ""}
+                    {shot.client ? ` · ${placeOf(shot, lang)}` : ""}
                   </span>
                 </figcaption>
               ) : (
@@ -242,7 +242,7 @@ export function Work() {
                   <span className="text-muted tabular-nums">
                     {t.work.frame} {frameNo(shot.id)}
                   </span>
-                  <span className="truncate">{shot.place}</span>
+                  <span className="truncate">{placeOf(shot, lang)}</span>
                 </figcaption>
               )}
             </motion.figure>
@@ -293,10 +293,10 @@ export function Work() {
                 />
                 {current.real && (
                   <p className="mt-3 text-center text-sm text-paper/85">
-                    <span className="font-medium">{current.client ?? current.place}</span>
+                    <span className="font-medium">{current.client ?? placeOf(current, lang)}</span>
                     <span className="text-paper/60">
                       {current.kind ? ` · ${t.work.kinds[current.kind]}` : ""}
-                      {current.client ? ` · ${current.place}` : ""}
+                      {current.client ? ` · ${placeOf(current, lang)}` : ""}
                     </span>
                   </p>
                 )}

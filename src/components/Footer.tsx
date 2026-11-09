@@ -48,7 +48,7 @@ const PinIcon = () => (
 );
 
 const title = "text-xs font-medium tracking-[0.2em] text-paper/50 uppercase";
-const link = "block py-1.5 text-paper/80 transition-colors hover:text-paper active:opacity-60";
+const link = "block py-2.5 text-paper/80 transition-colors hover:text-paper active:opacity-60";
 
 export function Footer() {
   const { t } = useLang();
@@ -154,7 +154,7 @@ export function Footer() {
         <Logo tone="paper" className="text-[22vw] md:text-[13vw]" />
       </div>
 
-      <div className="mt-10 flex flex-col gap-5 border-t border-paper/15 pt-6 text-sm text-paper/65 md:flex-row md:items-center md:justify-between">
+      <div className="mt-10 flex flex-col gap-5 border-t border-paper/15 pt-6 pb-16 text-sm text-paper/65 md:flex-row md:items-center md:justify-between md:pb-12">
         <span>
           © 2026 EGC Studio. {f.rights}
         </span>
@@ -164,7 +164,7 @@ export function Footer() {
             type="button"
             aria-pressed={mode === "full"}
             onClick={() => setMotion(mode !== "full")}
-            className="cursor-pointer transition-colors hover:text-paper"
+            className="flex min-h-11 cursor-pointer items-center transition-colors hover:text-paper"
           >
             {mode === "full" ? t.motion.on : t.motion.off}
           </button>

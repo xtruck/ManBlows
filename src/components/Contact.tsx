@@ -1,32 +1,53 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useLang } from "./LangProvider";
 import { contact } from "@/content/site";
 
-type Status = "idle" | "opened" | "invalid";
+type Status = "idle" | "opened" | "invalid" | "badEmail";
+
+const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const field =
   "mt-2 w-full rounded-xl border border-ink/15 bg-paper/75 px-4 text-base text-ink placeholder:text-muted focus:border-ink";
 
 export function Contact() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [status, setStatus] = useState<Status>("idle");
+  // The project type is kept by position, so it follows the language when it changes
+  const [typeIndex, setTypeIndex] = useState(0);
+  const [openUrl, setOpenUrl] = useState("");
+  const form = useRef<HTMLFormElement>(null);
+
+  // Flags a field for assistive technology and puts the cursor in it
+  const flag = (name: string) => {
+    const el = form.current?.elements.namedItem(name);
+    if (el instanceof HTMLElement) el.focus();
+  };
 
   // Static site (GitHub Pages): no server, so the form hands a prefilled message to WhatsApp or email.
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const via = (e.nativeEvent as SubmitEvent).submitter?.getAttribute("value") === "email" ? "email" : "whatsapp";
     const data = Object.fromEntries(new FormData(e.currentTarget)) as Record<string, string>;
+    const type = t.contact.types[typeIndex] ?? "";
     if (!data.name?.trim() || !data.message?.trim()) {
       setStatus("invalid");
+      flag(!data.name?.trim() ? "name" : "message");
       return;
     }
+    if (data.email?.trim() && !EMAIL.test(data.email.trim())) {
+      setStatus("badEmail");
+      flag("email");
+      return;
+    }
+    // "2026-12-12" is read as a plain date, written the way the visitor's language writes it
+    const when = data.date ? new Date(`${data.date}T12:00:00`).toLocaleDateString(lang === "en" ? "en-GB" : "fr-FR", { day: "numeric", month: "long", year: "numeric" }) : "";
     const text = [
       `${t.contact.intro} ${data.name.trim()}.`,
-      `${t.contact.type} : ${data.type}`,
-      data.date ? `${t.contact.date} : ${data.date}` : "",
-      data.email ? `${t.contact.email} : ${data.email}` : "",
+      `${t.contact.type} : ${type}`,
+      when ? `${t.contact.date} : ${when}` : "",
+      data.email?.trim() ? `${t.contact.email} : ${data.email.trim()}` : "",
       "",
       data.message.trim(),
     ]
@@ -34,13 +55,18 @@ export function Contact() {
       .join("\n");
     const url =
       via === "email"
-        ? `mailto:${contact.email}?subject=${encodeURIComponent(`${data.type}, ${data.name.trim()}`)}&body=${encodeURIComponent(text)}`
+        ? `mailto:${contact.email}?subject=${encodeURIComponent(`${type}, ${data.name.trim()}`)}&body=${encodeURIComponent(text)}`
         : `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank", "noopener,noreferrer");
+    // A mail link opens the mail app in place; WhatsApp opens in a new tab. If the browser blocks
+    // that tab there is no way to know, so a link to the same address is always shown below.
+    if (via === "email") window.location.href = url;
+    else window.open(url, "_blank", "noopener,noreferrer");
+    setOpenUrl(url);
     setStatus("opened");
   }
 
-  const message = status === "opened" ? t.contact.opened : status === "invalid" ? t.contact.required : "";
+  const message = status === "opened" ? t.contact.opened : status === "invalid" ? t.contact.required : status === "badEmail" ? t.contact.emailInvalid : "";
+  const bad = { name: status === "invalid", message: status === "invalid", email: status === "badEmail" };
 
   return (
     <section
@@ -61,13 +87,13 @@ export function Contact() {
               href={`https://wa.me/${contact.whatsapp}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline decoration-1 underline-offset-[6px] hover:decoration-2"
+              className="inline-block py-2 underline decoration-1 underline-offset-[6px] hover:decoration-2"
             >
               {t.contact.whatsapp} <span className="whitespace-nowrap">{contact.whatsappLabel}</span>
             </a>
           </li>
           <li>
-            <a href={`mailto:${contact.email}`} className="underline decoration-1 underline-offset-[6px] hover:decoration-2">
+            <a href={`mailto:${contact.email}`} className="inline-block py-2 underline decoration-1 underline-offset-[6px] hover:decoration-2">
               {contact.email}
             </a>
           </li>
@@ -76,7 +102,7 @@ export function Contact() {
               href={`https://instagram.com/${contact.instagram}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline decoration-1 underline-offset-[6px] hover:decoration-2"
+              className="inline-block py-2 underline decoration-1 underline-offset-[6px] hover:decoration-2"
             >
               Instagram @{contact.instagram}
             </a>
@@ -86,7 +112,7 @@ export function Contact() {
               href={`https://www.tiktok.com/@${contact.tiktok}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="underline decoration-1 underline-offset-[6px] hover:decoration-2"
+              className="inline-block py-2 underline decoration-1 underline-offset-[6px] hover:decoration-2"
             >
               TikTok @{contact.tiktok}
             </a>
@@ -95,6 +121,7 @@ export function Contact() {
       </div>
 
       <form
+        ref={form}
         noValidate
         onSubmit={onSubmit}
         data-reveal
@@ -103,17 +130,19 @@ export function Contact() {
         <div className="grid gap-5 sm:grid-cols-2">
           <label className="block text-sm font-medium">
             {t.contact.name}
-            <input name="name" autoComplete="name" required className={`${field} h-12`} />
+            <input name="name" autoComplete="name" required aria-invalid={bad.name} aria-describedby="contact-status" className={`${field} h-12`} />
           </label>
           <label className="block text-sm font-medium">
             {t.contact.email}
-            <input name="email" type="email" autoComplete="email" className={`${field} h-12`} />
+            <input name="email" type="email" autoComplete="email" aria-invalid={bad.email} aria-describedby="contact-status" className={`${field} h-12`} />
           </label>
           <label className="block text-sm font-medium">
             {t.contact.type}
-            <select name="type" className={`${field} h-12 cursor-pointer`}>
-              {t.contact.types.map((ty) => (
-                <option key={ty}>{ty}</option>
+            <select name="type" value={typeIndex} onChange={(e) => setTypeIndex(Number(e.target.value))} className={`${field} h-12 cursor-pointer`}>
+              {t.contact.types.map((ty, i) => (
+                <option key={i} value={i}>
+                  {ty}
+                </option>
               ))}
             </select>
           </label>
@@ -124,7 +153,7 @@ export function Contact() {
         </div>
         <label className="mt-5 block text-sm font-medium">
           {t.contact.message}
-          <textarea name="message" rows={5} required className={`${field} resize-y py-3`} />
+          <textarea name="message" rows={5} required aria-invalid={bad.message} aria-describedby="contact-status" className={`${field} resize-y py-3`} />
         </label>
 
         <div className="mt-6 flex flex-wrap items-center gap-4">
@@ -142,8 +171,16 @@ export function Contact() {
           >
             {t.contact.sendEmail}
           </button>
-          <p aria-live="polite" className="text-sm font-medium">
+          <p id="contact-status" aria-live="polite" className="text-sm font-medium">
             {message}
+            {status === "opened" && openUrl && (
+              <>
+                {" "}
+                <a href={openUrl} target={openUrl.startsWith("mailto:") ? undefined : "_blank"} rel="noopener noreferrer" className="underline underline-offset-4">
+                  {t.contact.openAgain}
+                </a>
+              </>
+            )}
           </p>
         </div>
       </form>

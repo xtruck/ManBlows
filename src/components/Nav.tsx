@@ -59,7 +59,7 @@ export function Nav() {
   return (
     <>
       <header className="liquid-glass-dark glass-rim fixed inset-x-3 top-3 z-50 flex h-14 items-center justify-between gap-4 rounded-full pr-2 pl-5 text-paper md:inset-x-6 md:top-5 xl:inset-x-8">
-        <TransitionLink href="/" className="shrink-0 pt-2">
+        <TransitionLink href="/" className="-my-2 shrink-0 py-2 pt-4">
           <Logo tone="paper" className="text-[22px]" />
         </TransitionLink>
 
@@ -97,7 +97,7 @@ export function Nav() {
             onClick={() => setOpen(true)}
             aria-expanded={open}
             aria-controls="mobile-menu"
-            className="flex h-10 cursor-pointer items-center gap-2 rounded-full px-4 text-sm active:scale-95 lg:hidden"
+            className="flex h-11 cursor-pointer items-center gap-2 rounded-full px-4 text-sm active:scale-95 lg:hidden"
           >
             {t.nav.menu}
             <span aria-hidden className="flex flex-col gap-1">
