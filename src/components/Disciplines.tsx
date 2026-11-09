@@ -4,7 +4,7 @@ import { Deck, type DeckItem } from "./Deck";
 import { useLang } from "./LangProvider";
 import { getLenis } from "./SmoothScroll";
 import { TransitionLink } from "./TransitionProvider";
-import { films, shots, type Shot } from "@/content/site";
+import { films, placeOf, shots, type Shot } from "@/content/site";
 
 const isPhoto = (s: Shot) => s.category !== "design" && s.category !== "studio";
 const photos = shots.filter(isPhoto);
@@ -39,7 +39,7 @@ export function Disciplines() {
 
   const decks: { items: DeckItem[]; hint: string; href: string }[] = [
     {
-      items: photoPicks.map((s) => ({ src: s.src, caption: s.client ?? s.place })),
+      items: photoPicks.map((s) => ({ src: s.src, caption: s.client ?? placeOf(s, lang) })),
       hint: d.photosCta,
       href: "/travaux/#photos",
     },
@@ -49,7 +49,7 @@ export function Disciplines() {
       href: "/films/",
     },
     {
-      items: designPicks.map((s) => ({ src: s.src, caption: s.client ?? s.place })),
+      items: designPicks.map((s) => ({ src: s.src, caption: s.client ?? placeOf(s, lang) })),
       hint: d.cta,
       href: "/travaux/#design",
     },
@@ -99,7 +99,7 @@ export function Disciplines() {
               }`}
             >
               <div className="flex items-start justify-between gap-4">
-                <span className="text-sm tabular-nums opacity-60">0{i + 1}</span>
+                <span className="text-sm tabular-nums opacity-75">0{i + 1}</span>
                 {design && (
                   <span className="rounded-full bg-ink px-3 py-1 text-xs font-medium text-paper">{d.since}</span>
                 )}

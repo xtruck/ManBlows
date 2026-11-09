@@ -417,15 +417,17 @@ export function Hero() {
                   onClick={() => pick(i)}
                   aria-label={c.name}
                   aria-pressed={i === active}
-                  className="relative h-1 w-10 cursor-pointer overflow-hidden rounded-full bg-paper/20"
+                  className="flex h-11 w-11 cursor-pointer items-center"
                 >
-                  {i === active && (
-                    <span
-                      key={turn}
-                      className={`absolute inset-0 origin-left rounded-full bg-brand ${started && !paused && !dragging && !gentle ? "prism-progress" : ""}`}
-                      style={{ animationDuration: `${TURN_MS}ms` }}
-                    />
-                  )}
+                  <span className="relative block h-1 w-full overflow-hidden rounded-full bg-paper/20">
+                    {i === active && (
+                      <span
+                        key={turn}
+                        className={`absolute inset-0 origin-left rounded-full bg-brand ${started && !paused && !dragging && !gentle ? "prism-progress" : ""}`}
+                        style={{ animationDuration: `${TURN_MS}ms` }}
+                      />
+                    )}
+                  </span>
                 </button>
               ))}
             </div>

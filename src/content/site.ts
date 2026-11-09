@@ -4,6 +4,10 @@
 
 import { designShots, offerShots } from "./design";
 import { photoShots } from "./photos";
+import { placeEn } from "./captions-en";
+
+/** The caption of a gallery picture in the visitor's language (French when no English one is written). */
+export const placeOf = (shot: { place: string }, lang: "fr" | "en") => (lang === "en" ? placeEn[shot.place] ?? shot.place : shot.place);
 
 export type Category = "ceremonies" | "events" | "products" | "portraits" | "films" | "design" | "studio";
 

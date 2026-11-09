@@ -8,7 +8,7 @@
 - Puis photographe et vidéaste : mariages, baptêmes, événements, portraits.
 
 ## Contenu du site (tout est de lui, plus aucune maquette)
-- **Travaux** (`/travaux/`) : 35 créations graphiques (`src/content/design.ts`) et 11 photos
+- **Travaux** (`/travaux/`) : 35 créations graphiques (`src/content/design.ts`) et 41 photos
   (`src/content/photos.ts`), chacune avec le client et le type (église, entreprise, école, événement).
   Filtres : Tout, Design (avec un sous-filtre par type de client), Produits, Événements.
   Images optimisées dans `public/work/`.
@@ -16,11 +16,11 @@
   (forfaits réseaux sociaux, création de design, services, grille tarifaire) sont **à part** du travail
   client, dans un carrousel avec agrandissement. Elles sont dans `design.ts` (catégorie `studio`,
   exportées en `offerShots`) et ne s'affichent pas dans la galerie.
-- **Films** (`/films/`) : 8 vidéos (3 mariages en vertical, un montage Les Bols du Bonheur, un plan serré au clavier, une vidéo AGEF, un reportage Archibat, un reportage Maracana) dans `public/films/`, plus le **showreel**.
+- **Films** (`/films/`) : 18 vidéos (à l'origine 8 : 3 mariages en vertical, un montage Les Bols du Bonheur, un plan serré au clavier, une vidéo AGEF, un reportage Archibat, un reportage Maracana) dans `public/films/`, plus le **showreel**.
 - **Showreel** : sa vidéo de reportage d'événement de 25 s, en 1080×1920 (`public/films/showreel.mp4`).
 - **Trois métiers** (accueil, `components/Disciplines.tsx` + `Deck.tsx`) : la sélection du début de
   l'accueil est fusionnée ici. Chaque carte montre un paquet de ses vraies images qui défilent
-  (compteur « 11 photos », « 5 vidéos », « 35 créations ») et mène directement à `/travaux/#photos`,
+  (compteurs calculés depuis les données : 41 photos, 18 vidéos, 35 créations au 09/11) et mène directement à `/travaux/#photos`,
   `/films/` ou `/travaux/#design` (le filtre est choisi par le lien). La carte Design a aussi
   « Voir les tarifs ». Les images de chaque paquet se choisissent par numéro dans `Disciplines.tsx`.
 - Clients identifiés : Église Mesev, Assemblée Internationale Royaume de Lumière, Mission Évangélique

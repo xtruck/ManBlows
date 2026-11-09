@@ -312,7 +312,7 @@ export function Assistant() {
           onClick={toggle}
           aria-expanded={open}
           aria-controls="egc-assistant"
-          className={`fixed bottom-4 left-4 z-[60] flex h-12 items-center gap-2 rounded-full bg-ink pr-4 pl-2.5 text-sm font-medium text-paper shadow-xl ring-1 shadow-black/30 ring-paper/15 transition-all duration-500 hover:scale-[1.03] active:scale-95 md:bottom-6 md:left-6 ${
+          className={`fixed bottom-4 left-4 z-[60] flex h-12 items-center gap-2 rounded-full bg-ink pr-4 pl-2.5 max-[359px]:pr-2.5 text-sm font-medium text-paper shadow-xl ring-1 shadow-black/30 ring-paper/15 transition-all duration-500 hover:scale-[1.03] active:scale-95 md:bottom-6 md:left-6 ${
             ready ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
           }`}
         >
@@ -320,7 +320,7 @@ export function Assistant() {
             <Icon name="chat" className="size-4" />
           </span>
           <span className="hidden sm:inline">{a.open}</span>
-          <span className="sm:hidden">{lang === "en" ? "Ask" : "Questions"}</span>
+          <span className="max-[359px]:sr-only sm:hidden">{lang === "en" ? "Ask" : "Questions"}</span>
         </button>
       )}
 
@@ -354,7 +354,7 @@ export function Assistant() {
                 <Avatar />
                 <div className="min-w-0 flex-1">
                   <p className="flex items-center gap-2 font-display text-[15px] leading-tight font-semibold">
-                    <span className="truncate">{a.title}</span>
+                    <span className="min-w-0 leading-tight">{a.title}</span>
                     {AI_URL && <span className="shrink-0 rounded-full bg-brand px-1.5 py-0.5 text-[10px] leading-none font-bold text-ink">{a.aiBadge}</span>}
                   </p>
                   <p className="mt-1 flex items-center gap-1.5 text-xs text-paper/75">

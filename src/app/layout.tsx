@@ -80,6 +80,9 @@ export const viewport: Viewport = { themeColor: "#ffc400" };
 // Runs while the HTML is still parsing, before anything is drawn: if the intro already played
 // in this visit, mark <html> so the preloader shows a plain dark cover (no artwork) that it then
 // fades out quickly.
+// The Skip button works before the page's scripts have arrived (slow connections): a click lifts the
+// cover at once and leaves a flag that the intro reads when it starts.
+const skipScript = `document.addEventListener("click",function(e){var b=e.target&&e.target.closest&&e.target.closest("[data-pre-skip]");if(!b)return;window.__egcSkipEarly=true;var c=document.querySelector("[data-preloader]");if(c){c.style.transition="opacity .25s";c.style.opacity="0";c.style.pointerEvents="none"}b.style.display="none";try{sessionStorage.setItem(${JSON.stringify(INTRO_SEEN_KEY)},"1")}catch(_){}},true)`;
 const bootScript = `(function(){try{if(sessionStorage.getItem(${JSON.stringify(INTRO_SEEN_KEY)}))document.documentElement.dataset.intro="quick"}catch(e){}})()`;
 
 const jsonLd = {
@@ -108,6 +111,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="grain min-h-full font-sans">
         <script dangerouslySetInnerHTML={{ __html: bootScript }} />
+        <script dangerouslySetInnerHTML={{ __html: skipScript }} />
         {/* Without JavaScript the intro cannot run, so it must not cover the page */}
         <noscript>
           <style>{"[data-preloader],[data-pre-skip]{display:none!important}"}</style>

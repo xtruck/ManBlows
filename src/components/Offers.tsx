@@ -7,7 +7,7 @@ import { useFocusTrap } from "@/lib/useFocusTrap";
 import { useLang } from "./LangProvider";
 import { getLenis } from "./SmoothScroll";
 import { TransitionLink } from "./TransitionProvider";
-import { offers, thumb } from "@/content/site";
+import { offers, placeOf, thumb } from "@/content/site";
 
 /**
  * EGC Studio's own posters: service packages, what each one includes and the price list.
@@ -15,7 +15,7 @@ import { offers, thumb } from "@/content/site";
  * A swipeable carousel (scroll-snap), with a full-size view so the small print is readable.
  */
 export function Offers() {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const track = useRef<HTMLDivElement>(null);
   const dialog = useRef<HTMLDivElement>(null);
   const lastTrigger = useRef<HTMLElement | null>(null);
@@ -95,19 +95,19 @@ export function Offers() {
                 lastTrigger.current = e.currentTarget;
                 setOpen(i);
               }}
-              aria-label={`${shot.place}, ${t.offers.hint}`}
+              aria-label={`${placeOf(shot, lang)}, ${t.offers.hint}`}
               className="group block w-full cursor-zoom-in overflow-hidden rounded-2xl bg-paper-2 shadow-lg shadow-ink/10 transition-transform duration-300 active:scale-[0.98]"
             >
               <Image
                 src={thumb(shot.src)}
-                alt={`${shot.place}, ${t.a11y.realDesign}`}
+                alt={`${placeOf(shot, lang)}, ${t.a11y.realDesign}`}
                 width={shot.w}
                 height={shot.h}
                 sizes="(min-width: 1024px) 27vw, (min-width: 640px) 44vw, 76vw"
                 className="h-auto w-full transition-transform duration-700 ease-out group-hover:scale-[1.03]"
               />
             </button>
-            <figcaption className="mt-3 text-sm font-medium">{shot.place}</figcaption>
+            <figcaption className="mt-3 text-sm font-medium">{placeOf(shot, lang)}</figcaption>
           </figure>
         ))}
       </div>
@@ -156,7 +156,7 @@ export function Offers() {
             ref={dialog}
             role="dialog"
             aria-modal="true"
-            aria-label={current.place}
+            aria-label={placeOf(current, lang)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -167,13 +167,13 @@ export function Offers() {
             <div className="flex max-h-full flex-col items-center" onClick={(e) => e.stopPropagation()}>
               <Image
                 src={current.src}
-                alt={`${current.place}, ${t.a11y.realDesign}`}
+                alt={`${placeOf(current, lang)}, ${t.a11y.realDesign}`}
                 width={current.w}
                 height={current.h}
                 sizes="90vw"
                 className="h-auto max-h-[72svh] w-auto max-w-full rounded-lg shadow-2xl md:max-h-[80svh]"
               />
-              <p className="mt-3 text-center text-sm font-medium text-paper/85">{current.place}</p>
+              <p className="mt-3 text-center text-sm font-medium text-paper/85">{placeOf(current, lang)}</p>
             </div>
             <button
               type="button"

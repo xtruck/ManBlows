@@ -2,6 +2,7 @@
 
 import { motion, useTransform, useReducedMotion, useMotionValue, useSpring, useScroll, type MotionValue } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { useMedia } from "@/lib/useMedia";
 
 /*
  * Perspective Tunnel — cards fly out of the depth of the screen around a title, like a camera
@@ -142,12 +143,14 @@ export default function PerspectiveTunnelHero({ images, eyebrow, title, text, pr
 
   const pointer = useCameraParallax(!reduce);
 
-  const titleScale = useTransform(smoothProgress, [0, 0.5, 1], [0.7, 1, 1.35]);
+  // On a phone the block already fills the screen: it grows only a little, so nothing is cut at the edges
+  const narrow = useMedia("(max-width: 767px)");
+  const titleScale = useTransform(smoothProgress, [0, 0.5, 1], [0.7, 1, narrow ? 1.04 : 1.35]);
   const titleOpacity = useTransform(smoothProgress, [0, 0.12, 0.85, 1], [0.25, 1, 1, 0]);
   const promptOpacity = useTransform(smoothProgress, [0, 0.12], [1, 0]);
 
   return (
-    <section ref={sectionRef} className={`relative bg-ink text-paper ${className}`} style={{ height: `${length * 100}svh` }}>
+    <section ref={sectionRef} data-sequence className={`relative bg-ink text-paper ${className}`} style={{ height: `${length * 100}svh` }}>
       <div
         className="sticky top-0 flex h-[100svh] w-full items-center justify-center overflow-hidden select-none"
         style={{ perspective: stage.isMobile ? "900px" : "1200px", transformStyle: "preserve-3d" }}

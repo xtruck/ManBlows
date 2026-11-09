@@ -164,6 +164,7 @@ export const dict = {
       title: "Écrivez-moi",
       note: "Réponse sous 24 h",
       message: "Bonjour EGC Studio, je viens de votre site (page {page}) et j'aimerais en savoir plus.",
+      messageGeneric: "Bonjour EGC Studio, je viens de votre site et j'aimerais en savoir plus.",
     },
     cta: {
       title: "Une date en tête ?",
@@ -183,6 +184,8 @@ export const dict = {
       sendEmail: "Envoyer par email",
       opened: "Votre message est prêt, il ne reste qu'à l'envoyer.",
       required: "Remplissez votre nom et un message.",
+      emailInvalid: "Cette adresse e-mail ne semble pas valide.",
+      openAgain: "Rien ne s'est ouvert ? Touchez ici.",
       intro: "Bonjour EGC Studio, je suis",
       whatsapp: "WhatsApp",
     },
@@ -288,6 +291,14 @@ export const dict = {
     meta: {
       home: "EGC Studio | Photo, vidéo, design et web",
       description: "EGC Studio, photographe, vidéaste, infographiste et créateur de sites web à Abidjan : cérémonies, événements, portraits, films, design graphique et sites web.",
+      notFound: "Page introuvable",
+      pages: {
+        work: { title: "Travaux", description: "Les créations d'Egu à Abidjan : affiches, visuels pour les réseaux sociaux, identités de marque, et photos de cérémonies, d'événements et de portraits." },
+        reel: { title: "Films", description: "Films de mariage, reportages d'événements, clips et coulisses de tournage, tournés et montés à Abidjan par EGC Studio." },
+        web: { title: "Sites web", description: "Sites vitrines, portfolios et pages de lancement à Abidjan : rapides, bilingues, pensés pour le téléphone et reliés à WhatsApp. Par EGC Studio." },
+        about: { title: "À propos", description: "Egu, photographe, vidéaste et infographiste à Abidjan : son parcours, ses métiers et sa façon de travailler." },
+        contact: { title: "Contact", description: "Racontez votre projet à EGC Studio : type, date et lieu. Réponse sous 24 heures par WhatsApp ou par e-mail." },
+      },
     },
     preloader: "Chargement",
     focus: "Mise au point",
@@ -528,6 +539,7 @@ export const dict = {
       title: "Message me",
       note: "Replies within 24 h",
       message: "Hello EGC Studio, I'm coming from your website ({page} page) and would like to know more.",
+      messageGeneric: "Hello EGC Studio, I'm coming from your website and would like to know more.",
     },
     cta: {
       title: "Got a date in mind?",
@@ -547,6 +559,8 @@ export const dict = {
       sendEmail: "Send by email",
       opened: "Your message is ready, just hit send.",
       required: "Fill in your name and a message.",
+      emailInvalid: "That e-mail address does not look valid.",
+      openAgain: "Nothing opened? Tap here.",
       intro: "Hello EGC Studio, I'm",
       whatsapp: "WhatsApp",
     },
@@ -652,6 +666,14 @@ export const dict = {
     meta: {
       home: "EGC Studio | Photo, video, design and web",
       description: "EGC Studio, photographer, videographer, graphic designer and web creator in Abidjan: ceremonies, events, portraits, films, graphic design and websites.",
+      notFound: "Page not found",
+      pages: {
+        work: { title: "Work", description: "Egu's work in Abidjan: posters, social media visuals, brand identities, and photos of ceremonies, events and portraits." },
+        reel: { title: "Films", description: "Wedding films, event coverage, clips and behind-the-scenes, shot and edited in Abidjan by EGC Studio." },
+        web: { title: "Websites", description: "Showcase sites, portfolios and landing pages in Abidjan: fast, bilingual, built for phones and connected to WhatsApp. By EGC Studio." },
+        about: { title: "About", description: "Egu, photographer, videographer and graphic designer in Abidjan: his story, his crafts and the way he works." },
+        contact: { title: "Contact", description: "Tell EGC Studio about your project: type, date and place. Reply within 24 hours on WhatsApp or by e-mail." },
+      },
     },
     preloader: "Loading",
     focus: "Focusing",

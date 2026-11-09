@@ -4,11 +4,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { getLenis } from "./SmoothScroll";
 import { useLang } from "./LangProvider";
 import { normalize, routes } from "@/lib/routes";
 import { motionMode } from "@/lib/motion";
+import { refreshScrollTriggers } from "@/lib/scroll";
 
 type TransitionContext = { navigate: (href: string) => void };
 
@@ -97,7 +97,7 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
     };
     align(0);
     lenis?.start();
-    requestAnimationFrame(() => ScrollTrigger.refresh());
+    requestAnimationFrame(() => refreshScrollTriggers());
     gsap
       .timeline({ delay: 0.12 })
       .to(label.current, { yPercent: -110, duration: 0.35, ease: "power2.in" })

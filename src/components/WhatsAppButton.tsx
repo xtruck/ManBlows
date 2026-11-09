@@ -13,7 +13,7 @@ import { normalize, routes } from "@/lib/routes";
  * naming the page they came from.
  *
  * Hidden: on the contact page (it has its own WhatsApp form), until the intro has finished,
- * during the home page's 3D camera sequence, while the footer (which has the link) is on screen,
+ * during the home page's 3D camera sequence and its tunnel, while the footer (which has the link) is on screen,
  * and whenever a video's playback controls sit under it.
  */
 /** The button's corner of the screen (bottom right). */
@@ -21,6 +21,14 @@ const ZONE = { width: 260, height: 96 };
 
 /** Height of a video's native control bar, along its bottom edge. */
 const CONTROLS = 64;
+
+/** True while an immersive scroll sequence (the home page's tunnel) fills the screen. */
+function inSequence() {
+  return [...document.querySelectorAll("[data-sequence]")].some((el) => {
+    const r = el.getBoundingClientRect();
+    return r.top < window.innerHeight * 0.5 && r.bottom > window.innerHeight * 0.5;
+  });
+}
 
 /** True when a video's playback controls overlap the button's corner. */
 function videoBelow() {
@@ -48,7 +56,7 @@ export function WhatsAppButton() {
       // On the home page, wait until the scroll-driven camera sequence is over.
       const hero = document.getElementById("top");
       const pastHero = !hero || hero.getBoundingClientRect().bottom < window.innerHeight * 0.5;
-      setClear(pastHero && !footerInView && !videoBelow());
+      setClear(pastHero && !footerInView && !videoBelow() && !inSequence());
     };
     const schedule = () => {
       if (!raf) raf = requestAnimationFrame(update);
@@ -79,7 +87,8 @@ export function WhatsAppButton() {
 
   const route = routes.find((r) => r.href === pathname);
   const page = route ? t.nav[route.key] : "";
-  const text = t.whatsapp.message.replace("{page}", page);
+  // Unknown pages (the 404) get the message without a page name rather than "(page )"
+  const text = page ? t.whatsapp.message.replace("{page}", page) : t.whatsapp.messageGeneric;
   const shown = introDone && clear;
 
   return (

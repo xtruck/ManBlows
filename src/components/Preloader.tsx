@@ -6,6 +6,12 @@ import { useLang } from "./LangProvider";
 import { INTRO_SEEN_KEY, markIntroDone, markIntroLeaving } from "@/lib/intro";
 import { motionMode } from "@/lib/motion";
 
+declare global {
+  interface Window {
+    __egcSkipEarly?: boolean; // set by the inline script in layout.tsx when Skip was pressed before this code arrived
+  }
+}
+
 const MAX_WAIT_MS = 2500; // never hold the visitor longer than this for the fonts
 const HARD_CAP_MS = 9000; // whatever happens (stalled timers, background tab), the cover is gone by then
 const IRIS_AT = 0.75; // seconds after navigation start when the shutter opens (the CSS viewfinder takes until then)
@@ -72,6 +78,13 @@ export function Preloader() {
       window.removeEventListener("keydown", onKey);
       document.documentElement.style.overflow = "";
     };
+
+    // Skip was pressed before the scripts arrived: the cover is already lifting, just finish
+    if (window.__egcSkipEarly) {
+      markIntroLeaving();
+      finish();
+      return cleanup;
+    }
 
     const fonts = document.fonts?.ready ?? Promise.resolve();
     const fontsOrTimeout = Promise.race([fonts, new Promise((r) => setTimeout(r, MAX_WAIT_MS))]);

@@ -6,6 +6,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { onIntroLeaving } from "@/lib/intro";
 import { useMotionMode } from "@/lib/motion";
+import { refreshScrollTriggers } from "@/lib/scroll";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -56,7 +57,9 @@ export function Reveals() {
           gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) => {
             // Things already on screen wait for the page curtain to lift.
             const delay = ScrollTrigger.isInViewport(el) ? 0.35 : 0;
-            const scrollTrigger = { trigger: el, start: "top 92%", once: true };
+            // Plays once. Not `once: true`: a trigger that deletes itself while GSAP is refreshing the others
+            // leaves a hole in its list and the refresh throws (seen when switching animations on /travaux/).
+            const scrollTrigger = { trigger: el, start: "top 92%", toggleActions: "play none none none" };
             if (gentle) {
               // Soft mode: a plain fade, with no movement, clipping or blur.
               gsap.from(el, { autoAlpha: 0, duration: 0.6, ease: "power1.out", delay, scrollTrigger });
@@ -66,7 +69,7 @@ export function Reveals() {
               gsap.from(el, { y: 36, autoAlpha: 0, duration: 0.9, ease: "power3.out", delay, scrollTrigger });
             }
           });
-          ScrollTrigger.refresh();
+          refreshScrollTriggers();
         });
       });
     });

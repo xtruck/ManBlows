@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Image from "next/image";
 import { useLang } from "./LangProvider";
 import { TransitionLink } from "./TransitionProvider";
 import { LightLeaks } from "./LightLeaks";
 import { LaptopMockup, PhoneMockup } from "./ui/device-mockups";
 import { SiteShowcase, shot, type Work } from "./SiteShowcase";
+import { refreshScrollTriggers } from "@/lib/scroll";
 import { getLenis } from "./SmoothScroll";
 import { contact } from "@/content/site";
 
@@ -47,7 +47,6 @@ function WorkCard({ work, concept, visit }: { work: Work; concept: string; visit
       rel="noopener noreferrer"
       onPointerMove={onMove}
       onPointerLeave={onLeave}
-      aria-label={`${work.name}, ${work.kind}${work.concept ? ` (${concept})` : ""} : ${visit}`}
       className="work-card group block rounded-[1.6rem] border border-paper/10 bg-graphite/70 p-3 md:p-4"
     >
       <div className="work-card-stage relative pr-[14%] pb-[7%]">
@@ -55,7 +54,7 @@ function WorkCard({ work, concept, visit }: { work: Work; concept: string; visit
         <LaptopMockup className="drop-shadow-[0_1.2rem_1.4rem_rgb(0_0_0/0.5)]">
           <Image
             src={shot(work.desk)}
-            alt={`${work.name}, ${work.kind}`}
+            alt=""
             fill
             sizes="(min-width: 1280px) 24rem, (min-width: 768px) 40vw, 76vw"
             className="object-cover object-top transition-transform duration-[1.2s] ease-out group-hover:scale-[1.03]"
@@ -77,7 +76,8 @@ function WorkCard({ work, concept, visit }: { work: Work; concept: string; visit
         <div className="min-w-0">
           <h3 className="font-display text-2xl font-semibold tracking-[-0.03em]">{work.name}</h3>
           <p className="mt-0.5 text-sm text-paper/65">{work.kind}</p>
-          <p className="mt-1 truncate text-xs text-paper/45">{work.url}</p>
+          <p className="mt-1 truncate text-xs text-paper/55">{work.url}</p>
+          <span className="sr-only">. {visit}</span>
         </div>
         <span
           aria-hidden
@@ -102,7 +102,7 @@ export function WebStudio() {
   const shown = sector === "all" ? w.works : w.works.filter((work) => work.sector === sector);
   // The cards below move up or down when the list changes: re-measure the scroll reveals
   useEffect(() => {
-    const id = window.setTimeout(() => ScrollTrigger.refresh(), 300);
+    const id = window.setTimeout(() => refreshScrollTriggers(), 300);
     return () => window.clearTimeout(id);
   }, [sector]);
 
@@ -187,7 +187,7 @@ export function WebStudio() {
                 type="button"
                 aria-pressed={sector === key}
                 onClick={() => setSector(key)}
-                className={`flex h-10 shrink-0 cursor-pointer items-center gap-2 rounded-full px-4 text-sm transition-colors duration-300 active:scale-95 ${
+                className={`flex h-11 shrink-0 cursor-pointer items-center gap-2 rounded-full px-4 text-sm transition-colors duration-300 active:scale-95 ${
                   sector === key ? "bg-brand text-ink" : "border border-paper/20 text-paper/80 hover:border-paper/40"
                 }`}
               >
@@ -293,7 +293,7 @@ export function WebStudio() {
           <div className="md:col-span-7">
             {w.faq.map((f) => (
               <details key={f.q} data-reveal className="group border-t border-ink/15 py-5 last:border-b">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 font-display text-xl font-semibold tracking-[-0.02em] md:text-2xl [&::-webkit-details-marker]:hidden">
+                <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-6 font-display text-xl font-semibold tracking-[-0.02em] md:text-2xl [&::-webkit-details-marker]:hidden">
                   {f.q}
                   <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full border border-ink/20 text-lg transition-transform duration-300 group-open:rotate-45">
                     +
