@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLang } from "./LangProvider";
-import { onIntroDone } from "@/lib/intro";
+import { onAssistantOpen, type AssistantOpen } from "@/lib/assistant";
 import { contact } from "@/content/site";
 
 type ServiceKey = "photo" | "video" | "design" | "web";
@@ -15,13 +15,14 @@ const TEXT_STEPS: Step[] = ["date", "place", "details", "name"];
 /**
  * Guided assistant: answers right away, asks one question at a time, then writes the full request
  * (service, type, date, place, details, name) and opens WhatsApp with it, addressed to Egu.
+ * It has no button of its own: the WhatsApp button and the "write to us" calls to action open it
+ * (lib/assistant.ts), so every WhatsApp message reaches Egu as a complete brief.
  * It never talks about money or travel zones: Egu sets those himself in his quote.
  * No AI and no server: it runs in the page, so it is free.
  */
 export function Assistant() {
   const { t, lang } = useLang();
   const a = t.assistant;
-  const [ready, setReady] = useState(false);
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<Step>("service");
   const [msgs, setMsgs] = useState<Msg[]>([]);
@@ -31,8 +32,6 @@ export function Assistant() {
   const list = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLInputElement>(null);
 
-  useEffect(() => onIntroDone(() => setReady(true)), []);
-
   // Start (or restart) the conversation, in the current language
   const reset = () => {
     setMsgs([{ from: "bot", text: a.hello }]);
@@ -41,10 +40,23 @@ export function Assistant() {
     setInput("");
     setShownLang(lang);
   };
-  const toggle = () => {
-    if (!open && (msgs.length === 0 || shownLang !== lang)) reset();
-    setOpen((o) => !o);
-  };
+  // Open on request, straight on the chosen service when the caller knows it (lib/assistant.ts)
+  const handle = useRef<(d: AssistantOpen) => void>(() => {});
+  useEffect(() => {
+    handle.current = ({ service, toggle }) => {
+      if (toggle && open) return setOpen(false);
+      const label = service && a.services.find((s) => s.key === service)?.label;
+      if (service && label) {
+        setMsgs([{ from: "bot", text: a.hello }, { from: "me", text: label }, { from: "bot", text: a.askKind }]);
+        setBrief({ service: label, serviceKey: service });
+        setStep("kind");
+        setInput("");
+        setShownLang(lang);
+      } else if (msgs.length === 0 || shownLang !== lang) reset();
+      setOpen(true);
+    };
+  });
+  useEffect(() => onAssistantOpen((d) => handle.current(d)), []);
 
   useEffect(() => {
     list.current?.scrollTo({ top: list.current.scrollHeight, behavior: "smooth" });
@@ -96,30 +108,13 @@ export function Assistant() {
 
   return (
     <>
-      <button
-        type="button"
-        onClick={toggle}
-        aria-expanded={open}
-        aria-controls="egc-assistant"
-        className={`fixed bottom-4 left-4 z-[60] flex h-12 items-center gap-2 rounded-full bg-ink pr-4 pl-2.5 text-sm font-medium text-paper shadow-xl ring-1 shadow-black/30 ring-paper/15 transition-all duration-500 hover:scale-[1.03] active:scale-95 md:bottom-6 md:left-6 ${
-          ready ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
-        }`}
-      >
-        <span aria-hidden className="flex size-7 items-center justify-center rounded-full bg-brand text-ink">
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 5h16v11H9l-5 4z" />
-          </svg>
-        </span>
-        <span className="hidden sm:inline">{a.open}</span>
-        <span className="sm:hidden">{lang === "en" ? "Ask" : "Questions"}</span>
-      </button>
 
       {open && (
         <div
           id="egc-assistant"
           role="dialog"
           aria-label={a.title}
-          className="fixed inset-x-3 bottom-20 z-[61] flex max-h-[min(36rem,calc(100svh-7rem))] flex-col overflow-hidden rounded-3xl bg-paper text-ink shadow-2xl ring-1 shadow-black/40 ring-ink/10 sm:inset-x-auto sm:left-6 sm:w-[24rem] md:bottom-24"
+          className="fixed inset-x-3 bottom-20 z-[61] flex max-h-[min(36rem,calc(100svh-7rem))] flex-col overflow-hidden rounded-3xl bg-paper text-ink shadow-2xl ring-1 shadow-black/40 ring-ink/10 sm:inset-x-auto sm:right-6 sm:w-[24rem] md:bottom-24"
         >
           <div className="flex items-center gap-3 bg-ink px-4 py-3 text-paper">
             <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand font-display text-xs font-bold text-ink">EGC</span>

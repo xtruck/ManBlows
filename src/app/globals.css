@@ -2,8 +2,8 @@
 @import "lenis/dist/lenis.css";
 
 :root {
-  --paper: #ece8e1; /* the "dark white" */
-  --paper-2: #ded8cd;
+  --paper: #f3ecdc; /* cream */
+  --paper-2: #e7dcc4;
   --ink: #0e0e0e;
   --graphite: #2a2826;
   --muted: #5c5954; /* 5.7:1 on paper, 4.9:1 on paper-2 (WCAG AA) */
@@ -410,10 +410,40 @@ html[data-intro="quick"] [data-pre-skip] {
     --prism-w: min(30vw, 27rem);
   }
 }
+/* The prism takes the shape of the picture in front (--prism-r = height / width, set by Hero.tsx):
+   tall for a 9:16 film, wide for a landscape one, always inside the same box so nothing around
+   it moves. --face-w is the prism's actual width, so its depth follows. */
+@property --prism-r {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 1.25;
+}
+.prism-wrap {
+  --r: clamp(0.56, var(--prism-r), 1.78);
+  --face-w: calc(var(--prism-w) * clamp(0.74, 1.32 / var(--r), 1.12));
+  transition: --prism-r 0.9s cubic-bezier(0.65, 0, 0.35, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: calc(var(--prism-w) * 1.12);
+  height: calc(var(--prism-w) * 1.32);
+  max-width: 100%;
+}
 .prism-scene {
   position: relative;
-  width: var(--prism-w);
-  height: calc(var(--prism-w) * 1.25);
+  flex: none;
+  width: var(--face-w);
+  height: calc(var(--face-w) * var(--r));
+}
+/* The stickers hold on to the prism's outline: they move out and in as it changes shape */
+.prism-wrap > .hero-collage {
+  inset: auto;
+  left: 50%;
+  top: 50%;
+  /* ...without crowding on a wide, low prism or leaving the screen beside it */
+  width: min(var(--face-w), var(--prism-w));
+  height: max(calc(var(--face-w) * var(--r)), calc(var(--prism-w) * 1.1));
+  transform: translate(-50%, -50%);
 }
 /* Soft shadow on the "floor" under the prism */
 .prism-scene::after {
@@ -449,7 +479,7 @@ html[data-intro="quick"] [data-pre-skip] {
   transform-style: preserve-3d;
   /* Pull the prism back by half its depth so the front face sits at its real size.
      --spin (set by Hero.tsx) is the rotation in quarter turns. */
-  transform: translateZ(calc(var(--prism-w) / -2)) rotateY(calc(var(--spin) * -90deg));
+  transform: translateZ(calc(var(--face-w) / -2)) rotateY(calc(var(--spin) * -90deg));
 }
 .prism-face {
   position: absolute;
@@ -457,7 +487,7 @@ html[data-intro="quick"] [data-pre-skip] {
   display: block;
   backface-visibility: hidden;
   -webkit-user-drag: none;
-  transform: rotateY(calc(var(--i) * 90deg)) translateZ(calc(var(--prism-w) / 2));
+  transform: rotateY(calc(var(--i) * 90deg)) translateZ(calc(var(--face-w) / 2));
 }
 
 /* Light on the faces, from each face's angle to the viewer: it darkens as it turns away, and a
@@ -555,11 +585,11 @@ html[data-intro="quick"] [data-pre-skip] {
   to { opacity: 1; transform: none; }
 }
 
-/* Ambient light in the colour of the craft in front, fading from one craft to the next */
+/* Ambient light behind the prism, in the logo yellow (stronger or softer per craft) */
 @property --ambient {
   syntax: "<color>";
   inherits: true;
-  initial-value: #2f5fa8;
+  initial-value: #ffc400;
 }
 #top {
   transition: --ambient 1.4s ease;
@@ -574,6 +604,9 @@ html[data-intro="quick"] [data-pre-skip] {
 }
 .prism-wrap {
   will-change: transform;
+}
+html[data-motion="gentle"] .prism-wrap {
+  transition: none;
 }
 
 /* Stickers around the prism (components/HeroCollage.tsx). Their tilt and drift use the
@@ -694,4 +727,15 @@ html[data-motion="gentle"] .work-card-phone {
 }
 html[data-motion="gentle"] .devices {
   transition: none;
+}
+
+/* Prism faces show each picture whole (posters keep their proportions); a blurred, darkened copy
+   of the same picture fills the space around it */
+.prism-backdrop {
+  position: absolute;
+  inset: -12%;
+  background-size: cover;
+  background-position: center;
+  filter: blur(22px) brightness(0.6) saturate(1.2);
+  transform: scale(1.1);
 }

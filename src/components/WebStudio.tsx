@@ -8,7 +8,7 @@ import { TransitionLink } from "./TransitionProvider";
 import { LightLeaks } from "./LightLeaks";
 import TumbleDeckShowcase from "./ui/tumble-deck-showcase";
 import { getLenis } from "./SmoothScroll";
-import { contact } from "@/content/site";
+import { openAssistant } from "@/lib/assistant";
 
 const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 const shot = (name: string) => `${base}/web/${name}.webp`;
@@ -138,7 +138,6 @@ function WorkCard({ work, concept, visit }: { work: Work; concept: string; visit
 export function WebStudio() {
   const { t } = useLang();
   const w = t.webPage;
-  const wa = `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(w.whatsapp)}`;
   // Sector filter for the project cards (the deck above always shows them all)
   const [sector, setSector] = useState<Sector | "all">("all");
   const shown = sector === "all" ? w.works : w.works.filter((work) => work.sector === sector);
@@ -171,9 +170,9 @@ export function WebStudio() {
             </h1>
             <p className="mt-8 max-w-[36rem] text-lg leading-relaxed text-paper/80 md:text-xl">{w.intro}</p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <a href={wa} target="_blank" rel="noopener noreferrer" className="flex h-12 items-center rounded-full bg-brand px-6 text-sm font-medium text-ink transition-transform duration-200 hover:scale-[1.03] active:scale-95">
+              <button type="button" onClick={() => openAssistant({ service: "web" })} className="flex h-12 items-center rounded-full bg-brand px-6 text-sm font-medium text-ink transition-transform duration-200 hover:scale-[1.03] active:scale-95">
                 {w.cta}
-              </a>
+              </button>
               <button type="button" onClick={toCase} className="flex h-12 cursor-pointer items-center rounded-full border border-paper/30 px-6 text-sm font-medium transition-colors hover:bg-paper/10 active:scale-95">
                 {w.secondary}
               </button>
@@ -362,9 +361,9 @@ export function WebStudio() {
             {w.ctaText}
           </p>
           <div data-reveal className="flex flex-wrap gap-3">
-            <a href={wa} target="_blank" rel="noopener noreferrer" className="flex h-14 items-center rounded-full bg-ink px-8 text-sm font-medium text-paper active:scale-95">
+            <button type="button" onClick={() => openAssistant({ service: "web" })} className="flex h-14 items-center rounded-full bg-ink px-8 text-sm font-medium text-paper active:scale-95">
               {w.cta}
-            </a>
+            </button>
             <TransitionLink href="/contact/" className="liquid-glass flex h-14 items-center rounded-full px-8 text-sm font-medium active:scale-95">
               {t.nav.contact}
             </TransitionLink>

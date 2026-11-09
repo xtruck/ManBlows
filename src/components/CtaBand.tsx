@@ -2,7 +2,7 @@
 
 import { useLang } from "./LangProvider";
 import { TransitionLink } from "./TransitionProvider";
-import { contact } from "@/content/site";
+import { openAssistant } from "@/lib/assistant";
 
 /** Closing call to action on the home and about pages. */
 export function CtaBand() {
@@ -24,14 +24,13 @@ export function CtaBand() {
           >
             {t.cta.button}
           </TransitionLink>
-          <a
-            href={`https://wa.me/${contact.whatsapp}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <button
+            type="button"
+            onClick={() => openAssistant()}
             className="liquid-glass flex h-14 items-center rounded-full px-8 text-sm font-medium active:scale-95"
           >
             WhatsApp
-          </a>
+          </button>
         </div>
       </div>
     </section>

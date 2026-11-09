@@ -9,8 +9,13 @@ export type CraftKey = "photo" | "video" | "design" | "web";
 export type Slide = { src: string; w: number; h: number; video?: string };
 
 const work = (n: string, w: number, h: number): Slide => ({ src: `${base}/work/${n}.webp`, w, h });
-// Hero loops: 6 s, 480 × 600 (the face's 4:5), no sound, cut from the films in public/films
-const loop = (n: string): Slide => ({ src: `${base}/films/loop/${n}.webp`, w: 480, h: 600, video: `${base}/films/loop/${n}.mp4` });
+// Hero loops: 6 s, no sound, cut from the films in public/films at their own proportions
+// (854 px on the long side; the wide films are listed here, the others are 9:16 portraits)
+const WIDE: Record<string, [number, number]> = { "agef-investir": [854, 368], archibat: [854, 484], maracana: [854, 484], "film-2585": [854, 480] };
+export const loop = (n: string): Slide => {
+  const [w, h] = WIDE[n] ?? [480, 854];
+  return { src: `${base}/films/loop/${n}.webp`, w, h, video: `${base}/films/loop/${n}.mp4` };
+};
 // Phone captures of sites the studio built (scripts/make-real-shots.mjs, SHOTS=face)
 const site = (n: string): Slide => ({ src: `${base}/web/real-${n}-face.webp`, w: 780, h: 1688 });
 

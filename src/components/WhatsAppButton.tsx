@@ -3,17 +3,17 @@
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useLang } from "./LangProvider";
-import { contact } from "@/content/site";
+import { openAssistant } from "@/lib/assistant";
 import { onIntroDone } from "@/lib/intro";
-import { normalize, routes } from "@/lib/routes";
+import { normalize } from "@/lib/routes";
 
 /**
- * Floating WhatsApp button on phones: the studio's bookings come through WhatsApp, so it stays
- * one tap away. It opens a chat with a first message already written, in the visitor's language,
- * naming the page they came from.
+ * Floating WhatsApp button: the studio's bookings come through WhatsApp, so it stays one tap away.
+ * It first opens the request assistant (components/Assistant.tsx), whose few questions end in a
+ * WhatsApp message to Egu with the whole brief, so he can answer with a quote straight away.
  *
  * Hidden: on the contact page (it has its own WhatsApp form), until the intro has finished,
- * during the home page's 3D camera sequence, while the footer (which has the link) is on screen,
+ * on phones during the home page's 3D camera sequence, while the footer (which has the link) is on screen,
  * and whenever a video's playback controls sit under it.
  */
 /** The button's corner of the screen (bottom right). */
@@ -47,7 +47,7 @@ export function WhatsAppButton() {
       raf = 0;
       // On the home page, wait until the scroll-driven camera sequence is over.
       const hero = document.getElementById("top");
-      const pastHero = !hero || hero.getBoundingClientRect().bottom < window.innerHeight * 0.5;
+      const pastHero = !hero || window.innerWidth >= 768 || hero.getBoundingClientRect().bottom < window.innerHeight * 0.5;
       setClear(pastHero && !footerInView && !videoBelow());
     };
     const schedule = () => {
@@ -77,19 +77,16 @@ export function WhatsAppButton() {
 
   if (pathname === "/contact/") return null;
 
-  const route = routes.find((r) => r.href === pathname);
-  const page = route ? t.nav[route.key] : "";
-  const text = t.whatsapp.message.replace("{page}", page);
   const shown = introDone && clear;
 
   return (
-    <a
-      href={`https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(text)}`}
-      target="_blank"
-      rel="noopener noreferrer"
+    <button
+      type="button"
+      onClick={() => openAssistant({ toggle: true })}
+      aria-controls="egc-assistant"
       inert={!shown}
       // Same dark glass as the menu bar, so it reads as part of the site rather than a widget.
-      className={`liquid-glass-dark glass-rim fixed right-3 z-[55] flex items-center gap-3 rounded-full py-1.5 pr-5 pl-1.5 text-paper transition-[opacity,translate,scale] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95 motion-reduce:transition-opacity md:hidden ${
+      className={`liquid-glass-dark glass-rim fixed right-3 z-[55] flex items-center gap-3 rounded-full py-1.5 pr-5 pl-1.5 text-paper transition-[opacity,translate,scale] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95 motion-reduce:transition-opacity md:right-6 ${
         shown ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
       }`}
       style={{ bottom: "max(0.75rem, calc(env(safe-area-inset-bottom) + 0.5rem))" }}
@@ -98,11 +95,11 @@ export function WhatsAppButton() {
         <WhatsAppGlyph />
       </span>
       <span className="sr-only">{t.whatsapp.label}. </span>
-      <span className="flex flex-col leading-tight">
+      <span className="flex flex-col text-left leading-tight">
         <span className="text-[11px] tracking-wide text-paper/65">{t.whatsapp.note}</span>
         <span className="text-sm font-medium">{t.whatsapp.title}</span>
       </span>
-    </a>
+    </button>
   );
 }
 

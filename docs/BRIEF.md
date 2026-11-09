@@ -292,3 +292,19 @@ Il ne donne ni prix ni date : Egu confirme sous 24 h. À compléter avec Egu : z
 Étape suivante possible : brancher une IA gratuite (Cloudflare Workers AI) pour les questions libres.
 
 - (08/11) Assistant : plus de question de budget ni de réponse sur les prix ou les zones ; il recueille seulement ce qu'il faut à Egu pour son devis. Stickers du hero : textes, formes et positions changent à chaque tour du prisme (un jeu par métier dans `hero.sticker.sets`).
+
+## Hero vivant, trois couleurs et WhatsApp guidé (09/11)
+
+- **Prisme du hero** : il puise chaque jour dans toute la galerie (photos, affiches, films, sites), dans un ordre différent d'un jour à l'autre.
+- **Images entières** : plus de recadrage ni de zoom. Chaque image s'affiche dans ses proportions d'origine, sur un fond flou de la même image.
+- **Forme du prisme** : il prend la forme de l'image de face (haut pour un film 9:16, large pour un paysage) dans une boîte fixe, donc rien ne bouge autour. Les stickers suivent son contour.
+- **Tous les films jouent** :
+  - une boucle de 6 s sans son pour chacun des 19 films (`public/films/loop`), à ses proportions, 854 px sur le grand côté ;
+  - la face Vidéo reste 6,4 s, le temps de jouer la boucle en entier ;
+  - film-2585 (fichier abîmé) : boucle prise à 40 s.
+- **Couleurs** : le site se limite au crème (#f3ecdc), au noir encre (#0e0e0e) et au jaune du logo (#ffc400). Stickers, lueur du hero et motifs des faces ont été repris dans ces trois couleurs. Seul le rond vert de WhatsApp reste, pour qu'on reconnaisse le bouton.
+- **WhatsApp guidé** :
+  - le bouton WhatsApp (téléphone et ordinateur) ouvre d'abord l'assistant ;
+  - les boutons WhatsApp de la bande d'appel et de la page Web font de même (la page Web arrive directement sur « Site web ») ;
+  - le message envoyé à Egu contient tout : service, type, date, lieu, détails, nom ;
+  - le pied de page garde le numéro comme simple coordonnée.

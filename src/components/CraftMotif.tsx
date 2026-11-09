@@ -23,7 +23,7 @@ export function CraftMotif({ craft, meta = [], tone = "paper" }: { craft: CraftK
       {craft === "video" && (
         <>
           <span className="absolute top-4 left-4 flex items-center gap-2 text-[11px] font-semibold tracking-wide">
-            <span className="rec-dot size-2 rounded-full bg-[#ff3b30]" />
+            <span className="rec-dot size-2 rounded-full bg-brand" />
             REC
           </span>
           <span className="absolute inset-x-4 bottom-4 h-[3px] overflow-hidden rounded-full bg-paper/25">
@@ -33,11 +33,11 @@ export function CraftMotif({ craft, meta = [], tone = "paper" }: { craft: CraftK
       )}
 
       {craft === "design" && (
-        <span className="absolute inset-5 border border-[#3b82f6]">
+        <span className="absolute inset-5 border border-brand">
           {["-top-1 -left-1", "-top-1 -right-1", "-bottom-1 -left-1", "-bottom-1 -right-1", "-top-1 left-1/2 -translate-x-1/2", "-bottom-1 left-1/2 -translate-x-1/2", "top-1/2 -left-1 -translate-y-1/2", "top-1/2 -right-1 -translate-y-1/2"].map((c) => (
-            <span key={c} className={`absolute size-2 border border-[#3b82f6] bg-white ${c}`} />
+            <span key={c} className={`absolute size-2 border border-brand bg-paper ${c}`} />
           ))}
-          <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 rounded bg-[#3b82f6] px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap text-white tabular-nums">
+          <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 rounded bg-brand px-1.5 py-0.5 text-[10px] font-medium whitespace-nowrap text-ink tabular-nums">
             1080 × 1350
           </span>
         </span>
@@ -45,9 +45,9 @@ export function CraftMotif({ craft, meta = [], tone = "paper" }: { craft: CraftK
 
       {craft === "web" && (
         <span className="absolute inset-x-0 top-0 flex h-9 items-center gap-1.5 bg-ink/85 px-3 backdrop-blur">
-          <span className="size-2.5 rounded-full bg-[#ff5f57]" />
-          <span className="size-2.5 rounded-full bg-[#febc2e]" />
-          <span className="size-2.5 rounded-full bg-[#28c840]" />
+          <span className="size-2.5 rounded-full bg-paper/70" />
+          <span className="size-2.5 rounded-full bg-brand" />
+          <span className="size-2.5 rounded-full bg-paper/40" />
           <span className="ml-2 flex h-5 flex-1 items-center rounded-full bg-paper/10 px-2.5 text-[10px] text-paper/70">
             <span className="truncate">votre-marque.ci</span>
             <span className="motif-caret ml-0.5 inline-block h-3 w-px bg-brand" />

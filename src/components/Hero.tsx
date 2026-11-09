@@ -11,15 +11,51 @@ import { CraftMotif } from "./CraftMotif";
 import { HeroCollage } from "./HeroCollage";
 import { onIntroDone, onIntroLeaving } from "@/lib/intro";
 import { useMotionMode } from "@/lib/motion";
-import { crafts } from "@/content/crafts";
+import { crafts, loop, type Slide } from "@/content/crafts";
+import { photoShots } from "@/content/photos";
+import { designShots } from "@/content/design";
+import { films } from "@/content/site";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const TURN_MS = 4200; // time on each face before the prism turns to the next craft
-// Ambient light behind the prism, in the colour of the craft in front (photo blue, film gold,
-// poster orange, web green), like a screen glowing on the wall behind it.
-const AMBIENT = ["#2f5fa8", "#b8862f", "#e0782a", "#1f7a4a"];
+const FILM_MS = 6400; // the film face stays until its 6 s loop has played through
+const turnMs = (face: number) => (crafts[face].key === "video" ? FILM_MS : TURN_MS);
+// Ambient light behind the prism, always the logo yellow, warmer or softer with the craft in front
+// (the site keeps to three colours: cream, ink black and the logo yellow).
+const AMBIENT = ["#ffc400", "#e0a800", "#ffd23d", "#f3ecdc"];
 const mod = (n: number, m: number) => ((n % m) + m) % m;
+
+// The whole gallery feeds the prism, in a new order every day: someone coming back tomorrow sees
+// other photos, posters, films and sites. (Seeded by the date, so the order holds all day.)
+const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const FACES = new Set(["anareka", "bmtacademy", "graya", "kignon", "vipgarage"]);
+function dailyShuffle<T>(list: T[], seed: number): T[] {
+  const out = [...list];
+  let x = seed || 1;
+  for (let i = out.length - 1; i > 0; i--) {
+    x = (x * 1103515245 + 12345) % 2147483648;
+    const j = x % (i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+function galleryPools(sites: readonly { desk: string; phone: string }[]): Record<string, Slide[]> {
+  const day = Math.floor(Date.now() / 86400000);
+  // Every film has its own loop (public/films/loop), named after its file
+  const loops = films.map((f) => loop(f.video.split("/").pop()!.replace(".mp4", "")));
+  const web: Slide[] = sites.map((s) => {
+    const slug = s.desk.replace(/^real-|-desk$/g, "");
+    return FACES.has(slug) ? { src: `${base}/web/real-${slug}-face.webp`, w: 780, h: 1688 } : { src: `${base}/web/${s.phone}.webp`, w: 420, h: 855 };
+  });
+  return {
+    photo: dailyShuffle(photoShots.map((p) => ({ src: p.src, w: p.w, h: p.h })), day),
+    design: dailyShuffle(designShots.map((d) => ({ src: d.src, w: d.w, h: d.h })), day + 1),
+    // Every film, each played in turn
+    video: dailyShuffle(loops, day + 2),
+    web: dailyShuffle(web, day + 3),
+  };
+}
 // Which slide a face shows: it moves on to the next one while it is at the back (out of sight),
 // so each time it comes round to the front it shows something new.
 const slideOf = (turn: number, face: number, count: number) => {
@@ -53,7 +89,21 @@ export function Hero() {
   const [dragging, setDragging] = useState(false);
   const [started, setStarted] = useState(false);
   const active = ((turn % 4) + 4) % 4;
+  // Built in the browser (it depends on today's date); the first paint keeps the default slides,
+  // swapped under the intro's cover
+  const [pools, setPools] = useState<Record<string, Slide[]> | null>(null);
+  const sites = t.webPage.works;
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setPools(galleryPools(sites)));
+    return () => cancelAnimationFrame(id);
+  }, [sites]);
   const craft = t.crafts[active];
+  // The slide each face shows, and the shape the prism takes for the one in front
+  const slideFor = (i: number) => {
+    const pool = pools?.[crafts[i].key] ?? crafts[i].slides;
+    return pool[slideOf(turn, i, pool.length)];
+  };
+  const front = slideFor(active);
 
   // Start turning once the intro is over.
   useEffect(() => onIntroDone(() => setStarted(true)), []);
@@ -68,9 +118,9 @@ export function Hero() {
 
   useEffect(() => {
     if (!started || paused || dragging || gentle || hidden || !inView) return;
-    const id = window.setTimeout(() => setTurn((n) => n + 1), TURN_MS);
+    const id = window.setTimeout(() => setTurn((n) => n + 1), turnMs(active));
     return () => window.clearTimeout(id);
-  }, [turn, started, paused, dragging, gentle, hidden, inView]);
+  }, [turn, active, started, paused, dragging, gentle, hidden, inView]);
 
   // The film face plays its loop only while it is in front, on screen and the tab is visible.
   useEffect(() => {
@@ -314,7 +364,7 @@ export function Hero() {
           </div>
 
           {/* Tips back as the page scrolls away (wrapper, so it doesn't fight the tilt and the spin) */}
-          <div ref={wrap} className="prism-wrap relative">
+          <div ref={wrap} className="prism-wrap relative" style={{ "--prism-r": front.h / front.w } as React.CSSProperties}>
           <HeroCollage active={active} />
           <div
             ref={scene}
@@ -348,7 +398,7 @@ export function Hero() {
             >
               <div className="prism">
                 {crafts.map((c, i) => {
-                  const slide = c.slides[slideOf(turn, i, c.slides.length)];
+                  const slide = slideFor(i);
                   return (
                   <TransitionLink
                     key={c.key}
@@ -363,6 +413,8 @@ export function Hero() {
                     <span className="sr-only">{`${t.crafts[i].verb} : ${t.crafts[i].what}`}</span>
                     {/* The slideshow: a new picture each time the face comes round (keyed, so the old
                         one is replaced while the face is at the back) */}
+                    {/* The whole picture, uncropped: a blurred copy fills the rest of the face */}
+                    {c.key !== "web" && <span aria-hidden className="prism-backdrop" style={{ backgroundImage: `url(${slide.src})` }} />}
                     <Image
                       key={slide.src}
                       src={slide.src}
@@ -372,7 +424,7 @@ export function Hero() {
                       sizes="(min-width: 1024px) 26rem, 72vw"
                       preload={i === 0 && slide.src === c.image}
                       draggable={false}
-                      className={`size-full object-cover transition-transform duration-[1.4s] ease-out group-hover:scale-[1.04] ${c.key === "web" ? "object-top pt-9" : ""}`}
+                      className={`relative size-full transition-transform duration-[1.4s] ease-out group-hover:scale-[1.02] ${c.key === "web" ? "object-cover object-top pt-9" : "object-contain"}`}
                     />
                     {slide.video && (
                       <video
@@ -384,7 +436,7 @@ export function Hero() {
                         playsInline
                         preload="none"
                         aria-hidden
-                        className="absolute inset-0 size-full object-cover"
+                        className="absolute inset-0 size-full object-contain"
                       />
                     )}
                     <span className="absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-ink/10" />
@@ -423,7 +475,7 @@ export function Hero() {
                     <span
                       key={turn}
                       className={`absolute inset-0 origin-left rounded-full bg-brand ${started && !paused && !dragging && !gentle ? "prism-progress" : ""}`}
-                      style={{ animationDuration: `${TURN_MS}ms` }}
+                      style={{ animationDuration: `${turnMs(i)}ms` }}
                     />
                   )}
                 </button>
