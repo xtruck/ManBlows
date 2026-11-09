@@ -274,13 +274,14 @@ export function Work() {
               if (Math.abs(dx) > 50) step(dx < 0 ? 1 : -1);
             }}
           >
-            <AnimatePresence mode="wait">
+            {/* Crossfade: the next picture fades in while the previous one fades out (no empty gap) */}
+            <AnimatePresence mode="popLayout" initial={false}>
               <motion.div
                 key={current.id}
-                initial={{ opacity: 0, scale: 0.96, filter: "blur(14px)" }}
+                initial={{ opacity: 0, scale: 0.97, filter: "blur(10px)" }}
                 animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+                exit={{ opacity: 0, scale: 1.01, filter: "blur(6px)" }}
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
                 onClick={(e) => e.stopPropagation()}
               >
                 <Image
@@ -303,6 +304,13 @@ export function Work() {
               </motion.div>
             </AnimatePresence>
 
+            {/* The pictures either side are loaded ahead, so the next one is ready before it is asked for */}
+            {[-1, 1].map((d) => {
+              const n = visible[(index + d + visible.length) % visible.length];
+              return n && n.id !== current.id ? (
+                <Image key={`pre-${n.id}`} src={n.src} alt="" aria-hidden width={n.w} height={n.h} sizes="90vw" loading="eager" fetchPriority="low" className="pointer-events-none fixed size-px opacity-0" />
+              ) : null;
+            })}
             <button
               type="button"
               autoFocus

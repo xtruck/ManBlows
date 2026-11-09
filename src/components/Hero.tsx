@@ -429,8 +429,15 @@ export function Hero() {
                       height={slide.h}
                       sizes="(min-width: 1024px) 26rem, 72vw"
                       preload={i === 0 && slide.src === c.image}
+                      // Loaded as soon as the face turns away (about 8 s before it comes back), never lazily:
+                      // a lazy picture on a turning face only starts loading in front of the visitor
+                      loading={i === 0 && slide.src === c.image ? undefined : "eager"}
+                      fetchPriority={i === active ? "high" : "low"}
+                      // Fades in once decoded (the first picture shows at once, under the intro)
+                      onLoad={(e) => e.currentTarget.setAttribute("data-ready", "")}
+                      data-fade={i === 0 && slide.src === c.image ? undefined : ""}
                       draggable={false}
-                      className={`relative size-full transition-transform duration-[1.4s] ease-out group-hover:scale-[1.02] ${c.key === "web" ? "object-cover object-top pt-9" : "object-contain"}`}
+                      className={`prism-photo relative size-full transition-transform duration-[1.4s] ease-out group-hover:scale-[1.02] ${c.key === "web" ? "object-cover object-top pt-9" : "object-contain"}`}
                     />
                     {slide.video && (
                       <video
@@ -440,7 +447,9 @@ export function Hero() {
                         muted
                         loop
                         playsInline
-                        preload="none"
+                        // The film's first frame shows until it plays; it starts loading one turn ahead
+                        poster={slide.src}
+                        preload={i === active || i === (active + 1) % 4 ? "auto" : "none"}
                         aria-hidden
                         className="absolute inset-0 size-full object-contain"
                       />

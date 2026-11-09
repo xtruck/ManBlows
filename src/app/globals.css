@@ -8,9 +8,16 @@
   --graphite: #2a2826;
   --muted: #5c5954; /* 5.7:1 on paper, 4.9:1 on paper-2 (WCAG AA) */
   --brand: #ffc400; /* EGC Studio yellow, from the logo */
+  /* One rhythm for all motion: a soft settle for things arriving or reacting, a calm in-out for
+     things travelling across the screen (the curtains, the prism's shape) */
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-travel: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
 @theme inline {
+  /* Every Tailwind transition (hovers, toggles, colour changes) uses the site's soft curve */
+  --default-transition-duration: 300ms;
+  --default-transition-timing-function: var(--ease-soft);
   --color-paper: var(--paper);
   --color-paper-2: var(--paper-2);
   --color-ink: var(--ink);
@@ -1136,4 +1143,30 @@ html[data-motion="gentle"] .menu-link {
     animation-duration: 0.01s;
     animation-delay: 0s;
   }
+}
+
+/* Prism pictures fade in once decoded, so a face never shows a blank or half-drawn picture */
+.prism-photo[data-fade] {
+  opacity: 0;
+  transition: opacity 0.6s var(--ease-soft), transform 1.4s ease-out;
+}
+.prism-photo[data-fade][data-ready] {
+  opacity: 1;
+}
+
+/* Links and buttons without their own transition still change colour smoothly (never transform:
+   the magnetic buttons are moved by GSAP, a CSS transition on transform would fight it).
+   In the base layer, so any transition class on an element wins. */
+@layer base {
+  a,
+  button,
+  summary {
+    transition-property: color, background-color, border-color, opacity, box-shadow, text-decoration-color;
+    transition-duration: 300ms;
+    transition-timing-function: var(--ease-soft);
+  }
+}
+html[data-motion="gentle"] a,
+html[data-motion="gentle"] button {
+  transition-duration: 0.01ms;
 }

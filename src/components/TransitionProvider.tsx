@@ -12,6 +12,25 @@ import { refreshScrollTriggers } from "@/lib/scroll";
 
 type TransitionContext = { navigate: (href: string) => void };
 
+/** Resolves when the pictures on screen have loaded (or failed), or after `max` ms at the latest. */
+function whenVisibleImagesReady(max: number) {
+  return new Promise<void>((resolve) => {
+    const pending = [...document.querySelectorAll<HTMLImageElement>("main img")].filter((img) => {
+      if (img.complete) return false;
+      const r = img.getBoundingClientRect();
+      return r.bottom > 0 && r.top < window.innerHeight && r.width > 0;
+    });
+    if (!pending.length) return resolve();
+    let left = pending.length;
+    const done = () => --left <= 0 && resolve();
+    pending.forEach((img) => {
+      img.addEventListener("load", done, { once: true });
+      img.addEventListener("error", done, { once: true });
+    });
+    window.setTimeout(resolve, max);
+  });
+}
+
 const Ctx = createContext<TransitionContext>({ navigate: () => {} });
 
 /**
@@ -98,12 +117,25 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
     align(0);
     lenis?.start();
     requestAnimationFrame(() => refreshScrollTriggers());
-    gsap
-      .timeline({ delay: 0.12 })
-      .to(label.current, { yPercent: -110, duration: 0.35, ease: "power2.in" })
-      .to(el.querySelectorAll("[data-band]"), { yPercent: -100, duration: 0.7, ease: "expo.inOut", stagger: 0.07 }, "-=0.15")
-      .set(el, { visibility: "hidden" });
-    return () => timers.forEach((id) => window.clearTimeout(id));
+    // Lift the curtain once the new page's visible pictures are in (at most 0.6 s), so nothing
+    // pops in after it has gone
+    let cancelled = false;
+    let lift: gsap.core.Timeline | null = null;
+    whenVisibleImagesReady(600).then(() => {
+      if (cancelled) return;
+      lift = gsap
+        .timeline({ delay: 0.05 })
+        .to(label.current, { yPercent: -110, duration: 0.35, ease: "power2.in" })
+        .to(el.querySelectorAll("[data-band]"), { yPercent: -100, duration: 0.7, ease: "expo.inOut", stagger: 0.07 }, "-=0.15")
+        .set(el, { visibility: "hidden" });
+    });
+    return () => {
+      cancelled = true;
+      // Never leave the curtain down if the page changes again mid-way
+      if (lift) lift.progress(1);
+      else gsap.set(el, { visibility: "hidden" });
+      timers.forEach((id) => window.clearTimeout(id));
+    };
   }, [pathname]);
 
   return (

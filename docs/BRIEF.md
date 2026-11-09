@@ -446,3 +446,9 @@ Rapport complet : `docs/AUDIT.md` (méthode, 24 constats corrigés, constats ouv
 - Testé contre la vraie IA : présentation du studio, services, refus des prix, fourchettes, remises, disponibilités et frais de déplacement (renvoi vers le devis d'Egu ou WhatsApp), bon numéro WhatsApp, refus du hors-sujet. Défauts vus : une réponse en français à une question en anglais, la liste des services en anglais oublie parfois le web, une requête lente (plus de 60 s) : le site affiche alors son message WhatsApp.
 - `worker/eval.mjs` n'envoie plus l'en-tête `CF-Connecting-IP` vers un Worker en ligne (Cloudflare le refuse, erreur 1000).
 - Sur ce PC, Node a besoin de `NODE_OPTIONS="--dns-result-order=ipv4first"` pour joindre l'API Cloudflare (sinon « fetch failed »).
+
+## Transitions sans coupure (09/11)
+- **Un seul rythme** : courbes `--ease-soft` (arrivées, réactions) et `--ease-travel` (traversées) dans `globals.css` ; toutes les transitions Tailwind passent à 300 ms sur la courbe douce ; liens et boutons sans transition propre changent de couleur en douceur (jamais `transform`, réservé à GSAP pour les boutons magnétiques).
+- **Prisme** : les images se chargent dès que la face passe à l'arrière (plus de chargement paresseux sur une face qui tourne : c'était la face noire), apparaissent en fondu une fois prêtes ; les films ont leur première image en affiche et se préchargent un tour avant. Vérifié : 8 tours, 0 face vide.
+- **Changement de page** : le rideau ne se lève qu'une fois les images visibles de la nouvelle page chargées (0,6 s au plus) ; il ne peut plus rester baissé si l'on change encore de page.
+- **Galerie (agrandissement)** : fondu enchaîné entre deux images au lieu d'un passage par le vide ; les images voisines sont préchargées.
