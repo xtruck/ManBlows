@@ -25,8 +25,49 @@ const BURST = Array.from({ length: 32 }, (_, i) => {
  * the intro, drift gently, lean away from the mouse at their own depth, and slide at their own
  * speed when the page scrolls. Decorative only (aria-hidden); phones show the four smaller ones.
  */
-// Each turn of the prism moves the stickers a little and gives them another shape
-const NUDGE = ["0 0", "6% -5%", "-5% 7%", "4% 4%"];
+// Each sticker hangs on a corner (or side) of the picture in front, almost entirely outside it, so
+// it never hides what the prism shows. `at` is its anchor on the picture's outline, `off` the
+// sticker's offset from it (in % of its own size) and `out` the outward direction it may drift to.
+type Spot = { at: [string, string]; off: [number, number]; out: [number, number] };
+const SPOTS: Record<"ticket" | "badge" | "bubble" | "heart" | "print" | "poster", Spot> = {
+  ticket: { at: ["0%", "0%"], off: [-80, -74], out: [-1, -1] },
+  badge: { at: ["100%", "0%"], off: [-18, -80], out: [1, -1] },
+  bubble: { at: ["0%", "100%"], off: [-82, -24], out: [-1, 1] },
+  heart: { at: ["100%", "100%"], off: [-16, -26], out: [1, 1] },
+  print: { at: ["100%", "50%"], off: [10, -50], out: [1, 0] },
+  poster: { at: ["0%", "50%"], off: [-110, -50], out: [-1, 0] },
+};
+// A wide picture leaves little room beside it (above all on phones) but plenty above and below:
+// the corner stickers then sit over and under its corners instead of beside them
+const WIDE_SPOTS: Partial<Record<keyof typeof SPOTS, Spot>> = {
+  ticket: { at: ["0%", "0%"], off: [-34, -106], out: [0, -1] },
+  badge: { at: ["100%", "0%"], off: [-66, -106], out: [0, -1] },
+  bubble: { at: ["0%", "100%"], off: [-34, 6], out: [0, 1] },
+  heart: { at: ["100%", "100%"], off: [-66, 6], out: [0, 1] },
+};
+// A tall picture (a 9:16 film, a phone capture) reaches high and low: its corner stickers go
+// beside its corners, so they neither leave the screen at the top nor cover the caption below
+const TALL_SPOTS: Partial<Record<keyof typeof SPOTS, Spot>> = {
+  ticket: { at: ["0%", "0%"], off: [-98, -8], out: [-1, 0] },
+  badge: { at: ["100%", "0%"], off: [6, -8], out: [1, 0] },
+  bubble: { at: ["0%", "100%"], off: [-100, -92], out: [-1, 0] },
+  heart: { at: ["100%", "100%"], off: [6, -92], out: [1, 0] },
+};
+// Each turn of the prism moves the stickers a little, always outward (never over the picture)
+const DRIFT: [number, number][] = [
+  [0, 0],
+  [6, 3],
+  [2, 7],
+  [7, 5],
+];
+const place = (spot: Spot, active: number): React.CSSProperties => {
+  const [dx, dy] = DRIFT[active] ?? DRIFT[0];
+  return {
+    left: spot.at[0],
+    top: spot.at[1],
+    translate: `${spot.off[0] + spot.out[0] * dx}% ${spot.off[1] + spot.out[1] * dy}%`,
+  };
+};
 const BADGE_SHAPES = [`polygon(${BURST})`, "circle(50% at 50% 50%)", "polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%)", `polygon(${BURST})`];
 // The site's three colours (cream, ink black, logo yellow), dealt out differently for each craft
 const C = "#f3ecdc", I = "#0e0e0e", Y = "#ffc400";
@@ -38,7 +79,8 @@ const PALETTES = [
 ];
 const BUBBLE_SHAPES = ["9999px", "1.4rem 1.4rem 1.4rem 0.3rem", "9999px 9999px 9999px 0.6rem", "1rem"];
 
-export function HeroCollage({ active = 0 }: { active?: number }) {
+export function HeroCollage({ active = 0, shape = "square" }: { active?: number; shape?: "wide" | "square" | "tall" }) {
+  const spot = (k: keyof typeof SPOTS) => place((shape === "wide" && WIDE_SPOTS[k]) || (shape === "tall" && TALL_SPOTS[k]) || SPOTS[k], active);
   const { t } = useLang();
   const s = t.hero.sticker;
   const set = s.sets[active] ?? s.sets[0];
@@ -52,26 +94,22 @@ export function HeroCollage({ active = 0 }: { active?: number }) {
     const el = root.current;
     if (!el) return;
     const items = gsap.utils.toArray<HTMLElement>("[data-sticker]", el);
+    // GSAP only touches the inner element: the sticker itself keeps its place (its translate, set by React)
+    const inners = items.map((it) => it.firstElementChild as HTMLElement);
     if (gentle) {
       gsap.set(items, { autoAlpha: 1 });
       return;
     }
     const ctx = gsap.context(() => {
-      gsap.set(items, { autoAlpha: 0, scale: 0.2 });
+      gsap.set(items, { autoAlpha: 0 });
+      gsap.set(inners, { scale: 0.2 });
     }, el);
 
     // Pop in once the intro is over, one after the other
     const off = onIntroDone(() => {
       ctx.add(() => {
-        gsap.to(items, {
-          autoAlpha: 1,
-          scale: 1,
-          duration: 0.7,
-          ease: "back.out(2.2)",
-          stagger: 0.09,
-          delay: 0.35,
-          clearProps: "transform",
-        });
+        gsap.to(items, { autoAlpha: 1, duration: 0.3, stagger: 0.09, delay: 0.35 });
+        gsap.to(inners, { scale: 1, duration: 0.7, ease: "back.out(2.2)", stagger: 0.09, delay: 0.35 });
         // Each slides at its own speed as the page scrolls
         items.forEach((it) => {
           const depth = Number(it.dataset.depth || 1);
@@ -111,7 +149,7 @@ export function HeroCollage({ active = 0 }: { active?: number }) {
   return (
     <div ref={root} aria-hidden className="hero-collage pointer-events-none absolute inset-0 z-10">
       {/* Shot ticket, like a kitchen receipt */}
-      <div data-sticker data-depth="1.4" className="sticker absolute -top-[3%] -left-[15%] lg:top-[4%] lg:-left-[44%]" style={{ translate: NUDGE[active], "--r": "-8deg", "--d": "7s" } as React.CSSProperties}>
+      <div data-sticker data-depth="1.4" className="sticker absolute" style={{ ...spot("ticket"), "--r": "-8deg", "--d": "7s" } as React.CSSProperties}>
         <div>
           <div style={{ background: pal.ticket, color: pal.ticketText }} className="w-[6.4rem] rounded-md transition-colors duration-700 p-2.5 font-mono text-[9px] leading-snug shadow-xl shadow-black/30 lg:w-[9.5rem] lg:p-4 lg:text-xs">
             <p className="text-lg font-bold lg:text-2xl">#24</p>
@@ -126,7 +164,7 @@ export function HeroCollage({ active = 0 }: { active?: number }) {
       </div>
 
       {/* Speech bubble */}
-      <div data-sticker data-depth="0.8" className="sticker absolute top-[52%] -left-[12%] lg:top-[44%] lg:-left-[36%]" style={{ translate: NUDGE[active], "--r": "-4deg", "--d": "8.5s" } as React.CSSProperties}>
+      <div data-sticker data-depth="0.8" className="sticker absolute" style={{ ...spot("bubble"), "--r": "-4deg", "--d": "8.5s" } as React.CSSProperties}>
         <div>
           <div style={{ borderRadius: BUBBLE_SHAPES[active], background: pal.bubble, color: pal.bubbleText }} className="flex size-[5.5rem] items-center justify-center p-3 text-center transition-[border-radius,background-color,color] duration-700 text-[11px] leading-tight font-medium shadow-xl shadow-black/40 ring-1 ring-paper/15 lg:size-[7.5rem] lg:text-sm">
             {swap(set.ask)}
@@ -136,7 +174,7 @@ export function HeroCollage({ active = 0 }: { active?: number }) {
       </div>
 
       {/* Starburst badge */}
-      <div data-sticker data-depth="1.2" className="sticker absolute -top-[6%] -right-[10%] lg:top-[0%] lg:-right-[24%]" style={{ translate: NUDGE[active], "--r": "12deg", "--d": "6.5s" } as React.CSSProperties}>
+      <div data-sticker data-depth="1.2" className="sticker absolute" style={{ ...spot("badge"), "--r": "12deg", "--d": "6.5s" } as React.CSSProperties}>
         <div>
           <div
             className="flex size-[5.5rem] items-center justify-center p-4 text-center font-display text-[11px] leading-tight font-semibold text-ink drop-shadow-xl lg:size-[7.5rem] lg:text-sm"
@@ -148,7 +186,7 @@ export function HeroCollage({ active = 0 }: { active?: number }) {
       </div>
 
       {/* Heart */}
-      <div data-sticker data-depth="1" className="sticker absolute top-[48%] -right-[12%] lg:top-[38%] lg:-right-[27%]" style={{ translate: NUDGE[active], "--r": "14deg", "--d": "9s" } as React.CSSProperties}>
+      <div data-sticker data-depth="1" className="sticker absolute" style={{ ...spot("heart"), "--r": "14deg", "--d": "9s" } as React.CSSProperties}>
         <div>
           <div className="relative w-[5.5rem] drop-shadow-xl lg:w-[8rem]">
             <svg viewBox="0 0 100 90" className="block w-full">
@@ -162,7 +200,7 @@ export function HeroCollage({ active = 0 }: { active?: number }) {
       </div>
 
       {/* A print of a photo (wider screens) */}
-      <div data-sticker data-depth="1.6" className="sticker absolute -right-[26%] -bottom-[6%] hidden lg:block" style={{ translate: NUDGE[active], "--r": "6deg", "--d": "7.5s" } as React.CSSProperties}>
+      <div data-sticker data-depth="1.6" className="sticker absolute hidden lg:block" style={{ ...spot("print"), "--r": "6deg", "--d": "7.5s" } as React.CSSProperties}>
         <div>
           <div className="w-[7rem] rounded-md bg-white p-1.5 pb-5 shadow-xl shadow-black/40">
             <div className="relative aspect-[4/5] overflow-hidden rounded-sm">
@@ -174,7 +212,7 @@ export function HeroCollage({ active = 0 }: { active?: number }) {
       </div>
 
       {/* A poster (wider screens) */}
-      <div data-sticker data-depth="0.9" className="sticker absolute -bottom-[2%] -left-[30%] hidden lg:block" style={{ translate: NUDGE[active], "--r": "-6deg", "--d": "8s" } as React.CSSProperties}>
+      <div data-sticker data-depth="0.9" className="sticker absolute hidden lg:block" style={{ ...spot("poster"), "--r": "-6deg", "--d": "8s" } as React.CSSProperties}>
         <div>
           <div className="relative aspect-[4/5] w-[6.5rem] overflow-hidden rounded-md shadow-xl shadow-black/40">
             <Image src={`${base}/work/design-33.webp`} alt="" fill sizes="6.5rem" className="object-cover" />

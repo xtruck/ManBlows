@@ -11,6 +11,7 @@ import { CraftMotif } from "./CraftMotif";
 import { HeroCollage } from "./HeroCollage";
 import { onIntroDone, onIntroLeaving } from "@/lib/intro";
 import { useMotionMode } from "@/lib/motion";
+import { useMedia } from "@/lib/useMedia";
 import { crafts, loop, type Slide } from "@/content/crafts";
 import { photoShots } from "@/content/photos";
 import { designShots } from "@/content/design";
@@ -104,6 +105,11 @@ export function Hero() {
     return pool[slideOf(turn, i, pool.length)];
   };
   const front = slideFor(active);
+  // Where the stickers go around it: above/below a wide picture, beside a tall one; on phones the
+  // menu bar leaves no room above, so a squarish picture gets them beside it too
+  const phone = !useMedia("(min-width: 640px)");
+  const ratio = front.h / front.w;
+  const shape = ratio < 0.95 ? "wide" : ratio > 1.4 || phone ? "tall" : "square";
 
   // Start turning once the intro is over.
   useEffect(() => onIntroDone(() => setStarted(true)), []);
@@ -365,7 +371,7 @@ export function Hero() {
 
           {/* Tips back as the page scrolls away (wrapper, so it doesn't fight the tilt and the spin) */}
           <div ref={wrap} className="prism-wrap relative" style={{ "--prism-r": front.h / front.w } as React.CSSProperties}>
-          <HeroCollage active={active} />
+          <HeroCollage active={active} shape={shape} />
           <div
             ref={scene}
             className="prism-scene"

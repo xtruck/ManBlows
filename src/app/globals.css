@@ -451,7 +451,7 @@ html[data-intro="quick"] [data-pre-skip] {
 }
 /* ---------- Home: the four-craft prism (components/Hero.tsx) ---------- */
 #top {
-  --prism-w: min(66vw, 21rem);
+  --prism-w: min(60vw, 21rem); /* phones: room on both sides for the stickers */
 }
 @media (min-width: 1024px) {
   #top {
@@ -468,7 +468,8 @@ html[data-intro="quick"] [data-pre-skip] {
 }
 .prism-wrap {
   --r: clamp(0.56, var(--prism-r), 1.78);
-  --face-w: calc(var(--prism-w) * clamp(0.74, 1.32 / var(--r), 1.12));
+  /* wide pictures stay within the prism's usual width, so the stickers keep room on both sides */
+  --face-w: calc(var(--prism-w) * clamp(0.74, 1.32 / var(--r), 1));
   transition: --prism-r 0.9s cubic-bezier(0.65, 0, 0.35, 1);
   display: flex;
   align-items: center;
@@ -483,14 +484,14 @@ html[data-intro="quick"] [data-pre-skip] {
   width: var(--face-w);
   height: calc(var(--face-w) * var(--r));
 }
-/* The stickers hold on to the prism's outline: they move out and in as it changes shape */
+/* The sticker layer is exactly the picture in front: each sticker hangs on one of its corners or
+   sides (HeroCollage.tsx), and follows it as the prism changes shape */
 .prism-wrap > .hero-collage {
   inset: auto;
   left: 50%;
   top: 50%;
-  /* ...without crowding on a wide, low prism or leaving the screen beside it */
-  width: min(var(--face-w), var(--prism-w));
-  height: max(calc(var(--face-w) * var(--r)), calc(var(--prism-w) * 1.1));
+  width: var(--face-w);
+  height: calc(var(--face-w) * var(--r));
   transform: translate(-50%, -50%);
 }
 /* Soft shadow on the "floor" under the prism */
@@ -662,7 +663,10 @@ html[data-motion="gentle"] .prism-wrap {
 /* The prism shrinks with the window but the stickers are fixed in rem, so on a narrow desktop
    they would pile up on each other. --sticker-k (set per width on #top) scales them with it. */
 #top {
-  --sticker-k: 1;
+  --sticker-k: 0.74; /* phones: smaller, so they fit beside the picture */
+}
+@media (min-width: 640px) {
+  #top { --sticker-k: 1; }
 }
 @media (min-width: 1024px) {
   #top { --sticker-k: 0.72; }
