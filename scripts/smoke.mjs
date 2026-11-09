@@ -25,6 +25,8 @@ try {
 }
 
 const root = join(fileURLToPath(new URL("..", import.meta.url)), "out");
+// The sub-path the site was built for (NEXT_PUBLIC_BASE_PATH, "/ManBlows" on GitHub Pages; empty for a root build)
+const base = (process.env.NEXT_PUBLIC_BASE_PATH ?? "").replace(/\/$/, "");
 const args = process.argv.slice(2);
 const withMotion = args.includes("--motion");
 const onlyArg = args.indexOf("--only");
@@ -41,7 +43,8 @@ const MIME = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".
 
 // Serves out/ the way GitHub Pages does (directory index, 404.html for unknown paths)
 const server = createServer(async (req, res) => {
-  const path = decodeURIComponent((req.url ?? "/").split("?")[0]);
+  let path = decodeURIComponent((req.url ?? "/").split("?")[0]);
+  if (base && (path === base || path.startsWith(base + "/"))) path = path.slice(base.length) || "/";
   let file = normalize(join(root, path));
   if (!file.startsWith(root)) return res.writeHead(403).end();
   try {
@@ -83,8 +86,8 @@ async function check(pageUrl, size, lang, motion) {
   page.on("pageerror", (e) => problems.push(`page error: ${String(e).slice(0, 160)}`));
   // Aborted requests are the browser cancelling prefetches or video ranges when the page closes: not bugs
   page.on("requestfailed", (r) => !/ERR_ABORTED/.test(r.failure()?.errorText ?? "") && !/\.mp4/.test(r.url()) && problems.push(`request failed: ${r.url().replace(origin, "")} (${r.failure()?.errorText})`));
-  page.on("response", (r) => r.status() >= 400 && !(pageUrl === "/404.html" && r.url() === origin + pageUrl) && !r.url().endsWith("/404.html") && problems.push(`HTTP ${r.status()}: ${r.url().replace(origin, "")}`));
-  await page.goto(origin + pageUrl, { waitUntil: "load" });
+  page.on("response", (r) => r.status() >= 400 && !(pageUrl === "/404.html" && r.url() === origin + base + pageUrl) && !r.url().endsWith("/404.html") && problems.push(`HTTP ${r.status()}: ${r.url().replace(origin, "")}`));
+  await page.goto(origin + base + pageUrl, { waitUntil: "load" });
   await page.waitForTimeout(1500);
   // scroll through the page so lazy images load
   const height = await page.evaluate(() => document.documentElement.scrollHeight);

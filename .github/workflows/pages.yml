@@ -39,6 +39,8 @@ jobs:
           npm install --no-save playwright@1.65.0
           npx playwright install --with-deps chromium
           npm run smoke
+        env:
+          NEXT_PUBLIC_BASE_PATH: /ManBlows
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3
         with:
           path: out
