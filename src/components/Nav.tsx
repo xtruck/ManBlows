@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { AnimatePresence, motion } from "motion/react";
 import { Logo } from "./Logo";
 import { useLang } from "./LangProvider";
 import { getLenis } from "./SmoothScroll";
@@ -39,6 +38,16 @@ export function Nav() {
   const { t } = useLang();
   const pathname = normalize(usePathname());
   const [open, setOpen] = useState(false);
+  // The menu stays on screen while it slides away (CSS animation, see .menu-sheet in globals.css)
+  const [closing, setClosing] = useState(false);
+  const closeTimer = useRef(0);
+  const close = () => {
+    setOpen(false);
+    setClosing(true);
+    window.clearTimeout(closeTimer.current);
+    closeTimer.current = window.setTimeout(() => setClosing(false), 550);
+  };
+  useEffect(() => () => window.clearTimeout(closeTimer.current), []);
   const menu = useRef<HTMLDivElement>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
   const wasOpen = useRef(false);
@@ -51,7 +60,7 @@ export function Nav() {
     // Give focus back to the Menu button when the dialog closes.
     if (!open && wasOpen.current) menuButton.current?.focus();
     wasOpen.current = open;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && open && close();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
@@ -108,19 +117,14 @@ export function Nav() {
         </div>
       </header>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
+      {(open || closing) && (
+          <div
             ref={menu}
             id="mobile-menu"
             role="dialog"
             aria-modal="true"
             aria-label={t.nav.menu}
-            initial={{ clipPath: "inset(0 0 100% 0)" }}
-            animate={{ clipPath: "inset(0 0 0% 0)" }}
-            exit={{ clipPath: "inset(0 0 100% 0)" }}
-            transition={{ duration: 0.55, ease: [0.76, 0, 0.24, 1] }}
-            className="fixed inset-0 z-[60] flex flex-col overflow-hidden bg-ink/80 px-6 pt-6 pb-10 text-paper backdrop-blur-2xl backdrop-saturate-150 lg:hidden"
+            className={`menu-sheet ${open ? "" : "is-closing"} fixed inset-0 z-[60] flex flex-col overflow-hidden bg-ink/80 px-6 pt-6 pb-10 text-paper backdrop-blur-2xl backdrop-saturate-150 lg:hidden`}
           >
             <span aria-hidden className="leak leak-yellow -top-24 -right-24 size-80" />
             <span aria-hidden className="leak leak-coral -bottom-32 -left-24 size-96" />
@@ -128,7 +132,7 @@ export function Nav() {
               <Logo tone="paper" className="mt-3 text-[26px]" />
               <button
                 type="button"
-                onClick={() => setOpen(false)}
+                onClick={close}
                 autoFocus
                 className="liquid-glass-dark h-11 cursor-pointer rounded-full px-5 text-sm active:scale-95"
               >
@@ -137,15 +141,10 @@ export function Nav() {
             </div>
             <nav aria-label={t.a11y.mainNav} className="relative mt-auto flex flex-col">
               {routes.map((r, i) => (
-                <motion.div
-                  key={r.href}
-                  initial={{ y: 40, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 + i * 0.06, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                >
+                <div key={r.href} className="menu-link" style={{ "--n": i } as React.CSSProperties}>
                   <TransitionLink
                     href={r.href}
-                    onClick={() => setOpen(false)}
+                    onClick={close}
                     aria-current={pathname === r.href ? "page" : undefined}
                     className={`flex items-center gap-3 py-1 font-display text-[3.2rem] leading-[1.05] font-semibold tracking-tight active:opacity-60 ${
                       pathname === r.href ? "text-brand" : ""
@@ -153,22 +152,21 @@ export function Nav() {
                   >
                     {t.nav[r.key]}
                   </TransitionLink>
-                </motion.div>
+                </div>
               ))}
             </nav>
             <div className="relative mt-10 flex items-center justify-between">
               <LangToggle className="liquid-glass-dark" />
               <TransitionLink
                 href="/contact/"
-                onClick={() => setOpen(false)}
+                onClick={close}
                 className="btn-brand flex h-11 items-center rounded-full px-5 text-sm font-medium"
               >
                 {t.nav.book}
               </TransitionLink>
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </>
   );
 }

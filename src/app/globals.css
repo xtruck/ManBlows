@@ -1025,3 +1025,39 @@ html[data-motion="gentle"] .assistant-dot {
     animation: none;
   }
 }
+
+/* Phone menu (components/Nav.tsx): slides down from the top, links rise one after the other */
+.menu-sheet {
+  animation: menu-in 0.55s cubic-bezier(0.76, 0, 0.24, 1) both;
+}
+.menu-sheet.is-closing {
+  animation: menu-out 0.55s cubic-bezier(0.76, 0, 0.24, 1) both;
+  pointer-events: none;
+}
+@keyframes menu-in {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 0% 0); }
+}
+@keyframes menu-out {
+  from { clip-path: inset(0 0 0% 0); }
+  to { clip-path: inset(0 0 100% 0); }
+}
+.menu-link {
+  animation: menu-link 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(0.2s + var(--n, 0) * 0.06s);
+}
+@keyframes menu-link {
+  from { opacity: 0; transform: translateY(40px); }
+}
+html[data-motion="gentle"] .menu-sheet,
+html[data-motion="gentle"] .menu-link {
+  animation-duration: 0.01s;
+  animation-delay: 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .menu-sheet,
+  .menu-link {
+    animation-duration: 0.01s;
+    animation-delay: 0s;
+  }
+}

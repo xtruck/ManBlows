@@ -3,7 +3,7 @@ import { Bricolage_Grotesque, Geist, Instrument_Serif, Mrs_Saint_Delafield, Popp
 import { LangProvider } from "@/components/LangProvider";
 import { SmoothScroll } from "@/components/SmoothScroll";
 import { Preloader } from "@/components/Preloader";
-import { Assistant } from "@/components/Assistant";
+import { AssistantLazy } from "@/components/AssistantLazy";
 import { TransitionProvider } from "@/components/TransitionProvider";
 import { Nav } from "@/components/Nav";
 import { Footer } from "@/components/Footer";
@@ -83,7 +83,9 @@ export const viewport: Viewport = { themeColor: "#ffc400" };
 // The Skip button works before the page's scripts have arrived (slow connections): a click lifts the
 // cover at once and leaves a flag that the intro reads when it starts.
 const skipScript = `document.addEventListener("click",function(e){var b=e.target&&e.target.closest&&e.target.closest("[data-pre-skip]");if(!b)return;window.__egcSkipEarly=true;var c=document.querySelector("[data-preloader]");if(c){c.style.transition="opacity .25s";c.style.opacity="0";c.style.pointerEvents="none"}b.style.display="none";try{sessionStorage.setItem(${JSON.stringify(INTRO_SEEN_KEY)},"1")}catch(_){}},true)`;
-const bootScript = `(function(){try{if(sessionStorage.getItem(${JSON.stringify(INTRO_SEEN_KEY)}))document.documentElement.dataset.intro="quick"}catch(e){}})()`;
+// Slow connections (2G/3G, or data saver on) get the same quick fade: the full intro would add
+// about 4 s on top of a long download before the first photo shows.
+const bootScript = `(function(){var q=false;try{q=!!sessionStorage.getItem(${JSON.stringify(INTRO_SEEN_KEY)})}catch(e){}try{var c=navigator.connection;if(c&&(c.saveData||/(^|-)(2g|3g)$/.test(c.effectiveType||"")))q=true}catch(e){}if(q)document.documentElement.dataset.intro="quick"})()`;
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -129,7 +131,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <MotionControl />
             <TitleSync />
             <WhatsAppButton />
-            <Assistant />
+            <AssistantLazy />
           </TransitionProvider>
         </LangProvider>
       </body>

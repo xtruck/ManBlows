@@ -135,7 +135,7 @@ export function WebStudio() {
                 {w.secondary}
               </button>
             </div>
-            {/* What every site comes with, at a glance (the count follows the list of projects) */}
+            {/* What every site comes with, at a glance (the counts follow the list of projects: all of them, and those delivered to clients) */}
             <ul className="mt-10 grid max-w-[36rem] grid-cols-2 gap-x-6 gap-y-3 border-t border-paper/15 pt-6 text-sm text-paper/75 sm:grid-cols-4 sm:gap-x-4">
               {w.trust.map((item, i) => (
                 <li key={item} className="flex flex-col gap-1">
@@ -144,7 +144,7 @@ export function WebStudio() {
                   ) : (
                     <span aria-hidden className="size-2 rounded-full bg-brand" />
                   )}
-                  <span className="leading-snug">{item}</span>
+                  <span className="leading-snug">{item.replace("{n}", String(w.works.filter((work) => !work.concept).length))}</span>
                 </li>
               ))}
             </ul>
