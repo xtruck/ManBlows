@@ -85,7 +85,7 @@ test("chat: long messages are cut, AI failures are 502", async () => {
 
 test("rate limit: a 13th request in a minute from one visitor is refused", async () => {
   const env = mockAI("ok");
-  const send = () => worker.fetch(new Request("https://w.example/", { method: "POST", headers: { Origin: ORIGIN, "CF-Connecting-IP": "203.0.113.9" }, body: JSON.stringify(ask("hi")) }), env);
+  const send = () => worker.fetch(new Request("https://w.example/", { method: "POST", headers: { Origin: ORIGIN, "Content-Type": "application/json", "CF-Connecting-IP": "203.0.113.9" }, body: JSON.stringify(ask("hi")) }), env);
   let last;
   for (let i = 0; i < 13; i++) last = await send();
   assert.equal(last.status, 429);
@@ -274,4 +274,27 @@ test("daily budget: the AI stops answering at the cap, and the cap is optional",
   const free = mockAI("ok");
   for (let i = 0; i < 4; i++) assert.equal((await call(ask("x"), free)).status, 200);
   assert.equal((await call(ask("x"), { ...mockAI("ok"), USAGE: kv(new Map(), { fail: true }) })).status, 200);
+});
+
+// ---- Request hardening ----
+
+const raw = (body, headers = {}) =>
+  worker.fetch(new Request("https://w.example/", { method: "POST", headers: { Origin: ORIGIN, "CF-Connecting-IP": `10.1.0.${++ip}`, ...headers }, body }), mockAI("ok"));
+
+test("hardening: only small JSON is read", async () => {
+  assert.equal((await raw(JSON.stringify(ask("hi")), { "Content-Type": "text/plain" })).status, 415);
+  assert.equal((await raw(JSON.stringify(ask("hi")))).status, 415, "no content type at all");
+  assert.equal((await raw("x".repeat(9000), { "Content-Type": "application/json" })).status, 413);
+  assert.equal((await raw(JSON.stringify(ask("hi")), { "Content-Type": "application/json", "Content-Length": "999999" })).status, 413);
+  assert.equal((await raw("{not json", { "Content-Type": "application/json" })).status, 400);
+  assert.equal((await raw("[1,2]", { "Content-Type": "application/json" })).status, 400);
+  assert.equal((await raw(JSON.stringify(ask("hi")), { "Content-Type": "application/json; charset=utf-8" })).status, 200);
+});
+
+test("hardening: answers are never cached, preflights can be", async () => {
+  const res = await call(ask("hi"), mockAI("ok"));
+  assert.equal(res.headers.get("Cache-Control"), "no-store");
+  const pre = await call(null, mockAI("ok"), { method: "OPTIONS" });
+  assert.equal(pre.headers.get("Access-Control-Max-Age"), "600");
+  assert.equal(pre.headers.get("Vary"), "Origin");
 });

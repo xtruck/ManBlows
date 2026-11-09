@@ -37,6 +37,13 @@ guided flow only.
 | You edit the site's FAQ, services, process or contact details | `npm run knowledge` (rebuilds `knowledge.generated.mjs`; `-- --check` tells you if it is out of date), then `npx wrangler deploy` |
 | You change the Worker, the prompt or the model | `npm run test:worker` (no account needed), `npx wrangler deploy`, then the check below |
 
+## Local tests
+
+`npx wrangler dev --env dev` runs the Worker on your computer. The `dev` environment also lets the local site
+(`npm run dev` on port 3000) call it; the production Worker only answers `https://xtruck.github.io`.
+Requests must be small (8 KB) JSON with `Content-Type: application/json`, which also makes browsers run the CORS
+check first.
+
 ## Limits and the free allowance
 
 - **Hard limit per visitor**: Cloudflare's own rate limiter (`LIMITER` in `wrangler.jsonc`): 12 requests a

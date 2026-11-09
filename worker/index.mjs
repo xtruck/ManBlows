@@ -15,6 +15,7 @@ const DEFAULT_ORIGINS = "https://xtruck.github.io";
 const MAX_MESSAGES = 6;
 const MAX_CHARS = 300;
 const MAX_BRIEF_CHARS = 500;
+const MAX_BODY_BYTES = 8 * 1024; // a request is a few short messages; anything bigger is refused unread
 const LIMIT_PER_MINUTE = 12;
 const DEFAULT_DAILY_BUDGET = 500; // AI answers a day, when the optional USAGE store is set up
 const HOLD = 14; // characters held back while streaming, so a rule-breaking word is never half shown
@@ -77,7 +78,22 @@ async function overBudget(env) {
 }
 
 function json(body, status, cors) {
-  return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", ...cors } });
+  return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...cors } });
+}
+
+/** The JSON body of a request, or an error response: right type, small, valid. */
+async function readBody(request, cors) {
+  // JSON only: browsers must then send a CORS preflight, which is where the allowed-origin rule bites
+  if (!(request.headers.get("Content-Type") ?? "").toLowerCase().startsWith("application/json")) return { error: json({ error: "unsupported" }, 415, cors) };
+  if (Number(request.headers.get("Content-Length") ?? 0) > MAX_BODY_BYTES) return { error: json({ error: "too large" }, 413, cors) };
+  const text = await request.text();
+  if (text.length > MAX_BODY_BYTES) return { error: json({ error: "too large" }, 413, cors) };
+  try {
+    const body = JSON.parse(text);
+    return body && typeof body === "object" && !Array.isArray(body) ? { body } : { error: json({ error: "bad request" }, 400, cors) };
+  } catch {
+    return { error: json({ error: "bad request" }, 400, cors) };
+  }
 }
 
 function parseMessages(messages) {
@@ -232,7 +248,7 @@ const worker = {
     const origin = request.headers.get("Origin") ?? "";
     const allowed = (env.ALLOWED_ORIGINS || DEFAULT_ORIGINS).split(",").map((s) => s.trim());
     const cors = allowed.includes(origin)
-      ? { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", Vary: "Origin" }
+      ? { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Content-Type", "Access-Control-Max-Age": "600", Vary: "Origin" }
       : null;
 
     if (request.method === "OPTIONS") return new Response(null, { status: cors ? 204 : 403, headers: cors ?? {} });
@@ -243,13 +259,9 @@ const worker = {
       return json({ error: "slow down" }, 429, cors);
     }
 
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return json({ error: "bad request" }, 400, cors);
-    }
-    if (!body || typeof body !== "object") return json({ error: "bad request" }, 400, cors);
+    const read = await readBody(request, cors);
+    if (read.error) return read.error;
+    const body = read.body;
     const lang = body.lang === "en" ? "en" : "fr";
 
     if (body.mode === "brief") return brief(env, body, cors);
