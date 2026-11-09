@@ -439,3 +439,10 @@ Rapport complet : `docs/AUDIT.md` (méthode, 24 constats corrigés, constats ouv
 - **Message WhatsApp et récapitulatif** : regroupés par service (« Services : Photo, Vidéo, Design graphique », puis un bloc par service, puis les infos pratiques : date, lieu, personnes, nom), en texte simple avec des puces.
 - **Jamais d'argent** : aucune question de budget, de prix ou de zone de déplacement ; Egu les traite dans son devis.
 - **IA (« Décrire mon projet en une phrase »)** : `worker/brief.mjs` renvoie maintenant une liste de services et des détails par service, toujours vérifiés contre les mots du visiteur ; l'assistant ne pose ensuite que les questions manquantes. Tests du Worker : 24 (`npm run test:worker`).
+
+## Assistant IA en ligne (Cloudflare Workers AI) (09/11)
+- Worker déployé : `https://egc-assistant.christry-ci.workers.dev` (compte Cloudflare christry.ci@gmail.com). Variable GitHub `ASSISTANT_URL` posée : le site appelle l'IA à chaque déploiement.
+- Modèle : `@cf/meta/llama-3.1-8b-instruct-fp8` (l'identifiant sans `-fp8` n'existe pas chez Cloudflare). Plafond quotidien actif : stockage KV `USAGE` créé, 500 réponses d'IA par jour au plus ; limite de 12 requêtes par minute et par visiteur.
+- Testé contre la vraie IA : présentation du studio, services, refus des prix, fourchettes, remises, disponibilités et frais de déplacement (renvoi vers le devis d'Egu ou WhatsApp), bon numéro WhatsApp, refus du hors-sujet. Défauts vus : une réponse en français à une question en anglais, la liste des services en anglais oublie parfois le web, une requête lente (plus de 60 s) : le site affiche alors son message WhatsApp.
+- `worker/eval.mjs` n'envoie plus l'en-tête `CF-Connecting-IP` vers un Worker en ligne (Cloudflare le refuse, erreur 1000).
+- Sur ce PC, Node a besoin de `NODE_OPTIONS="--dns-result-order=ipv4first"` pour joindre l'API Cloudflare (sinon « fetch failed »).

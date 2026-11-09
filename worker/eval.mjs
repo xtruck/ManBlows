@@ -17,6 +17,7 @@ if (!url) {
   process.exit(2);
 }
 const origin = opt("--origin", "https://xtruck.github.io");
+const local = /^https?:\/\/(localhost|127\.0\.0\.1)/.test(process.argv[2] ?? "");
 const delay = Number(opt("--delay", "5500"));
 const show = args.includes("--show");
 
@@ -66,7 +67,8 @@ for (const [i, c] of CASES.entries()) {
   try {
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Origin: origin, "CF-Connecting-IP": `198.51.100.${(i % 250) + 1}` },
+      // A fake visitor IP only works on a local Worker (wrangler dev); Cloudflare's edge refuses the header (error 1000)
+      headers: { "Content-Type": "application/json", Origin: origin, ...(local ? { "CF-Connecting-IP": `198.51.100.${(i % 250) + 1}` } : {}) },
       body: JSON.stringify({ mode: "chat", lang: c.lang, messages: [{ role: "user", content: c.q }] }),
     });
     if (!res.ok) problems = [`HTTP ${res.status}`];

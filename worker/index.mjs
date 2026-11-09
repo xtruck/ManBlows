@@ -10,7 +10,7 @@ import { finalize, violations } from "./guard.mjs";
 import { BRIEF_SYSTEM, normalizeBrief, parseJsonObject } from "./brief.mjs";
 import { record, topicOf } from "./insights.mjs";
 
-const DEFAULT_MODEL = "@cf/meta/llama-3.1-8b-instruct"; // set MODEL in wrangler.jsonc to change it
+const DEFAULT_MODEL = "@cf/meta/llama-3.1-8b-instruct-fp8"; // set MODEL in wrangler.jsonc to change it
 const DEFAULT_ORIGINS = "https://xtruck.github.io";
 const MAX_MESSAGES = 6;
 const MAX_CHARS = 300;

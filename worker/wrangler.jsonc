@@ -10,11 +10,11 @@
   // Optional daily cap on AI answers, to protect the free allowance. Create the store once with
   //   npx wrangler kv namespace create USAGE
   // then uncomment this with the id it prints. DAILY_BUDGET (below) is the cap.
-  // "kv_namespaces": [{ "binding": "USAGE", "id": "<id printed by the command above>" }],
+  "kv_namespaces": [{ "binding": "USAGE", "id": "ca0d65da8edf41b9ad5fb7c4eff333be" }],
   "vars": {
     // Pages allowed to call the Worker (the live site, and the dev server for local tests)
     "ALLOWED_ORIGINS": "https://xtruck.github.io",
-    "MODEL": "@cf/meta/llama-3.1-8b-instruct",
+    "MODEL": "@cf/meta/llama-3.1-8b-instruct-fp8",
     "DAILY_BUDGET": "500"
   },
   // `npx wrangler dev --env dev` for local tests: also lets the local site (npm run dev) call it
@@ -22,7 +22,7 @@
     "dev": {
       "ai": { "binding": "AI" },
       "ratelimits": [{ "name": "LIMITER", "namespace_id": "1002", "simple": { "limit": 12, "period": 60 } }],
-      "vars": { "ALLOWED_ORIGINS": "https://xtruck.github.io,http://localhost:3000", "MODEL": "@cf/meta/llama-3.1-8b-instruct", "DAILY_BUDGET": "500" }
+      "vars": { "ALLOWED_ORIGINS": "https://xtruck.github.io,http://localhost:3000", "MODEL": "@cf/meta/llama-3.1-8b-instruct-fp8", "DAILY_BUDGET": "500" }
     }
   }
 }
