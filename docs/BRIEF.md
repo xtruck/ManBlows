@@ -326,3 +326,20 @@ l'écran, et à 1024 px trois paires d'autocollants se chevauchaient (le prisme 
 - **À faire par Egu / le propriétaire** : compte Cloudflare, `npx wrangler deploy` dans `worker/`, variable `ASSISTANT_URL`
   dans GitHub, relancer le déploiement, vérifier l'identifiant du modèle (`MODEL`) dans la liste de Cloudflare.
 
+## Présentation de l'assistant (09/11)
+Refonte de l'apparence du panneau (`Assistant.tsx`, `assistant/parts.tsx`, styles `.assistant-*` dans `globals.css`) :
+- **En-tête** : pastille EGC, titre, badge « IA » (seulement si l'IA est branchée), état « Réponse immédiate » (plus de texte coupé
+  sur téléphone), boutons Recommencer et Fermer. Une barre de progression en 5 étapes apparaît pendant la demande.
+- **Écran d'accueil** à trois entrées claires : carte jaune « Décrire mon projet en une phrase » (IA), quatre tuiles avec
+  icônes (Photo, Vidéo, Design, Site web), puis « Poser une question ». Après le premier échange, les mêmes choix passent en
+  petites réponses rapides sous la conversation (avant, le grand menu repoussait la réponse hors de vue).
+- **Conversation** : avatar sur les messages de l'assistant, apparition douce, indicateur de saisie (trois points) pendant
+  qu'il écrit, défilement vers le dernier message (vers le haut sur l'écran d'accueil).
+- **Demande prête** : fiche « Votre demande » (Service, Type, Date, Lieu, Détails, Nom) et gros bouton WhatsApp vert.
+- **Pied toujours visible** : « Réponses générées par une IA. Egu confirme chaque devis sous 24 h. » (sans IA : « Egu confirme
+  chaque devis sous 24 h. ») et un bouton **« Écrire à Egu »** : un humain est toujours à un geste.
+- **Téléphone** : feuille en bas de l'écran, page assombrie derrière, clic à côté pour fermer, focus gardé dans le panneau.
+  **Ordinateur** : carte flottante, la page reste utilisable. Échap ferme et rend le focus au bouton d'ouverture.
+- Animations coupées en mode « doux » et avec « réduire les animations ». Textes FR et EN (`assistant` dans `dict.ts`).
+- Vérifié (Playwright) : 390 et 1440 px, FR et EN, avec et sans IA, tous les écrans ; clavier ; aucune erreur dans la console.
+

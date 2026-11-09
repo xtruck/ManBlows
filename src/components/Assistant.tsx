@@ -2,8 +2,11 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useLang } from "./LangProvider";
+import { Avatar, Icon, Progress, RequestCard, TypingDots, type IconName } from "./assistant/parts";
 import { onIntroDone } from "@/lib/intro";
 import { contact } from "@/content/site";
+import { useFocusTrap } from "@/lib/useFocusTrap";
+import { useMedia } from "@/lib/useMedia";
 
 type ServiceKey = "photo" | "video" | "design" | "web";
 type Step = "service" | "faq" | "describe" | "kind" | "date" | "place" | "details" | "name" | "done";
@@ -11,12 +14,14 @@ type Msg = { from: "bot" | "me"; text: string };
 type Brief = { service?: string; serviceKey?: ServiceKey; kind?: string; date?: string; place?: string; details?: string; name?: string };
 
 const TEXT_STEPS: Step[] = ["date", "place", "details", "name"];
-// Optional: URL of the Cloudflare Worker (see worker/). Without it the free-question box stays hidden.
+// The steps shown in the progress bar, in order
+const FLOW: Step[] = ["kind", "date", "place", "details", "name"];
+// Optional: URL of the Cloudflare Worker (see worker/). Without it the AI features stay hidden.
 const AI_URL = process.env.NEXT_PUBLIC_ASSISTANT_URL ?? "";
 type AiMsg = { role: "user" | "assistant"; content: string };
 type ApiBrief = { service?: string; kind?: string; date?: string; place?: string; details?: string; name?: string };
 const SERVICE_KEYS: ServiceKey[] = ["photo", "video", "design", "web"];
-const norm = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+const norm = (v: string) => v.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
 
 /**
  * Guided assistant: answers right away, asks one question at a time, then writes the full request
@@ -26,6 +31,9 @@ const norm = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").t
  * visitor can also ask free questions (answered word by word) and describe a project in one
  * sentence, which pre-fills the request. Both go to a Cloudflare Workers AI Worker
  * (worker/index.mjs) that never discusses money; the guided flow keeps working if it is down.
+ *
+ * On phones it is a bottom sheet over a dimmed page (focus stays inside); on larger screens a
+ * floating card beside the page. A human is always one tap away ("Écrire à Egu").
  */
 export function Assistant() {
   const { t, lang } = useLang();
@@ -42,6 +50,10 @@ export function Assistant() {
   const rid = useRef(0); // identifies the latest AI request, so a late answer never lands after a restart
   const list = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLInputElement>(null);
+  const panel = useRef<HTMLDivElement>(null);
+  const launcher = useRef<HTMLButtonElement>(null);
+  const wasOpen = useRef(false);
+  const wide = useMedia("(min-width: 768px)");
 
   useEffect(() => onIntroDone(() => setReady(true)), []);
 
@@ -61,10 +73,22 @@ export function Assistant() {
     setOpen((o) => !o);
   };
 
+  // On a phone the sheet traps focus (it is modal); on a larger screen the page stays usable
+  useFocusTrap(panel, open && !wide);
+
+  // Focus moves into the panel when it opens and back to the launcher when it closes
   useEffect(() => {
-    list.current?.scrollTo({ top: list.current.scrollHeight, behavior: "smooth" });
+    if (open) panel.current?.focus({ preventScroll: true });
+    else if (wasOpen.current) launcher.current?.focus({ preventScroll: true });
+    wasOpen.current = open;
+  }, [open]);
+
+  useEffect(() => {
+    // The start screen is read from the top; once the conversation runs, the newest message stays in view
+    const atStart = step === "service" && msgs.length <= 1;
+    list.current?.scrollTo({ top: atStart ? 0 : list.current.scrollHeight, behavior: atStart || asking ? "auto" : "smooth" });
     if (TEXT_STEPS.includes(step) || step === "describe") field.current?.focus();
-  }, [msgs, step]);
+  }, [msgs, step, asking, open]);
 
   useEffect(() => {
     if (!open) return;
@@ -73,9 +97,10 @@ export function Assistant() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const say = (me: string, bot: string | string[], next: Step, patch: Brief = {}) => {
+  // `me` is what the visitor said (null when it is already on screen)
+  const say = (me: string | null, bot: string | string[], next: Step, patch: Brief = {}) => {
     setBrief((b) => ({ ...b, ...patch }));
-    setMsgs((m) => [...m, { from: "me", text: me }, ...[bot].flat().map((text) => ({ from: "bot" as const, text }))]);
+    setMsgs((m) => [...m, ...(me === null ? [] : [{ from: "me" as const, text: me }]), ...[bot].flat().map((text) => ({ from: "bot" as const, text }))]);
     setStep(next);
     setInput("");
   };
@@ -159,20 +184,26 @@ export function Assistant() {
   };
 
   const f = a.fields;
-  const lines = [
-    a.msgIntro,
-    brief.service && `• ${f.service} : ${brief.service}`,
-    brief.kind && `• ${f.kind} : ${brief.kind}`,
-    brief.date && `• ${f.date} : ${brief.date}`,
-    brief.place && `• ${f.place} : ${brief.place}`,
-    brief.details && `• ${f.details} : ${brief.details}`,
-    brief.name && `• ${f.name} : ${brief.name}`,
-  ].filter(Boolean) as string[];
+  const rows = (b: Brief): [string, string][] =>
+    (
+      [
+        [f.service, b.service],
+        [f.kind, b.kind],
+        [f.date, b.date],
+        [f.place, b.place],
+        [f.details, b.details],
+        [f.name, b.name],
+      ] as [string, string | undefined][]
+    ).filter((r): r is [string, string] => !!r[1]);
+  const lines = [a.msgIntro, ...rows(brief).map(([k, v]) => `• ${k} : ${v}`)];
+
   // "Describe my project": the AI fills in what the visitor already said; the flow asks only what is missing
   const describeProject = async (value: string) => {
     const v = value.trim();
     if (!v || asking || !AI_URL) return;
     const id = ++rid.current;
+    setMsgs((m) => [...m, { from: "me", text: v }, { from: "bot", text: "" }]);
+    setInput("");
     setAsking(true);
     let found: ApiBrief | null = null;
     try {
@@ -185,7 +216,8 @@ export function Assistant() {
     }
     if (rid.current !== id) return;
     setAsking(false);
-    if (found === null) return say(v, a.describeFail, "service");
+    setMsgs((m) => m.slice(0, -1)); // the typing bubble
+    if (found === null) return say(null, a.describeFail, "service");
     const key = SERVICE_KEYS.find((k) => k === found.service);
     const patch: Brief = {};
     if (key) {
@@ -195,164 +227,252 @@ export function Assistant() {
     // Snap the type to one of the offered choices when it matches; otherwise keep the visitor's words
     if (found.kind) patch.kind = (key && a.kinds[key].find((k) => norm(k) === norm(found.kind ?? ""))) || found.kind;
     for (const field of ["date", "place", "details", "name"] as const) if (found[field]) patch[field] = found[field];
-    const noted = [
-      patch.service && `• ${f.service} : ${patch.service}`,
-      patch.kind && `• ${f.kind} : ${patch.kind}`,
-      patch.date && `• ${f.date} : ${patch.date}`,
-      patch.place && `• ${f.place} : ${patch.place}`,
-      patch.details && `• ${f.details} : ${patch.details}`,
-      patch.name && `• ${f.name} : ${patch.name}`,
-    ].filter(Boolean) as string[];
-    if (noted.length === 0) return say(v, a.describeNone, "service");
+    const noted = rows(patch);
+    if (noted.length === 0) return say(null, a.describeNone, "service");
     const next: Step = !key ? "service" : !patch.kind ? "kind" : !patch.date ? "date" : !patch.place ? "place" : !patch.details ? "details" : !patch.name ? "name" : "done";
     const asks: Record<string, string> = { service: a.askService, kind: a.askKind, date: a.askDate, place: a.askPlace, details: a.askDetails, name: a.askName, done: a.recap };
-    say(v, [`${a.understood}\n${noted.join("\n")}`, asks[next]], next, patch);
+    say(null, [`${a.understood}\n${noted.map(([k, x]) => `• ${k} : ${x}`).join("\n")}`, asks[next]], next, patch);
   };
 
   const waLink = `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(lines.join("\n"))}`;
+  const humanLink = `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(a.humanMsg)}`;
   const textStep = TEXT_STEPS.includes(step);
   const aiStep = !!AI_URL && (step === "service" || step === "faq");
   const describeStep = !!AI_URL && step === "describe";
+  const showForm = textStep || aiStep || describeStep;
+  const started = msgs.length > 1; // after the first exchange the big start menu gives way to quick replies
+  const flowIndex = FLOW.indexOf(step);
+  const inFlow = flowIndex >= 0 || step === "done";
+  const placeholder = textStep ? a.placeholder : describeStep ? a.describePlaceholder : a.askAi;
+  const close = () => setOpen(false);
 
-  const chip = "rounded-full border border-ink/15 bg-white px-3.5 py-2 text-left text-sm text-ink transition-colors hover:border-ink/40 active:scale-95";
+  const chip = "rounded-full bg-white px-3.5 py-2 text-left text-sm text-ink shadow-sm ring-1 ring-ink/10 transition hover:ring-ink/35 active:scale-95 disabled:opacity-50";
+  const tile = "group flex w-full items-center gap-3 rounded-2xl bg-white p-3 text-left text-sm font-medium text-ink shadow-sm ring-1 ring-ink/10 transition hover:ring-ink/35 active:scale-[0.98] disabled:opacity-50";
+  const label = "px-0.5 text-[11px] font-semibold tracking-[0.12em] text-muted uppercase";
+  const questionLabel = a.services.find((s) => s.key === "question")?.label ?? "";
 
   return (
     <>
-      <button
-        type="button"
-        onClick={toggle}
-        aria-expanded={open}
-        aria-controls="egc-assistant"
-        className={`fixed bottom-4 left-4 z-[60] flex h-12 items-center gap-2 rounded-full bg-ink pr-4 pl-2.5 text-sm font-medium text-paper shadow-xl ring-1 shadow-black/30 ring-paper/15 transition-all duration-500 hover:scale-[1.03] active:scale-95 md:bottom-6 md:left-6 ${
-          ready ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
-        }`}
-      >
-        <span aria-hidden className="flex size-7 items-center justify-center rounded-full bg-brand text-ink">
-          <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
-            <path d="M4 5h16v11H9l-5 4z" />
-          </svg>
-        </span>
-        <span className="hidden sm:inline">{a.open}</span>
-        <span className="sm:hidden">{lang === "en" ? "Ask" : "Questions"}</span>
-      </button>
+      {!(open && !wide) && (
+        <button
+          ref={launcher}
+          type="button"
+          onClick={toggle}
+          aria-expanded={open}
+          aria-controls="egc-assistant"
+          className={`fixed bottom-4 left-4 z-[60] flex h-12 items-center gap-2 rounded-full bg-ink pr-4 pl-2.5 text-sm font-medium text-paper shadow-xl ring-1 shadow-black/30 ring-paper/15 transition-all duration-500 hover:scale-[1.03] active:scale-95 md:bottom-6 md:left-6 ${
+            ready ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-6 opacity-0"
+          }`}
+        >
+          <span aria-hidden className="flex size-7 items-center justify-center rounded-full bg-brand text-ink">
+            <Icon name="chat" className="size-4" />
+          </span>
+          <span className="hidden sm:inline">{a.open}</span>
+          <span className="sm:hidden">{lang === "en" ? "Ask" : "Questions"}</span>
+        </button>
+      )}
 
       {open && (
-        <div
-          id="egc-assistant"
-          role="dialog"
-          aria-label={a.title}
-          className="fixed inset-x-3 bottom-20 z-[61] flex max-h-[min(36rem,calc(100svh-7rem))] flex-col overflow-hidden rounded-3xl bg-paper text-ink shadow-2xl ring-1 shadow-black/40 ring-ink/10 sm:inset-x-auto sm:left-6 sm:w-[24rem] md:bottom-24"
-        >
-          <div className="flex items-center gap-3 bg-ink px-4 py-3 text-paper">
-            <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand font-display text-xs font-bold text-ink">EGC</span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold">{a.title}</p>
-              <p className="truncate text-xs text-paper/65">{a.subtitle}</p>
-            </div>
-            <button type="button" onClick={() => setOpen(false)} aria-label={a.close} className="flex size-9 items-center justify-center rounded-full hover:bg-paper/10">
-              <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round">
-                <path d="M6 6l12 12M18 6L6 18" />
-              </svg>
-            </button>
-          </div>
+        <>
+          {/* Phones: the page dims behind the sheet, and a tap outside closes it */}
+          <div aria-hidden onClick={close} className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-[2px] md:hidden" />
+          <div
+            ref={panel}
+            id="egc-assistant"
+            role="dialog"
+            aria-modal={!wide}
+            aria-label={a.title}
+            tabIndex={-1}
+            className="assistant-panel fixed inset-x-0 bottom-0 z-[61] flex h-[min(42rem,calc(100svh-2rem))] flex-col overflow-hidden rounded-t-3xl bg-paper text-ink shadow-2xl ring-1 shadow-black/50 ring-ink/10 outline-none md:inset-x-auto md:bottom-24 md:left-6 md:h-[min(44rem,calc(100svh-8rem))] md:w-[25rem] md:rounded-3xl"
+          >
+            <header className="bg-ink px-4 pt-3.5 pb-3.5 text-paper">
+              <div className="flex items-center gap-3">
+                <Avatar />
+                <div className="min-w-0 flex-1">
+                  <p className="flex items-center gap-2 font-display text-[15px] leading-tight font-semibold">
+                    <span className="truncate">{a.title}</span>
+                    {AI_URL && <span className="shrink-0 rounded-full bg-brand px-1.5 py-0.5 text-[10px] leading-none font-bold text-ink">{a.aiBadge}</span>}
+                  </p>
+                  <p className="mt-1 flex items-center gap-1.5 text-xs text-paper/75">
+                    <span aria-hidden className="size-1.5 rounded-full bg-emerald-400" />
+                    {a.subtitle}
+                  </p>
+                </div>
+                <button type="button" onClick={reset} aria-label={a.restart} title={a.restart} className="flex size-9 items-center justify-center rounded-full text-paper/80 transition hover:bg-paper/10 hover:text-paper">
+                  <Icon name="restart" className="size-[18px]" />
+                </button>
+                <button type="button" onClick={close} aria-label={a.close} className="flex size-9 items-center justify-center rounded-full text-paper/80 transition hover:bg-paper/10 hover:text-paper">
+                  <Icon name="close" className="size-[18px]" />
+                </button>
+              </div>
+              {inFlow && <Progress step={step === "done" ? FLOW.length : flowIndex + 1} total={FLOW.length} label={step === "done" ? a.ready : a.progress.replace("{n}", String(flowIndex + 1)).replace("{total}", String(FLOW.length))} />}
+            </header>
 
-          <div ref={list} aria-live="polite" aria-busy={asking} data-lenis-prevent className="flex-1 space-y-2.5 overflow-y-auto overscroll-contain px-4 py-4">
-            {msgs.map((m, i) => (
-              <p
-                key={i}
-                className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-line ${
-                  m.from === "bot" ? "rounded-bl-md bg-white text-ink shadow-sm" : "ml-auto rounded-br-md bg-ink text-paper"
-                }`}
-              >
-                {m.text || "…"}
-              </p>
-            ))}
+            <div ref={list} role="log" aria-label={a.title} aria-live="polite" aria-busy={asking} data-lenis-prevent className="flex-1 space-y-2 overflow-y-auto overscroll-contain px-4 py-4">
+              {msgs.map((m, i) => {
+                const bot = m.from === "bot";
+                const firstOfRun = bot && (i === 0 || msgs[i - 1].from !== "bot");
+                return (
+                  <div key={i} className={`assistant-msg flex items-end gap-2 ${bot ? "" : "justify-end"}`}>
+                    {bot && <span className="w-6 shrink-0">{firstOfRun && <Avatar size="sm" />}</span>}
+                    <p
+                      className={`max-w-[82%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed whitespace-pre-line ${
+                        bot ? `bg-white text-ink shadow-sm ring-1 ring-ink/5 ${firstOfRun ? "rounded-bl-md" : ""}` : "rounded-br-md bg-ink text-paper"
+                      }`}
+                    >
+                      {m.text || <TypingDots label={a.typing} />}
+                    </p>
+                  </div>
+                );
+              })}
 
-            {/* Choices for the current step */}
-            <div className="flex flex-wrap gap-2 pt-1">
-              {step === "service" &&
-                a.services.map((s) => (
-                  <button key={s.key} type="button" className={chip} onClick={() => pickService(s.key, s.label)}>
-                    {s.label}
-                  </button>
-                ))}
-              {step === "service" && AI_URL && (
-                <>
-                  <button type="button" className={`${chip} bg-brand`} onClick={() => say(a.describeCta, a.describeAsk, "describe")}>
-                    {a.describeCta}
-                  </button>
-                  {a.starters.map((q) => (
-                    <button key={q} type="button" disabled={asking} className={`${chip} text-ink/70`} onClick={() => askAi(q)}>
-                      {q}
+              {/* The start screen: three clear ways in */}
+              {step === "service" && !started && (
+                <div className="assistant-msg space-y-4 pt-2">
+                  {AI_URL && (
+                    <button type="button" disabled={asking} onClick={() => say(a.describeCta, a.describeAsk, "describe")} className="flex w-full items-center gap-3 rounded-2xl bg-brand p-3.5 text-left text-ink shadow-md transition hover:brightness-95 active:scale-[0.98] disabled:opacity-50">
+                      <span aria-hidden className="flex size-9 shrink-0 items-center justify-center rounded-full bg-ink text-brand">
+                        <Icon name="sparkle" className="size-[18px]" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm font-semibold">{a.describeCta}</span>
+                        <span className="block text-xs text-ink/75">{a.describeHint}</span>
+                      </span>
+                      <Icon name="chevron" className="size-4 shrink-0 text-ink/60" />
+                    </button>
+                  )}
+                  <section aria-label={a.groupRequest} className="space-y-2">
+                    <p className={label}>{a.groupRequest}</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {a.services
+                        .filter((s) => s.key !== "question")
+                        .map((s) => (
+                          <button key={s.key} type="button" disabled={asking} onClick={() => pickService(s.key, s.label)} className={tile}>
+                            <span aria-hidden className="flex size-8 shrink-0 items-center justify-center rounded-full bg-paper-2 text-ink transition group-hover:bg-brand">
+                              <Icon name={s.key as IconName} className="size-[18px]" />
+                            </span>
+                            {s.label}
+                          </button>
+                        ))}
+                    </div>
+                  </section>
+                  <section aria-label={a.groupAsk} className="space-y-2">
+                    <p className={label}>{a.groupAsk}</p>
+                    <div className="space-y-1.5">
+                      <button type="button" disabled={asking} onClick={() => pickService("question", questionLabel)} className={`${tile} !py-2.5 font-normal`}>
+                        <Icon name="question" className="size-[18px] shrink-0 text-muted" />
+                        <span className="min-w-0 flex-1">{questionLabel}</span>
+                        <Icon name="chevron" className="size-4 shrink-0 text-muted" />
+                      </button>
+                      {AI_URL &&
+                        a.starters.map((q) => (
+                          <button key={q} type="button" disabled={asking} onClick={() => askAi(q)} className={`${tile} !py-2.5 font-normal`}>
+                            <Icon name="chat" className="size-[18px] shrink-0 text-muted" />
+                            <span className="min-w-0 flex-1">{q}</span>
+                            <Icon name="chevron" className="size-4 shrink-0 text-muted" />
+                          </button>
+                        ))}
+                    </div>
+                  </section>
+                </div>
+              )}
+
+              {/* Later in the conversation: the same choices, as compact quick replies */}
+              {step === "service" && started && (
+                <div className="assistant-msg flex flex-wrap gap-2 pt-1">
+                  {AI_URL && (
+                    <button type="button" disabled={asking} onClick={() => say(a.describeCta, a.describeAsk, "describe")} className={`${chip} flex items-center gap-1.5 !bg-brand font-medium !ring-0`}>
+                      <Icon name="sparkle" className="size-4" />
+                      {a.describeCta}
+                    </button>
+                  )}
+                  {a.services.map((s) => (
+                    <button key={s.key} type="button" disabled={asking} onClick={() => pickService(s.key, s.label)} className={chip}>
+                      {s.label}
                     </button>
                   ))}
-                </>
+                </div>
               )}
-              {step === "describe" && (
-                <button type="button" className={chip} onClick={() => say(a.back, a.hello, "service")}>
-                  {a.back}
-                </button>
-              )}
-              {step === "faq" && (
-                <button type="button" className={`${chip} bg-brand`} onClick={() => say(a.startRequest, a.hello, "service")}>
-                  {a.startRequest}
-                </button>
-              )}
-              {step === "kind" &&
-                brief.serviceKey &&
-                a.kinds[brief.serviceKey].map((k) => (
-                  <button key={k} type="button" className={chip} onClick={() => say(k, a.askDate, "date", { kind: k })}>
-                    {k}
-                  </button>
-                ))}
-              {step === "details" && (
-                <button type="button" className={chip} onClick={() => say(a.skip, a.askName, "name")}>
-                  {a.skip}
-                </button>
-              )}
-              {step === "done" && (
-                <div className="w-full space-y-2">
-                  <p className="rounded-2xl bg-white p-3 text-xs leading-relaxed whitespace-pre-line text-ink/80 shadow-sm">{lines.slice(1).join("\n")}</p>
-                  <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex h-12 w-full items-center justify-center rounded-full bg-[#25d366] text-sm font-semibold text-ink shadow-md active:scale-95">
-                    {a.send}
-                  </a>
-                  <button type="button" className="w-full text-center text-xs text-ink/60 underline-offset-4 hover:underline" onClick={reset}>
-                    {a.restart}
-                  </button>
+
+              {/* Choices for the other steps */}
+              {step !== "service" && (
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {step === "faq" && (
+                    <button type="button" className={`${chip} !bg-brand !ring-0 font-medium`} onClick={() => say(a.startRequest, a.hello, "service")}>
+                      {a.startRequest}
+                    </button>
+                  )}
+                  {step === "describe" && (
+                    <button type="button" className={chip} onClick={() => say(a.back, a.hello, "service")}>
+                      {a.back}
+                    </button>
+                  )}
+                  {step === "kind" &&
+                    brief.serviceKey &&
+                    a.kinds[brief.serviceKey].map((k) => (
+                      <button key={k} type="button" className={chip} onClick={() => say(k, a.askDate, "date", { kind: k })}>
+                        {k}
+                      </button>
+                    ))}
+                  {step === "details" && (
+                    <button type="button" className={chip} onClick={() => say(a.skip, a.askName, "name")}>
+                      {a.skip}
+                    </button>
+                  )}
+                  {step === "done" && (
+                    <div className="w-full space-y-3 pt-1">
+                      <RequestCard title={a.yourRequest} rows={rows(brief)} />
+                      <a href={waLink} target="_blank" rel="noopener noreferrer" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#25d366] text-sm font-semibold text-ink shadow-md transition hover:brightness-95 active:scale-95">
+                        <Icon name="whatsapp" className="size-5" />
+                        {a.send}
+                      </a>
+                      <button type="button" className="w-full text-center text-xs text-muted underline-offset-4 hover:underline" onClick={reset}>
+                        {a.restart}
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
-          </div>
 
-          {(textStep || aiStep || describeStep) && (
-            <form
-              className="border-t border-ink/10 bg-paper p-3"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (textStep) submitText(input);
-                else if (describeStep) describeProject(input);
-                else askAi(input);
-              }}
-            >
-              {aiStep && <p className="px-1 pb-2 text-[11px] leading-snug text-ink/60">{a.aiNote}</p>}
-              <div className="flex gap-2">
-                <input
-                  ref={field}
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder={textStep ? a.placeholder : describeStep ? a.describePlaceholder : a.askAi}
-                  aria-label={textStep ? a.placeholder : describeStep ? a.describePlaceholder : a.askAi}
-                  maxLength={describeStep ? 500 : 300}
-                  disabled={asking}
-                  className="h-11 min-w-0 flex-1 rounded-full border border-ink/15 bg-white px-4 text-base outline-none focus:border-ink/40 disabled:opacity-60"
-                />
-                <button type="submit" disabled={asking} className="h-11 shrink-0 rounded-full bg-ink px-4 text-sm font-medium text-paper active:scale-95 disabled:opacity-60">
-                  {asking ? "…" : a.submit}
-                </button>
-              </div>
-            </form>
-          )}
-        </div>
+            {showForm && (
+              <form
+                className="border-t border-ink/10 bg-paper px-3 pt-3 pb-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (textStep) submitText(input);
+                  else if (describeStep) describeProject(input);
+                  else askAi(input);
+                }}
+              >
+                <div className="flex items-center gap-2 rounded-full bg-white pr-1.5 pl-4 shadow-sm ring-1 ring-ink/15 transition focus-within:ring-ink/40">
+                  <input
+                    ref={field}
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder={placeholder}
+                    aria-label={placeholder}
+                    maxLength={describeStep ? 500 : 300}
+                    disabled={asking}
+                    className="h-11 min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted/80 disabled:opacity-60"
+                  />
+                  <button type="submit" disabled={asking || !input.trim()} aria-label={a.submit} title={a.submit} className="flex size-9 shrink-0 items-center justify-center rounded-full bg-ink text-paper transition active:scale-90 disabled:bg-ink/25">
+                    <Icon name="send" className="size-[18px]" />
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* Always visible: who answers, and the way to a human */}
+            <footer className="flex items-center justify-between gap-3 border-t border-ink/10 bg-paper-2/70 px-4 py-2.5 pb-[max(0.625rem,env(safe-area-inset-bottom))]">
+              <p className="min-w-0 text-[11px] leading-snug text-muted">{AI_URL ? a.aiNote : a.trust}</p>
+              <a href={humanLink} target="_blank" rel="noopener noreferrer" className="flex shrink-0 items-center gap-1.5 rounded-full bg-ink px-3 py-1.5 text-[11px] font-medium text-paper transition active:scale-95">
+                <Icon name="whatsapp" className="size-3.5" />
+                {a.human}
+              </a>
+            </footer>
+          </div>
+        </>
       )}
     </>
   );
