@@ -293,3 +293,11 @@ Il ne donne ni prix ni date : Egu confirme sous 24 h. À compléter avec Egu : z
 Étape suivante possible : brancher une IA gratuite (Cloudflare Workers AI) pour les questions libres.
 
 - (08/11) Assistant : plus de question de budget ni de réponse sur les prix ou les zones ; il recueille seulement ce qu'il faut à Egu pour son devis. Stickers du hero : textes, formes et positions changent à chaque tour du prisme (un jeu par métier dans `hero.sticker.sets`).
+
+## Autocollants de l'accueil : tailles et bords (09/11)
+Mesuré (Playwright) à 9 largeurs, de 320 à 2560 px : sur téléphone le ticket rose dépassait de 5 px à gauche de
+l'écran, et à 1024 px trois paires d'autocollants se chevauchaient (le prisme rétrécit avec la fenêtre, pas eux).
+- Ticket : décalage à gauche réduit sur téléphone (`HeroCollage.tsx`), avec de la marge pour le déplacement à chaque tour.
+- Les autocollants suivent la taille du prisme sur ordinateur : `--sticker-k` (0,72 à 1024 px, 0,8 dès 1100,
+  0,9 dès 1260, 1 dès 1440) appliqué en `zoom` dans `globals.css`. Résultat : aucun chevauchement ni débordement,
+  au moins 14 px de marge au bord de l'écran.

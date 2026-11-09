@@ -578,7 +578,25 @@ html[data-intro="quick"] [data-pre-skip] {
 
 /* Stickers around the prism (components/HeroCollage.tsx). Their tilt and drift use the
    individual rotate/translate properties, so they add up with GSAP's transforms. */
+/* The prism shrinks with the window but the stickers are fixed in rem, so on a narrow desktop
+   they would pile up on each other. --sticker-k (set per width on #top) scales them with it. */
+#top {
+  --sticker-k: 1;
+}
+@media (min-width: 1024px) {
+  #top { --sticker-k: 0.72; }
+}
+@media (min-width: 1100px) {
+  #top { --sticker-k: 0.8; }
+}
+@media (min-width: 1260px) {
+  #top { --sticker-k: 0.9; }
+}
+@media (min-width: 1440px) {
+  #top { --sticker-k: 1; }
+}
 .sticker > div {
+  zoom: var(--sticker-k, 1);
   rotate: var(--r, 0deg);
   animation: sticker-float var(--d, 7s) ease-in-out infinite alternate;
 }
