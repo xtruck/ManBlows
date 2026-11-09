@@ -6,7 +6,7 @@ import { onIntroDone } from "@/lib/intro";
 import { contact } from "@/content/site";
 
 type ServiceKey = "photo" | "video" | "design" | "web";
-type Step = "service" | "faq" | "kind" | "date" | "place" | "details" | "name" | "done";
+type Step = "service" | "faq" | "describe" | "kind" | "date" | "place" | "details" | "name" | "done";
 type Msg = { from: "bot" | "me"; text: string };
 type Brief = { service?: string; serviceKey?: ServiceKey; kind?: string; date?: string; place?: string; details?: string; name?: string };
 
@@ -14,13 +14,18 @@ const TEXT_STEPS: Step[] = ["date", "place", "details", "name"];
 // Optional: URL of the Cloudflare Worker (see worker/). Without it the free-question box stays hidden.
 const AI_URL = process.env.NEXT_PUBLIC_ASSISTANT_URL ?? "";
 type AiMsg = { role: "user" | "assistant"; content: string };
+type ApiBrief = { service?: string; kind?: string; date?: string; place?: string; details?: string; name?: string };
+const SERVICE_KEYS: ServiceKey[] = ["photo", "video", "design", "web"];
+const norm = (v: string) => v.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
 
 /**
  * Guided assistant: answers right away, asks one question at a time, then writes the full request
  * (service, type, date, place, details, name) and opens WhatsApp with it, addressed to Egu.
  * It never talks about money or travel zones: Egu sets those himself in his quote.
- * The guided flow runs in the page (no server, free). When NEXT_PUBLIC_ASSISTANT_URL is set, free
- * questions go to a Cloudflare Workers AI Worker (worker/index.mjs) that never discusses money.
+ * The guided flow runs in the page (no server, free). When NEXT_PUBLIC_ASSISTANT_URL is set, the
+ * visitor can also ask free questions (answered word by word) and describe a project in one
+ * sentence, which pre-fills the request. Both go to a Cloudflare Workers AI Worker
+ * (worker/index.mjs) that never discusses money; the guided flow keeps working if it is down.
  */
 export function Assistant() {
   const { t, lang } = useLang();
@@ -34,6 +39,7 @@ export function Assistant() {
   const [shownLang, setShownLang] = useState(lang);
   const [asking, setAsking] = useState(false);
   const [aiHistory, setAiHistory] = useState<AiMsg[]>([]);
+  const rid = useRef(0); // identifies the latest AI request, so a late answer never lands after a restart
   const list = useRef<HTMLDivElement>(null);
   const field = useRef<HTMLInputElement>(null);
 
@@ -46,6 +52,8 @@ export function Assistant() {
     setStep("service");
     setInput("");
     setAiHistory([]);
+    rid.current++;
+    setAsking(false);
     setShownLang(lang);
   };
   const toggle = () => {
@@ -55,7 +63,7 @@ export function Assistant() {
 
   useEffect(() => {
     list.current?.scrollTo({ top: list.current.scrollHeight, behavior: "smooth" });
-    if (TEXT_STEPS.includes(step)) field.current?.focus();
+    if (TEXT_STEPS.includes(step) || step === "describe") field.current?.focus();
   }, [msgs, step]);
 
   useEffect(() => {
@@ -86,27 +94,67 @@ export function Assistant() {
     else if (step === "name") say(v, a.recap, "done", { name: v });
   };
 
-  // A free question, answered by the AI Worker; any failure points to WhatsApp instead
+  // A free question, answered by the AI Worker word by word; any failure points to WhatsApp instead
   const askAi = async (value: string) => {
     const v = value.trim();
     if (!v || asking || !AI_URL) return;
+    const id = ++rid.current;
     let history: AiMsg[] = [...aiHistory, { role: "user" as const, content: v }].slice(-5);
     while (history.length > 1 && history[0].role === "assistant") history = history.slice(1);
-    setMsgs((m) => [...m, { from: "me", text: v }]);
+    setMsgs((m) => [...m, { from: "me", text: v }, { from: "bot", text: "" }]);
     setInput("");
     setAsking(true);
+    const show = (text: string) => {
+      if (rid.current !== id) return;
+      setMsgs((m) => {
+        const c = [...m];
+        c[c.length - 1] = { from: "bot", text };
+        return c;
+      });
+    };
     try {
-      const res = await fetch(AI_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ messages: history, lang }) });
+      const res = await fetch(AI_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "chat", stream: true, messages: history, lang }) });
       if (!res.ok) throw new Error(String(res.status));
-      const data: { reply?: unknown } = await res.json();
-      if (typeof data.reply !== "string" || !data.reply.trim()) throw new Error("empty");
-      const reply = data.reply.trim();
+      let reply = "";
+      if ((res.headers.get("content-type") ?? "").includes("text/event-stream") && res.body) {
+        const reader = res.body.getReader();
+        const dec = new TextDecoder();
+        let buf = "";
+        let shown = "";
+        for (;;) {
+          const { done, value: chunk } = await reader.read();
+          if (done) break;
+          buf += dec.decode(chunk, { stream: true });
+          const parts = buf.split("\n");
+          buf = parts.pop() ?? "";
+          for (const part of parts) {
+            if (!part.startsWith("data:")) continue;
+            let ev: { t?: unknown; reply?: unknown; error?: unknown };
+            try {
+              ev = JSON.parse(part.slice(5));
+            } catch {
+              continue;
+            }
+            if (typeof ev.t === "string") {
+              shown += ev.t;
+              show(shown);
+            } else if (typeof ev.reply === "string") reply = ev.reply;
+            else if (ev.error) throw new Error("stream");
+          }
+        }
+      } else {
+        const data: { reply?: unknown } = await res.json();
+        if (typeof data.reply === "string") reply = data.reply;
+      }
+      reply = reply.trim();
+      if (!reply) throw new Error("empty");
+      if (rid.current !== id) return;
+      show(reply);
       setAiHistory([...history, { role: "assistant" as const, content: reply }].slice(-5));
-      setMsgs((m) => [...m, { from: "bot", text: reply }]);
     } catch {
-      setMsgs((m) => [...m, { from: "bot", text: a.aiError }]);
+      show(a.aiError);
     } finally {
-      setAsking(false);
+      if (rid.current === id) setAsking(false);
     }
   };
 
@@ -120,9 +168,51 @@ export function Assistant() {
     brief.details && `• ${f.details} : ${brief.details}`,
     brief.name && `• ${f.name} : ${brief.name}`,
   ].filter(Boolean) as string[];
+  // "Describe my project": the AI fills in what the visitor already said; the flow asks only what is missing
+  const describeProject = async (value: string) => {
+    const v = value.trim();
+    if (!v || asking || !AI_URL) return;
+    const id = ++rid.current;
+    setAsking(true);
+    let found: ApiBrief | null = null;
+    try {
+      const res = await fetch(AI_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "brief", text: v, lang }) });
+      if (!res.ok) throw new Error(String(res.status));
+      const data: { brief?: ApiBrief } = await res.json();
+      found = data.brief ?? {};
+    } catch {
+      found = null;
+    }
+    if (rid.current !== id) return;
+    setAsking(false);
+    if (found === null) return say(v, a.describeFail, "service");
+    const key = SERVICE_KEYS.find((k) => k === found.service);
+    const patch: Brief = {};
+    if (key) {
+      patch.serviceKey = key;
+      patch.service = a.services.find((x) => x.key === key)?.label;
+    }
+    // Snap the type to one of the offered choices when it matches; otherwise keep the visitor's words
+    if (found.kind) patch.kind = (key && a.kinds[key].find((k) => norm(k) === norm(found.kind ?? ""))) || found.kind;
+    for (const field of ["date", "place", "details", "name"] as const) if (found[field]) patch[field] = found[field];
+    const noted = [
+      patch.service && `• ${f.service} : ${patch.service}`,
+      patch.kind && `• ${f.kind} : ${patch.kind}`,
+      patch.date && `• ${f.date} : ${patch.date}`,
+      patch.place && `• ${f.place} : ${patch.place}`,
+      patch.details && `• ${f.details} : ${patch.details}`,
+      patch.name && `• ${f.name} : ${patch.name}`,
+    ].filter(Boolean) as string[];
+    if (noted.length === 0) return say(v, a.describeNone, "service");
+    const next: Step = !key ? "service" : !patch.kind ? "kind" : !patch.date ? "date" : !patch.place ? "place" : !patch.details ? "details" : !patch.name ? "name" : "done";
+    const asks: Record<string, string> = { service: a.askService, kind: a.askKind, date: a.askDate, place: a.askPlace, details: a.askDetails, name: a.askName, done: a.recap };
+    say(v, [`${a.understood}\n${noted.join("\n")}`, asks[next]], next, patch);
+  };
+
   const waLink = `https://wa.me/${contact.whatsapp}?text=${encodeURIComponent(lines.join("\n"))}`;
   const textStep = TEXT_STEPS.includes(step);
   const aiStep = !!AI_URL && (step === "service" || step === "faq");
+  const describeStep = !!AI_URL && step === "describe";
 
   const chip = "rounded-full border border-ink/15 bg-white px-3.5 py-2 text-left text-sm text-ink transition-colors hover:border-ink/40 active:scale-95";
 
@@ -166,7 +256,7 @@ export function Assistant() {
             </button>
           </div>
 
-          <div ref={list} aria-live="polite" data-lenis-prevent className="flex-1 space-y-2.5 overflow-y-auto overscroll-contain px-4 py-4">
+          <div ref={list} aria-live="polite" aria-busy={asking} data-lenis-prevent className="flex-1 space-y-2.5 overflow-y-auto overscroll-contain px-4 py-4">
             {msgs.map((m, i) => (
               <p
                 key={i}
@@ -174,7 +264,7 @@ export function Assistant() {
                   m.from === "bot" ? "rounded-bl-md bg-white text-ink shadow-sm" : "ml-auto rounded-br-md bg-ink text-paper"
                 }`}
               >
-                {m.text}
+                {m.text || "…"}
               </p>
             ))}
 
@@ -186,6 +276,23 @@ export function Assistant() {
                     {s.label}
                   </button>
                 ))}
+              {step === "service" && AI_URL && (
+                <>
+                  <button type="button" className={`${chip} bg-brand`} onClick={() => say(a.describeCta, a.describeAsk, "describe")}>
+                    {a.describeCta}
+                  </button>
+                  {a.starters.map((q) => (
+                    <button key={q} type="button" disabled={asking} className={`${chip} text-ink/70`} onClick={() => askAi(q)}>
+                      {q}
+                    </button>
+                  ))}
+                </>
+              )}
+              {step === "describe" && (
+                <button type="button" className={chip} onClick={() => say(a.back, a.hello, "service")}>
+                  {a.back}
+                </button>
+              )}
               {step === "faq" && (
                 <button type="button" className={`${chip} bg-brand`} onClick={() => say(a.startRequest, a.hello, "service")}>
                   {a.startRequest}
@@ -217,12 +324,13 @@ export function Assistant() {
             </div>
           </div>
 
-          {(textStep || aiStep) && (
+          {(textStep || aiStep || describeStep) && (
             <form
               className="border-t border-ink/10 bg-paper p-3"
               onSubmit={(e) => {
                 e.preventDefault();
                 if (textStep) submitText(input);
+                else if (describeStep) describeProject(input);
                 else askAi(input);
               }}
             >
@@ -232,9 +340,9 @@ export function Assistant() {
                   ref={field}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  placeholder={textStep ? a.placeholder : a.askAi}
-                  aria-label={textStep ? a.placeholder : a.askAi}
-                  maxLength={300}
+                  placeholder={textStep ? a.placeholder : describeStep ? a.describePlaceholder : a.askAi}
+                  aria-label={textStep ? a.placeholder : describeStep ? a.describePlaceholder : a.askAi}
+                  maxLength={describeStep ? 500 : 300}
                   disabled={asking}
                   className="h-11 min-w-0 flex-1 rounded-full border border-ink/15 bg-white px-4 text-base outline-none focus:border-ink/40 disabled:opacity-60"
                 />

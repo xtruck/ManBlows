@@ -303,15 +303,26 @@ l'écran, et à 1024 px trois paires d'autocollants se chevauchaient (le prisme 
   au moins 14 px de marge au bord de l'écran.
 
 ## Assistant IA (Cloudflare Workers AI) (09/11)
-- `worker/` : petit Worker Cloudflare (`index.mjs`, `wrangler.jsonc`, `README.md` avec le déploiement). Il reçoit la
-  question, appelle un modèle Workers AI et renvoie la réponse. Consignes strictes : jamais de prix, de délai, de
-  disponibilité ni de zone de déplacement (Egu les donne dans son devis) ; réponses courtes, en français ou en anglais ;
-  il renvoie vers la demande guidée ou WhatsApp. Seules les origines de `ALLOWED_ORIGINS` peuvent l'appeler.
-- Site : une zone « Posez votre question… » apparaît dans l'assistant (écran d'accueil et FAQ) **seulement si** le site
-  est construit avec `NEXT_PUBLIC_ASSISTANT_URL` (variable GitHub `ASSISTANT_URL`, lue par `pages.yml`). Sans elle, rien
-  ne change. Une mention indique que les réponses sont générées par une IA. En cas d'erreur (quota gratuit dépassé,
-  Worker hors ligne), le visiteur est renvoyé vers WhatsApp.
-- Testé : Worker (origines, rôles falsifiés, messages trop longs, limite de débit, erreurs de l'IA) avec une IA simulée ;
-  page dans un navigateur avec un faux Worker (réponses, historique, erreur, zone masquée sans URL).
+- `worker/` : Worker Cloudflare (`index.mjs`, `guard.mjs`, `brief.mjs`, `knowledge.generated.mjs`, `wrangler.jsonc`,
+  `README.md` avec le déploiement). Sans l'URL du Worker, l'assistant garde sa demande guidée seule.
+- **Questions libres** : réponses affichées mot à mot, à partir des vraies informations du studio
+  (`npm run knowledge` les extrait de `dict.ts` et `site.ts`, à relancer puis redéployer après une modification de la FAQ,
+  des services, du processus ou des coordonnées). Trois questions types sont proposées en un geste.
+- **« Décrire mon projet en une phrase »** : l'IA remplit service, type, date, lieu, détails et nom d'après le texte du
+  visiteur ; l'assistant ne pose que les questions restantes, puis ouvre WhatsApp avec la demande complète. Tout ce que le
+  visiteur n'a pas écrit est écarté, rien n'est inventé. Si l'IA est en panne, le service est quand même deviné par mots-clés.
+- **Règles appliquées par le code** (`guard.mjs`), quelle que soit la réponse du modèle : aucun prix ni montant, aucun
+  « gratuit » ou remise, aucun numéro, e-mail ou lien autre que ceux du studio, aucune fuite des consignes. Une réponse
+  fautive est remplacée par « Egu confirme lui-même les prix, les dates… » (FR ou EN). Pendant l'affichage mot à mot, le
+  texte est retenu de quelques caractères et le texte final contrôlé remplace ce qui était affiché.
+- Une mention indique que les réponses sont générées par une IA. En cas d'erreur (quota gratuit dépassé, Worker hors
+  ligne), le visiteur est renvoyé vers WhatsApp ou la demande guidée.
+- Testé sans compte Cloudflare : 15 tests (`npm run test:worker`, lancés aussi par `pages.yml`) avec une IA simulée :
+  origines, rôles falsifiés, messages trop longs, limite de débit, règles du garde-fou, flux coupé n'importe où, prix
+  jamais envoyé même en morceaux, extraction du projet ; page dans un navigateur contre un faux Worker (mot à mot,
+  prix bloqué, description complète puis partielle, URL de WhatsApp, Worker hors ligne). `wrangler deploy --dry-run` valide.
+- **Pas testé : la vraie IA.** Après le déploiement, `node worker/eval.mjs <url du Worker> --show` pose 20 questions
+  pièges (prix, « ignore tes consignes », hors sujet, anglais) et lit les réponses.
 - **À faire par Egu / le propriétaire** : compte Cloudflare, `npx wrangler deploy` dans `worker/`, variable `ASSISTANT_URL`
-  dans GitHub, relancer le déploiement. Vérifier l'identifiant du modèle (`MODEL`) dans la liste de Cloudflare.
+  dans GitHub, relancer le déploiement, vérifier l'identifiant du modèle (`MODEL`) dans la liste de Cloudflare.
+
