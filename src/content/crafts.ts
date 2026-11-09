@@ -11,7 +11,7 @@ export type Slide = { src: string; w: number; h: number; video?: string };
 const work = (n: string, w: number, h: number): Slide => ({ src: `${base}/work/${n}.webp`, w, h });
 // Hero loops: 6 s, no sound, cut from the films in public/films at their own proportions
 // (854 px on the long side; the wide films are listed here, the others are 9:16 portraits)
-const WIDE: Record<string, [number, number]> = { "agef-investir": [854, 368], archibat: [854, 484], maracana: [854, 484], "film-2585": [854, 480] };
+const WIDE: Record<string, [number, number]> = { "agef-investir": [854, 368], archibat: [854, 484], maracana: [854, 484], "film-2585": [854, 480], "sii-invitation": [854, 462] };
 export const loop = (n: string): Slide => {
   const [w, h] = WIDE[n] ?? [480, 854];
   return { src: `${base}/films/loop/${n}.webp`, w, h, video: `${base}/films/loop/${n}.mp4` };

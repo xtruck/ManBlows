@@ -401,7 +401,7 @@ Rapport complet : `docs/AUDIT.md` (méthode, 24 constats corrigés, constats ouv
 - **Images entières** : plus de recadrage ni de zoom. Chaque image s'affiche dans ses proportions d'origine, sur un fond flou de la même image.
 - **Forme du prisme** : il prend la forme de l'image de face (haut pour un film 9:16, large pour un paysage) dans une boîte fixe, donc rien ne bouge autour. Les stickers suivent son contour.
 - **Tous les films jouent** :
-  - une boucle de 6 s sans son pour chacun des 19 films (`public/films/loop`), à ses proportions, 854 px sur le grand côté ;
+  - une boucle de 6 s sans son pour chacun des films (19, puis 20 avec le film du SII) (`public/films/loop`), à ses proportions, 854 px sur le grand côté ;
   - la face Vidéo reste 6,4 s, le temps de jouer la boucle en entier ;
   - film-2585 (fichier abîmé) : boucle prise à 40 s.
 - **Couleurs** : le site se limite au crème (#f3ecdc), au noir encre (#0e0e0e) et au jaune du logo (#ffc400). Stickers, lueur du hero et motifs des faces ont été repris dans ces trois couleurs. Seul le rond vert de WhatsApp reste, pour qu'on reconnaisse le bouton.
@@ -410,3 +410,7 @@ Rapport complet : `docs/AUDIT.md` (méthode, 24 constats corrigés, constats ouv
   - les boutons WhatsApp de la bande d'appel et de la page Web font de même (la page Web arrive directement sur « Site web ») ;
   - le message envoyé à Egu contient tout : service, type, date, lieu, détails, nom ;
   - le pied de page garde le numéro comme simple coordonnée.
+
+## Salon International de l'Investissement 2026 (09/11)
+- **Design** (`design.ts`, n° 43 à 46) : kakémono du thème (1020 × 2400), « Merci pour votre participation », mur des partenaires et bandeau des partenaires (2000 px de large, pour que les logos restent lisibles). Ils sont rangés avec les autres visuels du SII.
+- **Films** : film d'invitation du SII 2026 (`films/sii-invitation.mp4`, source 4K de 29 s ramenée à 1280 × 692 avec le son, 7,7 Mo), avec son affiche et sa boucle de 6 s pour le prisme du hero.

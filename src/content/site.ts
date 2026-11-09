@@ -99,6 +99,14 @@ export const films = [
     video: `${base}/films/agef-investir.mp4`,
   },
   {
+    id: 24,
+    title: { fr: "Salon International de l'Investissement 2026, film d'invitation", en: "International Investment Fair 2026, invitation film" },
+    kind: { fr: "Événement", en: "Event" },
+    duration: "00:29",
+    poster: `${base}/films/sii-invitation-poster.webp`,
+    video: `${base}/films/sii-invitation.mp4`,
+  },
+  {
     id: 9,
     title: { fr: "Salon Archibat, reportage", en: "Archibat expo, coverage" },
     kind: { fr: "Événement", en: "Event" },
