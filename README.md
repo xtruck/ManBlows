@@ -20,6 +20,8 @@ npm run dev        # http://localhost:3000
 | `npm run build`     | Static export into `out/`                                      |
 | `npm run lint`      | ESLint                                                         |
 | `npm run typecheck` | Generates Next's route types, then runs TypeScript             |
+| `npm run test:worker` | Tests of the assistant's Cloudflare Worker (no account needed) |
+| `npm run smoke`     | Opens every page at 3 sizes in FR and EN and fails on errors, overflow, broken images (needs a build with `NEXT_PUBLIC_BASE_PATH=` empty, and Playwright on `NODE_PATH`) |
 
 Stack: Next.js 16 (App Router, `output: "export"`), React 19, Tailwind CSS 4, GSAP, Motion and
 Lenis for animation. Everything 3D is pure CSS (no WebGL), so it stays light on phones.

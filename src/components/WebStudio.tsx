@@ -192,7 +192,7 @@ export function WebStudio() {
                 }`}
               >
                 {key === "all" ? w.worksAll : w.worksSectors[key]}
-                <span className={`tabular-nums ${sector === key ? "text-ink/60" : "text-paper/45"}`}>{count}</span>
+                <span className={`tabular-nums ${sector === key ? "text-ink/75" : "text-paper/55"}`}>{count}</span>
               </button>
             );
           })}
