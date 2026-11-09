@@ -56,8 +56,10 @@ ${bullets(w.process.map((s, i) => `${i + 1}. ${s.title} : ${s.text}`))}
 Questions fréquentes sur les sites :
 ${bullets(w.faq.map((f) => `${f.q} ${f.a}`))}
 
+La demande guidée : le visiteur choisit un ou plusieurs services à la fois (par exemple photo, vidéo et design graphique pour le même événement). Elle demande une seule fois le projet, la date, le lieu (photo et vidéo) et le nom, puis quelques questions par service.
 Types de projets proposés dans la demande guidée :
-${bullets(Object.entries(fr.assistant.kinds).map(([k, v]) => `${k} : ${v.join(", ")}`))}
+${bullets(fr.assistant.kinds.map((k) => `${k.label} (${k.for.join(", ")})`))}
+Types de sites proposés : ${fr.assistant.options.webType.join(", ")}.
 
 Questions fréquentes :
 ${bullets(fr.assistant.faq.map((f) => `${f.q} ${f.a}`))}

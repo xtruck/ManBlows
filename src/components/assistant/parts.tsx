@@ -48,6 +48,13 @@ const paths = {
   close: <path d="M6 6l12 12M18 6L6 18" />,
   chevron: <path d="M9.5 6l6 6-6 6" />,
   chat: <path d="M4 5h16v11H9l-5 4z" />,
+  check: <path d="M5.5 12.5l4 4 9-9.5" />,
+  info: (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M12 11v5.5M12 7.6v.1" />
+    </>
+  ),
   whatsapp: (
     <>
       <path d="M4 20l1.3-4.1A8.5 8.5 0 1 1 8.3 19z" />
@@ -91,7 +98,7 @@ export function TypingDots({ label }: { label: string }) {
   );
 }
 
-/** Where the visitor is in the request: five segments and a line of text. */
+/** Where the visitor is in the request: one segment per question of this request, and a line of text. */
 export function Progress({ step, total, label }: { step: number; total: number; label: string }) {
   return (
     <div className="mt-3">
@@ -105,19 +112,35 @@ export function Progress({ step, total, label }: { step: number; total: number; 
   );
 }
 
-/** The finished request, laid out like a small form. */
-export function RequestCard({ title, rows }: { title: string; rows: [string, string][] }) {
+export type RequestSection = { title?: string; icon?: IconName; rows: [string, string][] };
+
+/** The finished request, laid out like a small form: the services first, then one block per service, then the practical details. */
+export function RequestCard({ title, sections }: { title: string; sections: RequestSection[] }) {
   return (
     <div className="assistant-msg overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-ink/10">
       <p className="px-4 pt-3 text-[11px] font-semibold tracking-[0.12em] text-muted uppercase">{title}</p>
-      <dl className="divide-y divide-ink/10 px-4 pb-1">
-        {rows.map(([label, value]) => (
-          <div key={label} className="flex gap-3 py-2 text-sm">
-            <dt className="w-16 shrink-0 pt-0.5 text-xs text-muted">{label}</dt>
-            <dd className="min-w-0 font-medium break-words">{value}</dd>
-          </div>
-        ))}
-      </dl>
+      {sections.map((s, i) => (
+        <section key={s.title ?? i} aria-label={s.title} className={i > 0 ? "mt-1 border-t-4 border-paper-2" : ""}>
+          {s.title && (
+            <h3 className="flex items-center gap-2 px-4 pt-2.5 text-sm font-semibold">
+              {s.icon && (
+                <span aria-hidden className="flex size-6 items-center justify-center rounded-full bg-brand text-ink">
+                  <Icon name={s.icon} className="size-3.5" />
+                </span>
+              )}
+              {s.title}
+            </h3>
+          )}
+          <dl className="divide-y divide-ink/10 px-4 pb-1">
+            {s.rows.map(([label, value]) => (
+              <div key={label} className="flex gap-3 py-2 text-sm">
+                <dt className="w-24 shrink-0 pt-0.5 text-xs text-muted">{label}</dt>
+                <dd className="min-w-0 font-medium break-words">{value}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+      ))}
     </div>
   );
 }

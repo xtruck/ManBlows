@@ -424,3 +424,18 @@ Rapport complet : `docs/AUDIT.md` (méthode, 24 constats corrigés, constats ouv
 - Sous le cadre, le nom du métier (FR/EN, repris de `crafts` dans `dict.ts`) et « 01 / 04 · Je photographie ». En bas, une barre en quatre segments suit la progression.
 - **Fin** : les quatre segments montent en quatre panneaux jaunes (un par métier, comme les faces du prisme), le logo « egc studio. » s'écrit dessus, puis les panneaux se lèvent l'un après l'autre et le prisme du hero monte.
 - Inchangé : une fois par visite, fondu rapide ensuite, bouton « Passer l'intro » (même avant le JavaScript), Échap, limite de temps, filet de sécurité CSS, mode doux (image finale puis fondu).
+
+## Assistant : plusieurs services dans une même demande (09/11)
+
+- **Le problème** : un client qui voulait photo + vidéo + design pour le même événement ne pouvait choisir qu'un service, et toutes les catégories recevaient les mêmes questions.
+- **Choix des services** : les tuiles Photo, Vidéo, Design graphique et Site web se cochent (une ou plusieurs), puis « Continuer ». « Poser une question » reste une entrée à part. Un bouton qui ouvre l'assistant sur un service (page Web) le coche d'avance ; on peut en ajouter d'autres.
+- **Questions communes, posées une seule fois** : le projet (mariage, anniversaire, église, entreprise, produits… : les choix suivent les services cochés), la date (ou « pour quand » pour un design ou un site seuls), le lieu et le nombre de personnes (seulement avec photo ou vidéo), le nom.
+- **Questions par service** (choix rapides, texte libre possible, « Passer » sur les questions facultatives) :
+  - Photo : ce qu'il faut couvrir (cérémonie, réception, portraits, produits…), la livraison (sélection retouchée, album, tirages) ;
+  - Vidéo : le format (film complet, clip des temps forts, reels, drone), la durée ;
+  - Design graphique : les supports (affiche, logo, posts, kakémono, invitation, carte de visite) avec nombre et usage en texte libre, et si les textes et le logo existent déjà ;
+  - Site web : le type de site, ce qui est déjà prêt (domaine, logo, textes, site actuel), les pages ou fonctions et le lien du site actuel.
+- **Progression** : la barre compte les vraies questions de la demande (7 pour une photo seule, 11 pour photo + vidéo + design, 5 pour un site seul).
+- **Message WhatsApp et récapitulatif** : regroupés par service (« Services : Photo, Vidéo, Design graphique », puis un bloc par service, puis les infos pratiques : date, lieu, personnes, nom), en texte simple avec des puces.
+- **Jamais d'argent** : aucune question de budget, de prix ou de zone de déplacement ; Egu les traite dans son devis.
+- **IA (« Décrire mon projet en une phrase »)** : `worker/brief.mjs` renvoie maintenant une liste de services et des détails par service, toujours vérifiés contre les mots du visiteur ; l'assistant ne pose ensuite que les questions manquantes. Tests du Worker : 24 (`npm run test:worker`).

@@ -3,7 +3,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import worker from "./index.mjs";
 import { finalize, safeReply, tidy, violations } from "./guard.mjs";
-import { guessService, normalizeBrief, parseJsonObject } from "./brief.mjs";
+import { BRIEF_SYSTEM, guessServices, normalizeBrief, parseJsonObject } from "./brief.mjs";
 import { CONTACT } from "./knowledge.generated.mjs";
 import { topicOf } from "./insights.mjs";
 
@@ -156,33 +156,80 @@ test("stream: an empty stream is an error event; a non-stream answer still works
 
 test("brief: extracts a request and drops what the visitor did not say", async () => {
   const text = "Bonjour, je voudrais un film de mon mariage le 12 décembre à Cocody, environ 150 invités. Je m'appelle Awa.";
-  const model = '```json\n{"service":"video","kind":"Mariage","date":"12 décembre","place":"Cocody","details":"environ 150 invités","name":"Awa"}\n```';
+  const model = '```json\n{"services":["video"],"kind":"Mariage","date":"12 décembre","place":"Cocody","guests":"environ 150 invités","details":null,"name":"Awa","video":{"type":"film","length":null}}\n```';
   const r = await (await call({ mode: "brief", text, lang: "fr" }, mockAI(model))).json();
   assert.equal(r.ai, true);
-  assert.deepEqual(r.brief, { service: "video", kind: "Mariage", date: "12 décembre", place: "Cocody", details: "environ 150 invités", name: "Awa" });
+  assert.deepEqual(r.brief, { services: ["video"], kind: "Mariage", date: "12 décembre", place: "Cocody", guests: "environ 150 invités", name: "Awa", video: { type: "film" } });
 
-  const made = { service: "photo", kind: "Portrait", date: "demain", place: "Marcory", name: "Jean-Pierre", details: "séance en studio" };
+  const made = { services: ["photo"], kind: "Portrait", date: "demain", place: "Marcory", name: "Jean-Pierre", details: "séance en studio", photo: { cover: "portraits de famille" } };
   const r2 = await (await call({ mode: "brief", text: "Je veux des photos", lang: "fr" }, mockAI(JSON.stringify(made)))).json();
-  assert.deepEqual(r2.brief, { service: "photo", kind: "Portrait" });
+  assert.deepEqual(r2.brief, { services: ["photo"], kind: "Portrait" });
 });
 
-test("brief: if the AI fails or answers badly, the service is still guessed from the words", async () => {
+test("brief: several services for one project, each with its own details", async () => {
+  const text = "Photos, film et faire-part pour notre mariage le 20 décembre à Bingerville : la cérémonie et la soirée, un clip de 3 minutes, 200 invitations. Nous serons 200.";
+  const model = JSON.stringify({
+    services: ["photo", "video", "design"],
+    kind: "Mariage",
+    date: "20 décembre",
+    place: "Bingerville",
+    guests: "200",
+    photo: { cover: "la cérémonie et la soirée" },
+    video: { type: "clip", length: "3 minutes" },
+    design: { items: "200 invitations" },
+    web: { type: "Site vitrine", pages: "accueil" },
+  });
+  const r = await (await call({ mode: "brief", text, lang: "fr" }, mockAI(model))).json();
+  assert.deepEqual(r.brief, {
+    services: ["photo", "video", "design"],
+    kind: "Mariage",
+    date: "20 décembre",
+    place: "Bingerville",
+    guests: "200",
+    photo: { cover: "la cérémonie et la soirée" },
+    video: { type: "clip", length: "3 minutes" },
+    design: { items: "200 invitations" },
+  });
+  assert.ok(!("web" in r.brief), "details of a service the visitor did not ask for are dropped");
+
+  // Synonyms, a single string, the older "service" key and lists of details are all understood
+  assert.deepEqual(normalizeBrief({ services: ["Vidéo", "graphisme", "nope"] }, "x").services, ["video", "design"]);
+  assert.deepEqual(normalizeBrief({ services: "photo" }, "x").services, ["photo"]);
+  assert.deepEqual(normalizeBrief({ service: "web" }, "x").services, ["web"]);
+  assert.deepEqual(normalizeBrief({ services: ["design"], design: { items: ["affiche", "logo"] } }, "une affiche et un logo").design, { items: "affiche, logo" });
+  // Invented details are dropped, even for a service that was asked for
+  assert.deepEqual(normalizeBrief({ services: ["video"], video: { type: "drone", length: "10 minutes" } }, "un film"), { services: ["video"] });
+});
+
+test("brief: if the AI fails or answers badly, the services are still guessed from the words", async () => {
   const down = { AI: { run: async () => { throw new Error("quota"); } } };
   const r = await (await call({ mode: "brief", text: "Je cherche un site vitrine pour mon salon" }, down)).json();
   assert.equal(r.ai, false);
-  assert.deepEqual(r.brief, { service: "web" });
+  assert.deepEqual(r.brief, { services: ["web"] });
   const bad = await (await call({ mode: "brief", text: "Une affiche pour mon église" }, mockAI("désolé, je ne peux pas"))).json();
-  assert.deepEqual(bad.brief, { service: "design" });
+  assert.deepEqual(bad.brief, { services: ["design"] });
+  const both = await (await call({ mode: "brief", text: "Des photos et une vidéo de mon anniversaire" }, down)).json();
+  assert.deepEqual(both.brief, { services: ["photo", "video"] });
+  const none = await (await call({ mode: "brief", text: "Bonjour, je voudrais un renseignement" }, down)).json();
+  assert.deepEqual(none.brief, {});
   assert.equal((await call({ mode: "brief", text: "   " }, mockAI("{}"))).status, 400);
 });
 
 test("brief helpers", () => {
-  assert.equal(guessService("photos et vidéo"), undefined);
-  assert.equal(guessService("un logo"), "design");
+  assert.deepEqual(guessServices("photos et vidéo"), ["photo", "video"]);
+  assert.deepEqual(guessServices("un logo"), ["design"]);
+  assert.deepEqual(guessServices("bonjour"), []);
   assert.deepEqual(parseJsonObject('texte {"a":1} fin'), { a: 1 });
   assert.equal(parseJsonObject("pas de json"), null);
   assert.equal(parseJsonObject("[1,2]"), null);
-  assert.deepEqual(normalizeBrief({ service: "Vidéo", kind: "null", place: "inconnu" }, "film"), { service: "video" });
+  assert.deepEqual(normalizeBrief({ services: ["Vidéo"], kind: "null", place: "inconnu" }, "film"), { services: ["video"] });
+});
+
+test("brief: the extraction prompt asks for every service and never for money", () => {
+  assert.match(BRIEF_SYSTEM, /SEVERAL services/);
+  assert.match(BRIEF_SYSTEM, /"services"/);
+  assert.match(BRIEF_SYSTEM, /Never mention prices, budget or money/);
+  assert.doesNotMatch(BRIEF_SYSTEM, /"budget"/);
 });
 
 // ---- Hard limit, daily budget and anonymous logs ----
@@ -241,7 +288,7 @@ test("logs: one anonymous line per request, never the question, the answer or th
 test("logs: errors, rate limits and briefs are recorded without text", async () => {
   const lines = await logged(async () => {
     await call(ask("Salut"), { AI: { run: async () => { throw new Error("x"); } } });
-    await call({ mode: "brief", text: "film de mon mariage chez SECRETPLACE le 12 décembre" }, mockAI('{"service":"video","kind":"Mariage","place":"SECRETPLACE"}'));
+    await call({ mode: "brief", text: "film de mon mariage chez SECRETPLACE le 12 décembre" }, mockAI('{"services":["video"],"kind":"Mariage","place":"SECRETPLACE"}'));
   });
   const [chat, brief] = lines.map((l) => JSON.parse(l));
   assert.deepEqual([chat.event, chat.outcome], ["chat", "error"]);
