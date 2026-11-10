@@ -19,6 +19,20 @@ const MAX_BODY_BYTES = 8 * 1024; // a request is a few short messages; anything 
 const LIMIT_PER_MINUTE = 12;
 const DEFAULT_DAILY_BUDGET = 500; // AI answers a day, when the optional USAGE store is set up
 const HOLD = 14; // characters held back while streaming, so a rule-breaking word is never half shown
+const AI_TIMEOUT_MS = 20_000; // give up on a model that has not started answering by then
+
+/** Runs the model, or throws if it has not answered within AI_TIMEOUT_MS. */
+async function runAI(env, model, input, ms = Number(env.AI_TIMEOUT_MS) || AI_TIMEOUT_MS) {
+  let timer;
+  const timeout = new Promise((_, reject) => {
+    timer = setTimeout(() => reject(new Error("ai timeout")), ms);
+  });
+  try {
+    return await Promise.race([env.AI.run(model, input), timeout]);
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 function systemPrompt(lang) {
   return `You are the website assistant of EGC Studio, a creative studio in Abidjan run by its founder, Egu. You speak for the studio, warmly and simply, like a helpful receptionist.
@@ -199,7 +213,7 @@ async function chat(env, body, lang, cors) {
   };
   const model = env.MODEL || DEFAULT_MODEL;
   try {
-    const out = await env.AI.run(model, streamed ? { ...input, stream: true } : input);
+    const out = await runAI(env, model, streamed ? { ...input, stream: true } : input);
     if (typeof ReadableStream !== "undefined" && out instanceof ReadableStream) {
       return new Response(toEvents(out, lang, ({ outcome, flagged }) => log(outcome, flagged)), {
         headers: { "Content-Type": "text/event-stream; charset=utf-8", "Cache-Control": "no-store", ...cors },
@@ -229,7 +243,7 @@ async function brief(env, body, cors) {
   const started = Date.now();
   let obj = null;
   try {
-    const out = await env.AI.run(env.MODEL || DEFAULT_MODEL, {
+    const out = await runAI(env, env.MODEL || DEFAULT_MODEL, {
       messages: [{ role: "system", content: BRIEF_SYSTEM }, { role: "user", content: text }],
       max_tokens: 400,
       temperature: 0,

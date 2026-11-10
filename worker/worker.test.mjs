@@ -345,3 +345,13 @@ test("hardening: answers are never cached, preflights can be", async () => {
   assert.equal(pre.headers.get("Access-Control-Max-Age"), "600");
   assert.equal(pre.headers.get("Vary"), "Origin");
 });
+
+test("timeout: an AI that never answers gives up instead of hanging", async () => {
+  const hang = { AI: { run: () => new Promise(() => {}) }, AI_TIMEOUT_MS: "50" };
+  const started = Date.now();
+  assert.equal((await call(ask("hi"), hang)).status, 502);
+  const brief = await call({ mode: "brief", text: "Un mariage à Abidjan", lang: "fr" }, hang);
+  assert.equal(brief.status, 200);
+  assert.equal((await brief.json()).ai, false);
+  assert.ok(Date.now() - started < 2000);
+});
