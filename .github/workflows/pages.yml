@@ -3,15 +3,17 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Pull requests (Dependabot's included) get the same checks; only main is published
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
 
 concurrency:
-  group: pages
+  # One deploy at a time; a pull request's checks never cancel a deploy of main
+  group: ${{ github.event_name == 'pull_request' && format('checks-{0}', github.ref) || 'pages' }}
   cancel-in-progress: true
 
 jobs:
@@ -42,12 +44,17 @@ jobs:
         env:
           NEXT_PUBLIC_BASE_PATH: /ManBlows
       - uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
         with:
           path: out
 
   deploy:
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

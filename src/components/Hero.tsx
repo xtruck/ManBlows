@@ -26,6 +26,9 @@ const turnMs = (face: number) => (crafts[face].key === "video" ? FILM_MS : TURN_
 // (the site keeps to three colours: cream, ink black and the logo yellow).
 const AMBIENT = ["#ffc400", "#e0a800", "#ffd23d", "#f3ecdc"];
 const mod = (n: number, m: number) => ((n % m) + m) % m;
+// The blurred backdrop behind a picture needs no detail: the 400px copy of a work photo or poster
+// (the face itself shows the 640px one), instead of a second download of the full-size file.
+const blurSrc = (src: string) => src.replace(/\/work\/(?:sm\/|xs\/)?([^/]+)$/, "/work/xs/$1");
 
 // The whole gallery feeds the prism, in a new order every day: someone coming back tomorrow sees
 // other photos, posters, films and sites. (Seeded by the date, so the order holds all day.)
@@ -420,7 +423,7 @@ export function Hero() {
                     {/* The slideshow: a new picture each time the face comes round (keyed, so the old
                         one is replaced while the face is at the back) */}
                     {/* The whole picture, uncropped: a blurred copy fills the rest of the face */}
-                    {c.key !== "web" && <span aria-hidden className="prism-backdrop" style={{ backgroundImage: `url(${slide.src})` }} />}
+                    {c.key !== "web" && <span aria-hidden className="prism-backdrop" style={{ backgroundImage: `url(${blurSrc(slide.src)})` }} />}
                     <Image
                       key={slide.src}
                       src={slide.src}
@@ -447,9 +450,10 @@ export function Hero() {
                         muted
                         loop
                         playsInline
-                        // The film's first frame shows until it plays; it starts loading one turn ahead
+                        // The film's first frame shows until it plays. It starts loading one turn ahead, but
+                        // only once the intro is over, so it does not compete with the first pictures
                         poster={slide.src}
-                        preload={i === active || i === (active + 1) % 4 ? "auto" : "none"}
+                        preload={i === active || (started && i === (active + 1) % 4) ? "auto" : "none"}
                         aria-hidden
                         className="absolute inset-0 size-full object-contain"
                       />
