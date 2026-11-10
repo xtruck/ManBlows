@@ -173,3 +173,73 @@ node worker/eval.mjs https://<worker>.workers.dev --show # after deploying the W
 Lighthouse was run with `npx lighthouse@12 <url> --only-categories=performance,accessibility,best-practices,seo`
 against the local build, one page at a time. The QA agent's full report (21 findings with screenshots) was
 produced outside the repository; the findings and their status are the table in section 3.
+
+## 7. Follow-up audit (10 November 2026)
+
+A second pass the day after, on the code as it now stands (with the live AI assistant, the new intro and the
+"seamless motion" changes of 9 November). Same method as above, run again from scratch in this sandbox.
+
+### 7.1 What was run
+
+| Check | Result |
+| --- | --- |
+| `npm run lint`, `npm run typecheck`, `npm run build` | Pass |
+| `npm run test:worker` | 24 tests, pass |
+| `npm audit` | 0 vulnerabilities |
+| `npm run smoke -- --motion` | 70 page views, no problems (before and after the fixes below) |
+| axe, after the animations settle and the page has been scrolled through | 6 pages x 2 languages x 3 sizes (320, 390, 1440 px): **1 critical rule on 4 of 6 pages** before, **0** after |
+| Keyboard | Tab through 5 pages at 1440 px: 232 focus stops, every one has a visible focus ring and is visible on screen |
+| Image sizes | Every image compared with its displayed size x pixel ratio |
+| Lighthouse (mobile profile) | All six pages, plus home twice after the fixes |
+| Worker and assistant client | Code review: CORS, body limits, rate limit, daily budget, streaming guard, brief grounding, timeouts |
+| Repository | Secret scan of tracked files (none found), weights, `npm outdated`, CI workflow |
+
+### 7.2 Found and fixed in this pass
+
+| ID | Severity | Problem | Fix | Verified |
+| --- | --- | --- | --- | --- |
+| F2-01 | High | **Home page weight doubled (2.0 MB to 4.3 MB) since the first audit.** The 9 November change made the prism preload the film loop of the next face at once, so the first visit downloaded 1.1-1.8 MB of video during the intro, competing with the first pictures on slow phones. | The loop one turn ahead now starts loading only when the intro is over (it still has a full 4.2 s turn to buffer). | Lighthouse home: 4,314 KB to 2,252 KB, media 1,808 KB to 0 KB at load, TBT 180 to 100-110 ms. In a browser: the loop is requested at 3.9 s, fully buffered at 5 s, and plays when its face arrives. |
+| F2-02 | Medium | **The prism's blurred backdrop downloaded every photo and poster twice**: the face shows the 640 px copy, the blur behind it loaded the full-size file (70-105 KB each). | The backdrop uses the 400 px copy (it is blurred by 22 px, so no visible difference). | Lighthouse home images 1,081 KB to 827 KB; no full-size `/work/` file is requested by the prism any more. |
+| F2-03 | Medium | **axe critical `aria-valid-attr-value` on home, Web, About (and Films at some sizes)**: the floating WhatsApp/assistant button had `aria-controls="egc-assistant"`, an element that only exists while the assistant is open (it is now loaded lazily). Screen readers get a reference to nothing. | `aria-haspopup="dialog"` instead. | axe: 0 violations over 36 views. |
+| F2-04 | Low | The home tunnel showed a 1,280 px site capture in a card at most 270 px wide (69 KB instead of 24 KB). | Uses the existing 640 px copy. | Image size check. |
+| F2-05 | Low | **The assistant could wait forever.** Neither the browser request nor the Worker's AI call has a timeout; the brief records one AI request that took over 60 s. Meanwhile the input stays locked. | The site abandons a chat answer after 30 s and a brief after 20 s, and shows its WhatsApp message. The Worker side is still open (BE-04). | Lint and types; the error path is the existing one. |
+| F2-06 | Medium | **Dependabot's pull requests were never checked.** The workflow ran only on pushes to `main`, although `dependabot.yml` says every update goes through lint, types, tests and build first. | The workflow also runs on pull requests to `main` (checks only: no upload, no deploy); deploy permissions moved to the deploy job; a pull request can no longer cancel a deploy in progress. | YAML parsed; takes effect on the next pull request. |
+
+### 7.3 Status of the open findings of section 4
+
+Done since the first audit: FE-01 in part (quick intro on 2G/3G and data saver), FE-02 in part (CSS phone menu, assistant
+loaded after the page), FE-10 ("sites conçus, dont 3 livrés à des clients"), BE-02 and BE-03 (the Worker is live with
+the daily budget on and was tested against the real model, see `BRIEF.md`), BE-08 in part (checkout and setup-node
+pinned by SHA, `npm audit` and the smoke test in CI).
+
+Still open: FE-03, FE-04/BE-06/BE-07 (custom domain), FE-05 (the `-face` captures are still 80-126 KB), FE-06
+(/travaux/ now 1,118 elements), FE-07 (43 KB of polyfills), FE-08, FE-09, FE-11, BE-04 (Worker side), BE-05, BE-09,
+BE-10 (no privacy notice for the AI yet, now that it is live), BE-11.
+
+### 7.4 New open findings
+
+| ID | Severity | Finding | Recommendation | Effort |
+| --- | --- | --- | --- | --- |
+| F2-07 | Medium | **The film loops are heavy for what they are.** 20 six-second clips at 480 x 600, silent, weigh 17 MB together: 0.15 to 1.6 MB each (up to about 2 Mbit/s). A phone watching the prism for a minute downloads several MB. `public/` grew from 145 to 165 MB in a day. | Re-encode the loops with a size target (about 400-500 KB each, e.g. H.264 CRF 30-32, `-preset slow`, `-movflags +faststart`) and compare on a phone. | S |
+| F2-08 | Low | Share previews are the same on every page: a link to `/films/` shared on WhatsApp shows the home title and text, because the pages set `title` and `description` but not `openGraph`. | Give each page its own `openGraph` title and description (and repeat the image, since Next replaces the whole `openGraph` object). Keep the bilingual text if that was the intent. | S |
+| F2-09 | Info | Search engines only see French: the HTML is always rendered in French and the English version exists only in the browser, so English searches will not find the site. A known trade-off of the one-URL design. | If English visitors matter, give English its own URLs (`/en/...`) with `hreflang` links. | M-L |
+| F2-10 | Low | The 404 page's canonical link points to `/_not-found/`, an address that does not exist (harmless: the page is `noindex`). | Set no canonical on the not-found page. | S |
+| F2-11 | Low | A 30 s client timeout ends an unusually slow answer that is still streaming. | Move the limit to the Worker (BE-04): a timeout on the first token rather than on the whole answer. | S |
+| F2-12 | Info | Patch releases are waiting: Next 16.4.6, React 19.3.1, motion 14.12, Tailwind 4.3.5. Dependabot will now open them with checks. | Merge the weekly group once its checks pass. | S |
+
+### 7.5 Scorecard
+
+Lighthouse, mobile profile, same sandbox as section 5 (compare between runs, not as absolute values):
+
+| Page | Perf / A11y / BP / SEO | FCP | LCP | TBT | CLS | Transferred |
+| --- | --- | --- | --- | --- | --- | --- |
+| Home (before fixes) | 64 / 100 / 100 / 100 | 2.0 s | 9.8 s | 180 ms | 0 | 4.3 MB |
+| **Home (after fixes, 2 runs)** | **66-67** / 100 / 100 / 100 | 2.0 s | 9.5-9.6 s | 100-110 ms | 0 | **2.3 MB** |
+| Travaux | 67 / 100 / 100 / 100 | 2.1 s | 10.5 s | 100 ms | 0 | 1.7 MB |
+| Films | 69 / 100 / 100 / 100 | 1.8 s | 10.9 s | 80 ms | 0 | 1.6 MB |
+| Web | 66 / 100 / 100 / 100 | 2.0 s | 8.6 s | 130 ms | 0 | 1.8 MB |
+| À propos | 71 / 100 / 100 / 100 | 1.7 s | 6.9 s | 70 ms | 0 | 1.3 MB |
+| Contact | 68 / 100 / 100 / 100 | 1.7 s | 8.1 s | 190 ms | 0 | 1.2 MB |
+
+LCP is still held back by the intro (FE-01) on every page; the remaining big wins are the custom domain (real caching
+and compression control) and the JavaScript payload (about 355-410 KB unused per page).
