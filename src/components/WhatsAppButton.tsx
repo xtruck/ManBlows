@@ -91,7 +91,8 @@ export function WhatsAppButton() {
     <button
       type="button"
       onClick={() => openAssistant({ toggle: true })}
-      aria-controls="egc-assistant"
+      // Opens the assistant dialog. (No aria-controls: the dialog only exists while it is open.)
+      aria-haspopup="dialog"
       inert={!shown}
       // Same dark glass as the menu bar, so it reads as part of the site rather than a widget.
       className={`liquid-glass-dark glass-rim fixed right-3 z-[55] flex items-center gap-3 rounded-full py-1.5 pr-5 pl-1.5 text-paper transition-[opacity,translate,scale] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] active:scale-95 motion-reduce:transition-opacity md:right-6 ${

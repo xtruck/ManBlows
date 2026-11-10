@@ -19,7 +19,7 @@ const sets = {
     work("photo-14", "Shooting"),
     work("design-18", "SII 2026"),
     film("film-2002", "Robe kente"),
-    { src: `${base}/web/real-bmtacademy-desk.webp`, title: "BMT Green Academy" },
+    { src: `${base}/web/sm/real-bmtacademy-desk.webp`, title: "BMT Green Academy" },
     work("photo-02", "Les Bols du Bonheur"),
   ],
   // Travaux: photos and posters

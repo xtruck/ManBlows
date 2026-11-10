@@ -452,3 +452,12 @@ Rapport complet : `docs/AUDIT.md` (méthode, 24 constats corrigés, constats ouv
 - **Prisme** : les images se chargent dès que la face passe à l'arrière (plus de chargement paresseux sur une face qui tourne : c'était la face noire), apparaissent en fondu une fois prêtes ; les films ont leur première image en affiche et se préchargent un tour avant. Vérifié : 8 tours, 0 face vide.
 - **Changement de page** : le rideau ne se lève qu'une fois les images visibles de la nouvelle page chargées (0,6 s au plus) ; il ne peut plus rester baissé si l'on change encore de page.
 - **Galerie (agrandissement)** : fondu enchaîné entre deux images au lieu d'un passage par le vide ; les images voisines sont préchargées.
+
+## Second audit et corrections (10/11)
+- Rapport complet : `docs/AUDIT.md`, section 7.
+- **Accueil deux fois plus léger au chargement** (4,3 Mo à 2,3 Mo) : le film de la face suivante du prisme ne se précharge plus pendant l'intro, seulement après (il a encore un tour entier pour se charger) ; le fond flou du prisme utilise la petite copie de l'image au lieu de retélécharger l'original.
+- **Accessibilité** : le bouton WhatsApp/assistant pointait vers un élément absent tant que l'assistant est fermé (erreur critique axe sur 4 pages) ; corrigé, 0 erreur.
+- **Assistant** : une réponse de l'IA qui ne vient pas est abandonnée après 30 s (20 s pour « Décrire mon projet ») et le message WhatsApp s'affiche.
+- **Mises à jour Dependabot** : elles passent maintenant par les mêmes vérifications que `main` (lint, types, tests, build, test navigateur) avant fusion.
+- À décider : réencoder les boucles vidéo du prisme (17 Mo pour 20 clips de 6 s), une notice de confidentialité pour l'IA, un aperçu de partage propre à chaque page.
+

@@ -76,6 +76,11 @@ const PER_SERVICE: Record<ServiceKey, QId[]> = {
 
 // Optional: URL of the Cloudflare Worker (see worker/). Without it the AI features stay hidden.
 const AI_URL = process.env.NEXT_PUBLIC_ASSISTANT_URL ?? "";
+// A request to the AI that hangs is abandoned, so the visitor gets the WhatsApp fallback instead of
+// a typing bubble that never ends (the whole answer, streaming included, must arrive in this time)
+const CHAT_TIMEOUT_MS = 30_000;
+const BRIEF_TIMEOUT_MS = 20_000;
+const timeout = (ms: number) => (typeof AbortSignal.timeout === "function" ? AbortSignal.timeout(ms) : undefined);
 type AiMsg = { role: "user" | "assistant"; content: string };
 type ApiBrief = {
   services?: unknown;
@@ -306,7 +311,7 @@ export function Assistant() {
       });
     };
     try {
-      const res = await fetch(AI_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "chat", stream: true, messages: history, lang }) });
+      const res = await fetch(AI_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "chat", stream: true, messages: history, lang }), signal: timeout(CHAT_TIMEOUT_MS) });
       if (!res.ok) throw new Error(String(res.status));
       let reply = "";
       if ((res.headers.get("content-type") ?? "").includes("text/event-stream") && res.body) {
@@ -382,7 +387,7 @@ export function Assistant() {
     setAsking(true);
     let found: ApiBrief | null = null;
     try {
-      const res = await fetch(AI_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "brief", text: v, lang }) });
+      const res = await fetch(AI_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mode: "brief", text: v, lang }), signal: timeout(BRIEF_TIMEOUT_MS) });
       if (!res.ok) throw new Error(String(res.status));
       const data: { brief?: ApiBrief } = await res.json();
       found = data.brief && typeof data.brief === "object" ? data.brief : {};
