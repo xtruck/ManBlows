@@ -31,12 +31,27 @@ function whenVisibleImagesReady(max: number) {
   });
 }
 
+/** Writes `text` into `el` as one span per letter, so the letters can rise one after the other. */
+function spell(el: HTMLElement | null, text: string) {
+  if (!el) return [];
+  el.textContent = "";
+  return [...text].map((ch) => {
+    const span = document.createElement("span");
+    span.className = "inline-block";
+    span.textContent = ch === " " ? " " : ch;
+    el.appendChild(span);
+    return span;
+  });
+}
+
 const Ctx = createContext<TransitionContext>({ navigate: () => {} });
 
 /**
- * Page changes run behind four ink bands, one per craft (Photo, Vidéo, Design, Web): they rise
- * one after the other with the next page's name, the route changes underneath, then they lift
- * away in the same order, each with a brand-yellow edge.
+ * Page changes run behind four bands, one per craft (Photo, Vidéo, Design, Web). A yellow layer
+ * rises first and the ink follows it, so each band arrives with a brand-yellow edge; the band of
+ * the destination's craft lights up. The next page's name is spelled letter by letter, with its
+ * number and a short line, and a bar fills while that page and its pictures load. Then the ink
+ * lifts away and the yellow trails behind it, wiping once across the new page.
  */
 export function TransitionProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -44,6 +59,10 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
   const { t } = useLang();
   const curtain = useRef<HTMLDivElement>(null);
   const label = useRef<HTMLSpanElement>(null);
+  const num = useRef<HTMLSpanElement>(null);
+  const line = useRef<HTMLSpanElement>(null);
+  const meta = useRef<HTMLDivElement>(null);
+  const bar = useRef<HTMLSpanElement>(null);
   const pending = useRef(false);
 
   const navigate = useCallback(
@@ -76,16 +95,26 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
         return;
       }
       pending.current = true;
-      const route = routes.find((r) => r.href === target);
-      if (label.current) label.current.textContent = route ? t.nav[route.key] : "";
+      const index = routes.findIndex((r) => r.href === target);
+      const route = index >= 0 ? routes[index] : undefined;
+      const letters = spell(label.current, route ? t.nav[route.key] : "");
+      if (num.current) num.current.textContent = route ? `${String(index + 1).padStart(2, "0")} / ${String(routes.length).padStart(2, "0")}` : "";
+      if (line.current) line.current.textContent = route ? t.routeLines[route.key] : "";
+      // Light up the band of the destination's craft (none for Accueil, Travaux, À propos, Contact)
+      const craft = route && "craft" in route ? route.craft : -1;
+      el.querySelectorAll<HTMLElement>("[data-band-wrap]").forEach((b, i) => (b.dataset.active = String(i === craft)));
       getLenis()?.stop();
-      const bands = el.querySelectorAll("[data-band]");
       gsap
         .timeline()
         .set(el, { visibility: "visible" })
-        .fromTo(bands, { yPercent: 100 }, { yPercent: 0, duration: 0.55, ease: "expo.inOut", stagger: 0.07 })
-        .fromTo(label.current, { yPercent: 110 }, { yPercent: 0, duration: 0.45, ease: "power3.out" }, "-=0.3")
-        .add(() => router.push(href));
+        .set(bar.current, { scaleX: 0 })
+        .fromTo(el.querySelectorAll("[data-band-lead]"), { yPercent: 100 }, { yPercent: 0, duration: 0.5, ease: "expo.inOut", stagger: 0.06 }, 0)
+        .fromTo(el.querySelectorAll("[data-band]"), { yPercent: 100 }, { yPercent: 0, duration: 0.55, ease: "expo.inOut", stagger: 0.06 }, 0.08)
+        .fromTo(letters, { yPercent: 115 }, { yPercent: 0, duration: 0.5, ease: "expo.out", stagger: 0.025 }, 0.42)
+        .fromTo(meta.current, { autoAlpha: 0, y: 12 }, { autoAlpha: 1, y: 0, duration: 0.35, ease: "power2.out" }, 0.5)
+        // Most of the bar fills while the route changes; the rest once the new page is ready
+        .to(bar.current, { scaleX: 0.7, duration: 0.6, ease: "power2.out" }, 0.45)
+        .add(() => router.push(href), 0.62);
     },
     [pathname, router, t],
   );
@@ -117,16 +146,21 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
     align(0);
     lenis?.start();
     requestAnimationFrame(() => refreshScrollTriggers());
-    // Lift the curtain once the new page's visible pictures are in (at most 0.6 s), so nothing
+    // Lift the curtain once the new page's visible pictures are in (at most 0.7 s), so nothing
     // pops in after it has gone
     let cancelled = false;
     let lift: gsap.core.Timeline | null = null;
-    whenVisibleImagesReady(600).then(() => {
+    whenVisibleImagesReady(700).then(() => {
       if (cancelled) return;
+      const letters = label.current ? [...label.current.children] : [];
       lift = gsap
-        .timeline({ delay: 0.05 })
-        .to(label.current, { yPercent: -110, duration: 0.35, ease: "power2.in" })
-        .to(el.querySelectorAll("[data-band]"), { yPercent: -100, duration: 0.7, ease: "expo.inOut", stagger: 0.07 }, "-=0.15")
+        .timeline()
+        .to(bar.current, { scaleX: 1, duration: 0.25, ease: "power2.inOut" })
+        .to(letters, { yPercent: -115, duration: 0.32, ease: "power2.in", stagger: 0.015 }, 0.15)
+        .to(meta.current, { autoAlpha: 0, y: -10, duration: 0.25, ease: "power2.in" }, 0.15)
+        .to(el.querySelectorAll("[data-band]"), { yPercent: -100, duration: 0.7, ease: "expo.inOut", stagger: 0.06 }, 0.32)
+        // The yellow follows the ink a beat later: one bright wipe across the new page
+        .to(el.querySelectorAll("[data-band-lead]"), { yPercent: -100, duration: 0.7, ease: "expo.inOut", stagger: 0.06 }, 0.42)
         .set(el, { visibility: "hidden" });
     });
     return () => {
@@ -141,22 +175,34 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
   return (
     <Ctx.Provider value={{ navigate }}>
       {children}
-      <div ref={curtain} aria-hidden className="invisible fixed inset-0 z-[90] flex items-end px-5 pb-12 text-paper md:px-10 md:pb-16">
+      <div ref={curtain} aria-hidden className="page-curtain invisible fixed inset-0 z-[90] flex items-end px-5 pb-14 text-paper md:px-10 md:pb-20">
         <div className="absolute inset-0 flex">
           {t.crafts.map((c, i) => (
-            <div key={c.key} data-band className="relative h-full flex-1 bg-ink shadow-[-1px_0_0_rgb(255_255_255/0.06)]">
-              <span className="absolute inset-x-0 top-0 h-1.5 bg-brand" />
-              <span className="absolute top-6 left-3 text-[10px] tracking-[0.2em] text-paper/40 uppercase md:left-6 md:text-xs">
-                0{i + 1} {c.name}
-              </span>
+            <div key={c.key} data-band-wrap data-active="false" className="relative h-full flex-1 overflow-hidden">
+              <span data-band-lead className="absolute inset-0 block bg-brand" />
+              <div data-band className="curtain-band absolute inset-x-0 top-1.5 bottom-0 bg-ink shadow-[-1px_0_0_rgb(255_255_255/0.06)]">
+                <span className="curtain-tag absolute top-6 left-3 text-[10px] tracking-[0.2em] text-paper/40 uppercase md:left-6 md:text-xs">
+                  0{i + 1} {c.name}
+                </span>
+              </div>
             </div>
           ))}
         </div>
-        <div className="relative overflow-hidden">
-          <span
-            ref={label}
-            className="block font-display text-[clamp(3.2rem,13vw,11rem)] leading-[0.95] font-semibold tracking-[-0.045em]"
-          />
+        <div className="relative flex w-full min-w-0 flex-col gap-4 md:gap-6">
+          <div ref={meta} className="flex items-center gap-3 font-mono text-[11px] tracking-[0.2em] text-paper/60 uppercase md:text-xs">
+            <span ref={num} className="text-brand tabular-nums" />
+            <span aria-hidden className="block h-px w-8 bg-paper/30" />
+            <span ref={line} />
+          </div>
+          <div className="overflow-hidden pb-[0.06em]">
+            <span
+              ref={label}
+              className="block font-display text-[clamp(3rem,12vw,11rem)] leading-[0.95] font-semibold tracking-[-0.045em] whitespace-nowrap"
+            />
+          </div>
+          <span className="relative block h-[2px] w-full max-w-[28rem] bg-paper/15">
+            <span ref={bar} className="absolute inset-0 block origin-left bg-brand" />
+          </span>
         </div>
       </div>
     </Ctx.Provider>
