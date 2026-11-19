@@ -367,8 +367,8 @@ html[data-motion="gentle"] .deck-arrow {
   animation: none;
 }
 
-/* Repeat load in the same visit (set by the boot script in layout.tsx): the preloader is just a
-   dark cover that fades out, so hide the intro artwork before it can flash on screen. */
+/* Data saver on (set by the boot script in layout.tsx): the preloader is just a dark cover that
+   fades out, so hide the intro artwork before it can flash on screen. */
 html[data-intro="quick"] [data-preloader] > * {
   display: none;
 }
@@ -378,7 +378,7 @@ html[data-intro="quick"] [data-preloader] > * {
    the cover and the Skip button fade away on their own. The Preloader unmounts long before this. */
 [data-preloader],
 [data-pre-skip] {
-  animation: pre-failsafe 0.4s linear 7s forwards;
+  animation: pre-failsafe 0.4s linear 12s forwards;
 }
 @keyframes pre-failsafe {
   to { opacity: 0; visibility: hidden; pointer-events: none; }

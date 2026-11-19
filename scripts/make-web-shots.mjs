@@ -17,7 +17,7 @@ const browser = await chromium.launch();
 for (const s of shots) {
   const page = await browser.newPage({ viewport: s.viewport, deviceScaleFactor: 2 });
   await page.goto(B);
-  await page.evaluate(() => sessionStorage.setItem("egc-intro-seen", "1"));
+  await page.evaluate(() => localStorage.setItem("egc-intro", "quick"));
   await page.goto(B + s.path);
   await page.waitForFunction(() => !document.querySelector("[data-preloader]"));
   await page.evaluate((y) => window.scrollTo(0, y), s.scroll);
