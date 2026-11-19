@@ -6,7 +6,6 @@ import { useLang } from "./LangProvider";
 import { getLenis } from "./SmoothScroll";
 import { openAssistant, type AssistantService } from "@/lib/assistant";
 import { useMotionMode } from "@/lib/motion";
-import { loop } from "@/content/crafts";
 import { films } from "@/content/site";
 import { photoShots } from "@/content/photos";
 import { designShots } from "@/content/design";
@@ -124,9 +123,10 @@ function PhotoHero() {
           </ul>
         </div>
 
-        <div {...pause} className="mx-auto w-full max-w-[30rem]">
+        <div {...pause} className="mx-auto w-full max-w-[min(30rem,52svh)]">
           {/* The viewfinder */}
-          <div className="relative aspect-[4/5] overflow-hidden rounded-[4px] bg-ink">
+          {/* The frame takes the proportions of the picture in it: never cropped */}
+          <div className="relative overflow-hidden rounded-[4px] bg-ink " style={{ aspectRatio: `${shot.w} / ${shot.h}` }}>
             {photoPicks.map((p, n) => (
               <Image
                 key={p.src}
@@ -135,7 +135,7 @@ function PhotoHero() {
                 fill
                 priority={n === 0}
                 sizes="(min-width: 1024px) 30rem, 90vw"
-                className={`object-cover transition-opacity duration-500 ${n === i ? "opacity-100" : "opacity-0"}`}
+                className={`object-contain transition-opacity duration-500 ${n === i ? "opacity-100" : "opacity-0"}`}
               />
             ))}
             <span aria-hidden className="absolute inset-0 bg-gradient-to-b from-ink/35 via-transparent to-ink/45" />
@@ -171,11 +171,12 @@ function PhotoHero() {
                 aria-label={`${h.frame} ${n + 1}`}
                 aria-pressed={n === i}
                 onClick={() => setI(n)}
-                className={`relative aspect-[4/5] cursor-pointer overflow-hidden rounded-[3px] transition-all duration-300 ${
+                className={`relative cursor-pointer self-center overflow-hidden rounded-[3px] transition-all duration-300 ${
                   n === i ? "ring-2 ring-brand ring-offset-2 ring-offset-paper" : "opacity-60 hover:opacity-100"
                 }`}
+                style={{ aspectRatio: `${p.w} / ${p.h}` }}
               >
-                <Image src={p.src} alt="" fill sizes="4rem" className="object-cover" />
+                <Image src={p.src} alt="" fill sizes="4rem" className="object-contain" />
               </button>
             ))}
           </div>
@@ -187,9 +188,28 @@ function PhotoHero() {
 
 /* ---------------------------------------------------------------- Vidéo: the cinema screen */
 
-const SCENES = ["maracana", "film-2585", "archibat", "sii-invitation"].map((n) => {
-  const f = films.find((x) => x.video.endsWith(`/${n}.mp4`));
-  return { ...loop(n), title: f?.title, kind: f?.kind };
+/*
+ * Picked for picture quality, measured on every film in public/films (ffmpeg blurdetect on a
+ * frame per second, plus resolution and bitrate), then checked by eye:
+ *   film-1451  drone take-off      720×1280, 2nd sharpest of all, clear subject
+ *   film-1452  the camera operator 720×1280, very sharp close-up, 2.6 Mb/s
+ *   sii-invitation                 1280×692, true HD, event colour
+ *   film-1440  street dance        720×1280, sharp, lots of movement
+ * Left out: Maracana and Archibat (848×480, under 1 Mb/s), AGEF (0.18 Mb/s), film-2585 (a client
+ * logo covers the frame), the showreel (soft opening), film-1439 (sharp but just a crowd).
+ * The full files are used, not the 854 px loops, and each plays whole in its own proportions.
+ */
+const SCENE_MAX = 9; // seconds of each scene before the next one starts
+const SCENES = (
+  [
+    ["film-1451", 720, 1280],
+    ["film-1452", 720, 1280],
+    ["sii-invitation", 1280, 692],
+    ["film-1440", 720, 1280],
+  ] as const
+).map(([n, w, h]) => {
+  const f = films.find((x) => x.video.endsWith(`/${n}.mp4`))!;
+  return { video: f.video, poster: f.poster, w, h, title: f.title, kind: f.kind };
 });
 
 function timecode(seconds: number) {
@@ -217,8 +237,14 @@ function VideoHero() {
     let raf = 0;
     const tick = () => {
       if (tc.current) tc.current.textContent = timecode(v.currentTime);
+      const length = v.duration ? Math.min(v.duration, SCENE_MAX) : 0;
       const bar = bars.current[i];
-      if (bar && v.duration) bar.style.transform = `scaleX(${v.currentTime / v.duration})`;
+      if (bar && length) bar.style.transform = `scaleX(${Math.min(1, v.currentTime / length)})`;
+      // Long films: move on after SCENE_MAX seconds (short ones end on their own, see onEnded)
+      if (length && v.currentTime >= length && !v.paused) {
+        setI((n) => (n + 1) % SCENES.length);
+        return;
+      }
       raf = requestAnimationFrame(tick);
     };
     bars.current.forEach((b, n) => b && n !== i && (b.style.transform = `scaleX(${n < i ? 1 : 0})`));
@@ -232,41 +258,60 @@ function VideoHero() {
   const next = useCallback(() => setI((n) => (n + 1) % SCENES.length), []);
 
   return (
-    <section className="relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-ink text-paper">
-      <video
-        key={scene.video}
-        ref={video}
-        src={scene.video}
-        poster={scene.src}
-        muted
-        playsInline
-        preload="auto"
-        onEnded={next}
-        aria-hidden
-        className="cine-in absolute inset-0 -z-10 h-full w-full object-cover"
-      />
-      <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-t from-ink via-ink/40 to-ink/30" />
-      {/* Letterbox bars with the film's sprocket holes */}
-      <span aria-hidden className="cine-bar relative z-10 block h-[7vh] min-h-10 shrink-0 bg-ink" />
-      <span aria-hidden className="cine-bar absolute inset-x-0 bottom-0 z-10 block h-[7vh] min-h-10 bg-ink" />
+    <section className="relative isolate overflow-hidden bg-ink text-paper">
+      {/* Backdrop: the scene's poster, blurred and dimmed (decoration only; the film itself is shown whole) */}
+      <Image key={`bg${i}`} src={scene.poster} alt="" fill priority sizes="100vw" className="cine-in -z-20 scale-110 object-cover opacity-40 blur-2xl" />
+      <span aria-hidden className="absolute inset-0 -z-10 bg-gradient-to-b from-ink/70 via-ink/50 to-ink" />
+      {/* Film edges with sprocket holes */}
+      <span aria-hidden className="cine-bar absolute inset-x-0 top-0 block h-6 md:h-8" />
+      <span aria-hidden className="cine-bar absolute inset-x-0 bottom-0 block h-6 md:h-8" />
 
-      <div className="relative flex flex-1 flex-col justify-between px-4 pt-20 pb-[calc(7vh+2rem)] md:px-8 md:pt-24">
-        {/* Camera display */}
-        <div aria-hidden className="flex items-start justify-between font-mono text-[11px] tracking-[0.18em] uppercase md:text-xs">
-          <span className="flex items-center gap-2">
-            <i className={`block size-2.5 rounded-full bg-brand ${playing ? "pl-rec" : ""}`} /> {playing ? "REC" : "STBY"}
-          </span>
-          <span className="flex flex-col items-end gap-1 text-paper/75">
-            <span ref={tc} className="text-base tracking-[0.08em] text-paper tabular-nums md:text-xl">
-              00:00:00:00
+      <div className="mx-auto grid max-w-[110rem] grid-cols-[minmax(0,1fr)] items-center gap-10 px-4 pt-28 pb-20 md:px-8 md:pt-36 md:pb-28 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-16">
+        {/* The camera monitor: the film plays whole, in its own proportions */}
+        <div className="flex min-w-0 flex-col items-center lg:order-2">
+          <div
+            className={`relative overflow-hidden rounded-md bg-black ring-1 ring-paper/15 shadow-[0_2rem_4rem_-1.5rem_rgb(0_0_0/0.8)] ${
+              scene.h > scene.w ? "h-[min(64svh,44rem)] max-w-full" : "w-full"
+            }`}
+            style={{ aspectRatio: `${scene.w} / ${scene.h}` }}
+          >
+            <video
+              key={scene.video}
+              ref={video}
+              src={scene.video}
+              poster={scene.poster}
+              muted
+              playsInline
+              preload="auto"
+              onEnded={next}
+              aria-hidden
+              className="cine-in absolute inset-0 h-full w-full object-contain"
+            />
+            {/* Camera display over the picture */}
+            <span aria-hidden className="vf-corner vf-tl absolute opacity-70" />
+            <span aria-hidden className="vf-corner vf-tr absolute opacity-70" />
+            <span aria-hidden className="vf-corner vf-bl absolute opacity-70" />
+            <span aria-hidden className="vf-corner vf-br absolute opacity-70" />
+            <span aria-hidden className="absolute inset-x-[9%] top-[8%] flex items-start justify-between pt-1 font-mono text-[10px] tracking-[0.16em] uppercase [text-shadow:0_1px_3px_rgb(0_0_0/0.8)] md:text-[11px]">
+              <span className="flex items-center gap-1.5">
+                <i className={`block size-2 rounded-full bg-brand ${playing ? "pl-rec" : ""}`} /> {playing ? "REC" : "STBY"}
+              </span>
+              <span ref={tc} className="tabular-nums">
+                00:00:00:00
+              </span>
             </span>
-            <span>
-              {h.scene} {pad(i + 1)} · {t.crafts[1].meta.join(" · ")}
+            <span aria-hidden className="absolute inset-x-[9%] bottom-[8%] flex justify-between gap-3 pb-1 font-mono text-[10px] tracking-[0.16em] text-paper/85 uppercase [text-shadow:0_1px_3px_rgb(0_0_0/0.8)] md:text-[11px]">
+              <span>
+                {h.scene} {pad(i + 1)}
+              </span>
+              <span className="truncate">
+                {scene.w}×{scene.h} · {t.crafts[1].meta[1]}
+              </span>
             </span>
-          </span>
+          </div>
         </div>
 
-        <div className="mt-16 grid grid-cols-[minmax(0,1fr)] gap-10 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:items-end">
+        <div className="min-w-0 lg:order-1">
           <div>
             <p data-reveal className="font-mono text-xs tracking-[0.28em] text-paper/70 uppercase md:text-sm">
               {h.eyebrow}
@@ -279,7 +324,7 @@ function VideoHero() {
           </div>
 
           {/* Scene picker: each scene's bar fills while it plays, then the next one starts */}
-          <div className="w-full">
+          <div className="mt-10 w-full max-w-[34rem]">
             <div className="mb-3 flex items-center justify-between gap-4">
               <p className="min-w-0 truncate text-sm text-paper/80" aria-live="polite">
                 {scene.kind ? `${scene.kind[lang]} · ` : ""}
@@ -306,8 +351,8 @@ function VideoHero() {
                   onClick={() => setI(n)}
                   className="group cursor-pointer text-left"
                 >
-                  <span className={`relative block aspect-video overflow-hidden rounded-[4px] transition-opacity ${n === i ? "" : "opacity-55 group-hover:opacity-90"}`}>
-                    <Image src={s.src} alt="" fill sizes="10rem" className="object-cover" />
+                  <span className={`relative block aspect-[4/5] overflow-hidden rounded-[4px] bg-black transition-opacity ${n === i ? "" : "opacity-55 group-hover:opacity-90"}`}>
+                    <Image src={s.poster} alt="" fill sizes="8rem" className="object-contain" />
                   </span>
                   <span className="mt-2 block h-[3px] overflow-hidden bg-paper/20">
                     <span
@@ -387,7 +432,7 @@ function DesignHero() {
                   }}
                 >
                   <div className="relative max-h-full max-w-full shadow-[0_1.5rem_3rem_-1rem_rgb(14_14_14/0.45)]" style={{ aspectRatio: `${d.w} / ${d.h}`, height: d.h >= d.w ? "100%" : "auto", width: d.h >= d.w ? "auto" : "100%" }}>
-                    <Image src={d.src} alt={depth === 0 ? `${d.place}${d.client ? `, ${d.client}` : ""}` : ""} fill priority={n === 0} sizes="(min-width: 1024px) 26rem, 80vw" className="object-cover" />
+                    <Image src={d.src} alt={depth === 0 ? `${d.place}${d.client ? `, ${d.client}` : ""}` : ""} fill priority={n === 0} sizes="(min-width: 1024px) 26rem, 80vw" className="object-contain" />
                     {depth === 0 && (
                       <>
                         <span aria-hidden className="art-select absolute -inset-[6px] border-[1.5px] border-ink">
@@ -428,7 +473,7 @@ function DesignHero() {
                   className={`flex min-w-0 cursor-pointer items-center gap-2 rounded-lg p-1.5 text-left text-xs transition-colors ${n === i ? "bg-brand text-ink" : "hover:bg-ink/5"}`}
                 >
                   <span className="relative size-8 shrink-0 overflow-hidden rounded-[3px] ring-1 ring-ink/15">
-                    <Image src={d.src} alt="" fill sizes="2rem" className="object-cover" />
+                    <Image src={d.src} alt="" fill sizes="2rem" className="bg-ink/5 object-contain" />
                   </span>
                   <span className="hidden min-w-0 truncate sm:block">{d.client ?? d.place}</span>
                   <span className="sr-only sm:hidden">{d.client ?? d.place}</span>
