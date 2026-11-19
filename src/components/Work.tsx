@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { useFocusTrap } from "@/lib/useFocusTrap";
@@ -32,9 +32,18 @@ const kindFilters: KindFilter[] = ["all", ...kindOrder.filter((k) => kindsPresen
 const frameNo = (id: number) => String(id).padStart(2, "0");
 
 /** The founder's work: filter chips, a balanced masonry grid and a keyboard / swipe lightbox. */
-export function Work() {
+// The photo categories offered as chips on the Photo page
+const photoCategories = (["ceremonies", "events", "portraits", "products"] as const).filter((c) => shots.some((s) => s.category === c));
+
+/**
+ * `scope` narrows the gallery to one craft (the Photo and Design pages, under their own hero):
+ * its title becomes a section heading and the home page's deep links (#photos, #design) are ignored.
+ */
+export function Work({ scope }: { scope?: "photos" | "design" } = {}) {
   const { t, lang } = useLang();
-  const [filter, setFilter] = useState<Filter>("all");
+  const [filter, setFilter] = useState<Filter>(scope ?? "all");
+  const Heading = scope ? "h2" : "h1";
+  const chips: Filter[] = scope === "photos" ? ["photos", ...photoCategories] : scope === "design" ? [] : filters;
   const [kind, setKind] = useState<KindFilter>("all");
   const [index, setIndex] = useState<number | null>(null);
   const lastTrigger = useRef<HTMLElement | null>(null);
@@ -46,6 +55,7 @@ export function Work() {
   // go straight to the gallery, past the tunnel that opens the page.
   const section = useRef<HTMLElement>(null);
   useEffect(() => {
+    if (scope) return;
     let timer = 0;
     const apply = (smooth: boolean) => {
       const wanted = window.location.hash.slice(1);
@@ -68,7 +78,7 @@ export function Work() {
       window.clearTimeout(timer);
       window.removeEventListener("hashchange", onHash);
     };
-  }, []);
+  }, [scope]);
 
   // Filtering moves the remaining images up; re-measure scroll reveals once the
   // exit animation is done, or images still waiting to reveal stay hidden.
@@ -108,51 +118,62 @@ export function Work() {
     s.category === "design" ? `${placeOf(s, lang)}, ${t.a11y.realDesign}` : s.client ? `${placeOf(s, lang)}, ${s.client}` : placeOf(s, lang);
   const current = index === null ? null : visible[index];
 
-  const close = useCallback(() => {
+  const close = () => {
     setIndex(null);
     lastTrigger.current?.focus();
-  }, []);
-  const step = useCallback(
-    (dir: 1 | -1) => setIndex((i) => (i === null ? i : (i + dir + visible.length) % visible.length)),
-    [visible.length],
-  );
+  };
+  const count = visible.length;
+  const step = (dir: 1 | -1) => setIndex((i) => (i === null ? i : (i + dir + count) % count));
 
+  // While the lightbox is open: page scroll stops, the keyboard browses. Depends on "open", not
+  // on the index, so moving between pictures doesn't stop and restart the smooth scroll.
+  const open = index !== null;
   useEffect(() => {
-    if (index === null) return;
+    if (!open) return;
     getLenis()?.stop();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") close();
-      if (e.key === "ArrowRight") step(1);
-      if (e.key === "ArrowLeft") step(-1);
+      if (e.key === "Escape") {
+        setIndex(null);
+        lastTrigger.current?.focus();
+      }
+      if (e.key === "ArrowRight") setIndex((i) => (i === null ? i : (i + 1) % count));
+      if (e.key === "ArrowLeft") setIndex((i) => (i === null ? i : (i - 1 + count) % count));
     };
     window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("keydown", onKey);
       getLenis()?.start();
     };
-  }, [index, close, step]);
+  }, [open, count]);
 
   return (
-    <section ref={section} className="bg-paper px-4 pt-32 pb-24 md:px-8 md:pt-44 md:pb-36">
+    <section
+      ref={section}
+      id={scope ? "galerie" : undefined}
+      className={`bg-paper px-4 pb-24 md:px-8 md:pb-36 ${scope ? "scroll-mt-24 pt-20 md:pt-28" : "pt-32 md:pt-44"}`}
+    >
       <div className="grid gap-8 md:grid-cols-12 md:items-end">
-        <h1
+        <Heading
           data-reveal
-          className="font-display text-[clamp(3.4rem,10vw,9rem)] leading-[0.86] font-semibold tracking-[-0.045em] md:col-span-7"
+          className={`font-display leading-[0.86] font-semibold tracking-[-0.045em] md:col-span-7 ${
+            scope ? "text-[clamp(2.6rem,7vw,6rem)]" : "text-[clamp(3.4rem,10vw,9rem)]"
+          }`}
         >
-          {t.work.title}
-        </h1>
+          {scope ? t.work.gallery : t.work.title}
+        </Heading>
         {/* min-w-0 lets the scrollable filter row shrink instead of widening the page */}
         <div className="min-w-0 md:col-span-5">
           <p data-reveal className="max-w-[44ch] text-lg leading-relaxed text-muted">
-            {t.work.intro}
+            {scope === "photos" ? t.work.photoIntro : t.work.intro}
           </p>
+          {chips.length > 1 && (
           <div
               data-reveal
               role="group"
               aria-label={t.work.title}
               className="-mx-4 mt-6 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] md:mx-0 md:flex-wrap md:px-0"
             >
-              {filters.map((f) => (
+              {chips.map((f) => (
                 <button
                   key={f}
                   type="button"
@@ -165,10 +186,11 @@ export function Work() {
                     filter === f ? "bg-ink text-paper shadow-lg shadow-ink/20" : "liquid-glass text-ink"
                   }`}
                 >
-                  {t.work.filters[f]}
+                  {scope && f === "photos" ? t.work.filters.all : t.work.filters[f]}
                 </button>
               ))}
             </div>
+          )}
           {filter === "design" && (
             // Second row: who the designs were made for (churches, businesses, schools, events).
             <div

@@ -29,7 +29,7 @@ const site = (n: string): Slide => ({ src: `${base}/web/real-${n}-face.webp`, w:
 export const crafts: { key: CraftKey; href: string; image: string; w: number; h: number; slides: Slide[] }[] = [
   {
     key: "photo",
-    href: "/travaux/#photos",
+    href: "/photo/",
     // A studio portrait (photos.ts n° 12): the intro lands on it, so it comes first
     image: `${base}/work/photo-12.webp`,
     w: 934,
@@ -47,7 +47,7 @@ export const crafts: { key: CraftKey; href: string; image: string; w: number; h:
   },
   {
     key: "design",
-    href: "/travaux/#design",
+    href: "/design/",
     // "Opération rentrée scolaire" poster for Église Mesev (design.ts n° 2). The studio's own
     // price posters (n° 22 to 24 and 31) are left out: the owner asked for no prices for now.
     image: `${base}/work/design-02.webp`,
