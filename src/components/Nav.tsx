@@ -31,7 +31,8 @@ function LangToggle({ className = "" }: { className?: string }) {
   );
 }
 
-const pages = routes.filter((r) => r.key !== "home");
+// The bar shows one link per craft page plus À propos and Contact (see routes.ts)
+const pages = routes.filter((r) => r.bar);
 
 /** Dark liquid-glass bar, readable over every section; full links from laptop width up. */
 export function Nav() {
@@ -80,7 +81,7 @@ export function Nav() {
                 key={p.href}
                 href={p.href}
                 aria-current={active ? "page" : undefined}
-                className={`relative rounded-full px-4 py-2.5 transition-colors duration-300 ${
+                className={`relative rounded-full px-3.5 py-2.5 transition-colors xl:px-4 duration-300 ${
                   active ? "bg-paper/10 text-paper" : "text-paper/70 hover:bg-paper/5 hover:text-paper"
                 }`}
               >
@@ -146,7 +147,7 @@ export function Nav() {
                     href={r.href}
                     onClick={close}
                     aria-current={pathname === r.href ? "page" : undefined}
-                    className={`flex items-center gap-3 py-1 font-display text-[3.2rem] leading-[1.05] font-semibold tracking-tight active:opacity-60 ${
+                    className={`flex items-center gap-3 py-1 font-display text-[clamp(2.2rem,11vw,3rem)] leading-[1.05] font-semibold tracking-tight active:opacity-60 ${
                       pathname === r.href ? "text-brand" : ""
                     }`}
                   >

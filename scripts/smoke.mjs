@@ -75,7 +75,7 @@ async function check(pageUrl, size, lang, motion) {
   const ctx = await browser.newContext({ viewport: { width: size.width, height: size.height } });
   await ctx.addInitScript(([l, m]) => {
     try {
-      sessionStorage.setItem("egc-intro-seen", "1");
+      localStorage.setItem("egc-intro", "quick");
       localStorage.setItem("egc-motion", m);
       localStorage.setItem("egu-lang", l);
     } catch {}

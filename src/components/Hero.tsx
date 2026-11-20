@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { preload } from "react-dom";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLang } from "./LangProvider";
@@ -44,6 +45,14 @@ function dailyShuffle<T>(list: T[], seed: number): T[] {
   }
   return out;
 }
+// Each face's first picture stays the one the page was drawn (and preloaded) with. Swapping it for
+// today's shuffled one after hydration meant a second download that started only once the scripts
+// had run (late on a slow phone), then a fade-in from nothing: the first photo reached the screen
+// seconds after the intro had lifted. The shuffle now applies from each face's second picture on.
+const pinFirst = (list: Slide[], key: string): Slide[] => {
+  const first = crafts.find((c) => c.key === key)!.slides[0];
+  return [first, ...list.filter((s) => s.src !== first.src)];
+};
 function galleryPools(sites: readonly { desk: string; phone: string }[]): Record<string, Slide[]> {
   const day = Math.floor(Date.now() / 86400000);
   // Every film has its own loop (public/films/loop), named after its file
@@ -53,11 +62,11 @@ function galleryPools(sites: readonly { desk: string; phone: string }[]): Record
     return FACES.has(slug) ? { src: `${base}/web/real-${slug}-face.webp`, w: 780, h: 1688 } : { src: `${base}/web/${s.phone}.webp`, w: 420, h: 855 };
   });
   return {
-    photo: dailyShuffle(photoShots.map((p) => ({ src: p.src, w: p.w, h: p.h })), day),
-    design: dailyShuffle(designShots.map((d) => ({ src: d.src, w: d.w, h: d.h })), day + 1),
+    photo: pinFirst(dailyShuffle(photoShots.map((p) => ({ src: p.src, w: p.w, h: p.h })), day), "photo"),
+    design: pinFirst(dailyShuffle(designShots.map((d) => ({ src: d.src, w: d.w, h: d.h })), day + 1), "design"),
     // Every film, each played in turn
-    video: dailyShuffle(loops, day + 2),
-    web: dailyShuffle(web, day + 3),
+    video: pinFirst(dailyShuffle(loops, day + 2), "video"),
+    web: pinFirst(dailyShuffle(web, day + 3), "web"),
   };
 }
 // Which slide a face shows: it moves on to the next one while it is at the back (out of sight),
@@ -77,6 +86,10 @@ const slideOf = (turn: number, face: number, count: number) => {
  * On a first visit the prism rises from below as the intro's yellow curtain lifts (see Preloader).
  */
 export function Hero() {
+  // The first face's picture is preloaded by <Image preload> below; its blurred backdrop is a CSS
+  // background, which the browser would only find after the scripts, so it is preloaded here too
+  // (it is the largest thing on the first screen)
+  preload(blurSrc(crafts[0].slides[0].src), { as: "image", fetchPriority: "high" });
   const { t } = useLang();
   const root = useRef<HTMLElement>(null);
   const stage = useRef<HTMLDivElement>(null);

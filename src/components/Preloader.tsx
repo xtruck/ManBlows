@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { useLang } from "./LangProvider";
 import { Logo } from "./Logo";
-import { INTRO_SEEN_KEY, markIntroDone, markIntroLeaving } from "@/lib/intro";
+import { markIntroDone, markIntroLeaving } from "@/lib/intro";
 import { motionMode } from "@/lib/motion";
 
 declare global {
@@ -14,15 +14,18 @@ declare global {
 }
 
 const MAX_WAIT_MS = 2500; // never hold the visitor longer than this for the fonts
-const HARD_CAP_MS = 9000; // whatever happens (stalled timers, background tab), the cover is gone by then
-const START_AT = 0.5; // seconds after navigation start when the script takes over from the CSS-only photo scene
+const HARD_CAP_MS = 14000; // whatever happens (stalled timers, background tab), the cover is gone by then
+const START_AT = 0.9; // seconds after navigation start when the script takes over from the CSS-only photo scene
 const ADDRESS = "egcstudio"; // typed into the browser's address bar
 const HANDLES = ["0% 0%", "50% 0%", "100% 0%", "100% 50%", "100% 100%", "50% 100%", "0% 100%", "0% 50%"];
+
+// The sequence was written at 1x; it plays a little slower so each craft can be read (about 5 s in all)
+const PACE = 0.72;
 
 const pad = (n: number) => String(Math.floor(n)).padStart(2, "0");
 
 /**
- * First load of a visit (about 3.6 s): the four crafts of the studio, one after the other in the
+ * Every full load, a refresh included (about 5 s): the four crafts of the studio, one after the other in the
  * same frame, each in its own visual language, then merged into the logo.
  *
  *  1. Photo: a viewfinder (corner brackets, thirds, a focus square that locks, the exposure) and a
@@ -35,8 +38,8 @@ const pad = (n: number) => String(Math.floor(n)).padStart(2, "0");
  *  craft, like the faces of the home prism), the logo is written over them, and the panels lift
  *  one after the other to uncover the page while the prism rises (see Hero.tsx, onIntroLeaving).
  *
- * Only transform, opacity and clip-path are animated, so it stays smooth on phones. Later loads in
- * the same visit get a short fade (see layout.tsx). It can never trap the visitor: Skip button and
+ * Only transform, opacity and clip-path are animated, so it stays smooth on phones. Visitors with
+ * data saver on get a short fade instead (see layout.tsx). A loading percentage runs in the corner. It can never trap the visitor: Skip button and
  * Escape, a hard time cap, a CSS-only failsafe (see [data-preloader] in globals.css) and a
  * no-script rule (layout.tsx).
  */
@@ -64,9 +67,6 @@ export function Preloader() {
       finished = true;
       window.scrollTo(0, 0);
       document.documentElement.style.overflow = "";
-      try {
-        sessionStorage.setItem(INTRO_SEEN_KEY, "1");
-      } catch {}
       markIntroDone();
       setGone(true);
     };
@@ -90,7 +90,7 @@ export function Preloader() {
     const fonts = document.fonts?.ready ?? Promise.resolve();
     const fontsOrTimeout = Promise.race([fonts, new Promise((r) => setTimeout(r, MAX_WAIT_MS))]);
 
-    // Already seen in this visit: just lift the cover once fonts are in.
+    // Data saver: just lift the cover once fonts are in.
     if (document.documentElement.dataset.intro === "quick") {
       let tween: gsap.core.Tween | null = null;
       let cancelled = false;
@@ -187,10 +187,17 @@ export function Preloader() {
       // The photo scene plays in CSS (see .pl-photo in globals.css), so it shows even before this
       // script arrives on a slow phone. From here on, everything is GSAP.
       const lead = Math.max(0, START_AT - performance.now() / 1000);
-      main = gsap.timeline({ delay: lead, onComplete: () => void fontsOrTimeout.then(startOutro) });
+      const pct = q("[data-pl-pct]")[0];
+      // The percentage counts up from where the CSS photo scene left it
+      const from = Math.min(18, Math.round((performance.now() / 1000 / START_AT) * 18));
+      main = gsap.timeline({
+        delay: lead,
+        onUpdate: () => pct && (pct.textContent = String(Math.round(from + (100 - from) * (main?.progress() ?? 0))).padStart(3, "0")),
+        onComplete: () => void fontsOrTimeout.then(startOutro),
+      });
       // A slow phone already held the photo scene longer: play the rest a little faster
       const late = performance.now() / 1000 - START_AT;
-      if (late > 0.3) main.timeScale(Math.min(1.3, 1 + late * 0.2));
+      main.timeScale(late > 0.3 ? Math.min(1.1, PACE + late * 0.2) : PACE);
       const tc = { f: 0 };
       const ty = { n: 0 };
       main
@@ -245,7 +252,8 @@ export function Preloader() {
         .set(q("[data-pl-logo]"), { autoAlpha: 1 }, 1.92)
         .to(q("[data-logo-word]"), { yPercent: 0, autoAlpha: 1, duration: 0.45, ease: "expo.out" }, 1.95)
         .to(q("[data-logo-script]"), { clipPath: "inset(-40% 0% -40% 0)", duration: 0.36, ease: "power2.inOut" }, 2.08)
-        .to({}, { duration: 0.1 });
+        // Hold on the finished logo for a beat before the panels lift
+        .to({}, { duration: 0.45 });
     });
 
     skipRef.current = () => {
@@ -275,7 +283,12 @@ export function Preloader() {
 
         <div data-pl-hud className="pl-fade absolute inset-x-0 top-0 flex justify-between px-4 pt-4 font-mono text-[10px] tracking-[0.18em] text-ink/60 uppercase md:px-8 md:pt-7 md:text-xs">
           <span>EGC Studio</span>
-          <span>Abidjan</span>
+          <span className="flex items-center gap-3">
+            <span className="hidden sm:inline">Abidjan</span>
+            <span className="tabular-nums text-ink">
+              <span data-pl-pct>000</span>%
+            </span>
+          </span>
         </div>
 
         {/* The frame where the four crafts play, and the craft's name under it */}

@@ -367,8 +367,8 @@ html[data-motion="gentle"] .deck-arrow {
   animation: none;
 }
 
-/* Repeat load in the same visit (set by the boot script in layout.tsx): the preloader is just a
-   dark cover that fades out, so hide the intro artwork before it can flash on screen. */
+/* Data saver on (set by the boot script in layout.tsx): the preloader is just a dark cover that
+   fades out, so hide the intro artwork before it can flash on screen. */
 html[data-intro="quick"] [data-preloader] > * {
   display: none;
 }
@@ -378,7 +378,7 @@ html[data-intro="quick"] [data-preloader] > * {
    the cover and the Skip button fade away on their own. The Preloader unmounts long before this. */
 [data-preloader],
 [data-pre-skip] {
-  animation: pre-failsafe 0.4s linear 7s forwards;
+  animation: pre-failsafe 0.4s linear 12s forwards;
 }
 @keyframes pre-failsafe {
   to { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -521,7 +521,7 @@ html[data-intro="quick"] [data-preloader] > * {
   100% { opacity: 1; transform: scale(1); background-color: rgb(255 196 0 / 0.9); }
 }
 
-/* Repeat load in the same visit: a dark cover only (the intro artwork is hidden, see above) */
+/* Data saver: a dark cover only (the intro artwork is hidden, see above) */
 html[data-intro="quick"] [data-preloader] {
   background: var(--ink);
 }
@@ -1169,4 +1169,98 @@ html[data-motion="gentle"] .menu-link {
 html[data-motion="gentle"] a,
 html[data-motion="gentle"] button {
   transition-duration: 0.01ms;
+}
+
+/* ---------- Page transition (components/TransitionProvider.tsx) ---------- */
+/* The band of the destination's craft: a thicker yellow edge and its tag in yellow */
+.page-curtain [data-band-wrap][data-active="true"] .curtain-band {
+  top: 0.75rem;
+}
+.page-curtain [data-band-wrap][data-active="true"] .curtain-tag {
+  color: var(--brand);
+}
+
+/* ---------- Craft page openings (components/CraftHero.tsx) ---------- */
+/* Photo: viewfinder over the picture (paper-coloured marks, readable on any photo) */
+.vf-thirds {
+  background:
+    linear-gradient(rgb(255 255 255 / 0.22), rgb(255 255 255 / 0.22)) 33.333% 0 / 1px 100% no-repeat,
+    linear-gradient(rgb(255 255 255 / 0.22), rgb(255 255 255 / 0.22)) 66.666% 0 / 1px 100% no-repeat,
+    linear-gradient(rgb(255 255 255 / 0.22), rgb(255 255 255 / 0.22)) 0 33.333% / 100% 1px no-repeat,
+    linear-gradient(rgb(255 255 255 / 0.22), rgb(255 255 255 / 0.22)) 0 66.666% / 100% 1px no-repeat;
+}
+.vf-corner {
+  width: clamp(1.4rem, 5vw, 2.4rem);
+  height: clamp(1.4rem, 5vw, 2.4rem);
+  border: 0 solid var(--paper);
+}
+.vf-tl { top: 7%; left: 7%; border-top-width: 2px; border-left-width: 2px; }
+.vf-tr { top: 7%; right: 7%; border-top-width: 2px; border-right-width: 2px; }
+.vf-bl { bottom: 7%; left: 7%; border-bottom-width: 2px; border-left-width: 2px; }
+.vf-br { bottom: 7%; right: 7%; border-bottom-width: 2px; border-right-width: 2px; }
+.vf-focus {
+  --f: clamp(3rem, 12vw, 5rem);
+  width: var(--f);
+  height: var(--f);
+  margin-left: calc(var(--f) / -2);
+  border: 2px solid var(--paper);
+  animation: vf-focus 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+@keyframes vf-focus {
+  0% { opacity: 0; transform: scale(1.9); }
+  60% { opacity: 1; transform: scale(1); border-color: var(--paper); }
+  100% { opacity: 1; transform: scale(1); border-color: var(--brand); }
+}
+/* The shutter: two blades close and open in a blink */
+.vf-blade {
+  transform: scaleY(0);
+  animation: vf-blink 0.34s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.vf-blade-top { transform-origin: top; }
+.vf-blade-bottom { transform-origin: bottom; }
+@keyframes vf-blink {
+  0%, 100% { transform: scaleY(0); }
+  45%, 55% { transform: scaleY(1); }
+}
+
+/* Vidéo: the letterbox bars carry sprocket holes; each scene fades in */
+.cine-bar {
+  background:
+    repeating-linear-gradient(90deg, rgb(243 236 220 / 0.18) 0 10px, transparent 10px 26px) 0 50% / 100% 30% repeat-x,
+    var(--ink);
+}
+.cine-in {
+  animation: cine-in 0.6s ease-out both;
+}
+@keyframes cine-in {
+  from { opacity: 0; transform: scale(1.04); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Design: the posters move between the front and the pile, the selection snaps on */
+.art-sheet {
+  transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.5s ease;
+}
+.art-select {
+  animation: art-select 0.35s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both;
+}
+.art-dim {
+  animation: pl-fade 0.3s ease-out 0.55s both;
+}
+.art-cursor {
+  animation: art-cursor 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.3s both;
+}
+@keyframes art-select {
+  from { opacity: 0; transform: scale(1.05); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes art-cursor {
+  from { opacity: 0; transform: translate(2.5rem, 3rem); }
+  to { opacity: 1; transform: none; }
+}
+html[data-motion="gentle"] :is(.vf-focus, .vf-blade, .cine-in, .art-select, .art-dim, .art-cursor) {
+  animation: none;
+}
+html[data-motion="gentle"] .art-sheet {
+  transition: opacity 0.3s ease;
 }

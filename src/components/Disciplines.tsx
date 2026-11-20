@@ -41,7 +41,7 @@ export function Disciplines() {
     {
       items: photoPicks.map((s) => ({ src: s.src, caption: s.client ?? placeOf(s, lang) })),
       hint: d.photosCta,
-      href: "/travaux/#photos",
+      href: "/photo/",
     },
     {
       items: filmPicks.map((f) => ({ src: f.poster, caption: f.title[lang], play: true })),
@@ -51,7 +51,7 @@ export function Disciplines() {
     {
       items: designPicks.map((s) => ({ src: s.src, caption: s.client ?? placeOf(s, lang) })),
       hint: d.cta,
-      href: "/travaux/#design",
+      href: "/design/",
     },
     {
       items: webPicks,

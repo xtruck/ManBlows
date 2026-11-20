@@ -12,7 +12,6 @@ import { Interactions } from "@/components/Interactions";
 import { MotionControl } from "@/components/MotionControl";
 import { TitleSync } from "@/components/TitleSync";
 import { WhatsAppButton } from "@/components/WhatsAppButton";
-import { INTRO_SEEN_KEY } from "@/lib/intro";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -77,15 +76,14 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = { themeColor: "#ffc400" };
 
-// Runs while the HTML is still parsing, before anything is drawn: if the intro already played
-// in this visit, mark <html> so the preloader shows a plain dark cover (no artwork) that it then
+// Runs while the HTML is still parsing, before anything is drawn. The full intro plays on every
+// load (a refresh included); only a visitor who turned on data saver gets a plain dark cover that
 // fades out quickly.
 // The Skip button works before the page's scripts have arrived (slow connections): a click lifts the
 // cover at once and leaves a flag that the intro reads when it starts.
-const skipScript = `document.addEventListener("click",function(e){var b=e.target&&e.target.closest&&e.target.closest("[data-pre-skip]");if(!b)return;window.__egcSkipEarly=true;var c=document.querySelector("[data-preloader]");if(c){c.style.transition="opacity .25s";c.style.opacity="0";c.style.pointerEvents="none"}b.style.display="none";try{sessionStorage.setItem(${JSON.stringify(INTRO_SEEN_KEY)},"1")}catch(_){}},true)`;
-// Slow connections (2G/3G, or data saver on) get the same quick fade: the full intro would add
-// about 4 s on top of a long download before the first photo shows.
-const bootScript = `(function(){var q=false;try{q=!!sessionStorage.getItem(${JSON.stringify(INTRO_SEEN_KEY)})}catch(e){}try{var c=navigator.connection;if(c&&(c.saveData||/(^|-)(2g|3g)$/.test(c.effectiveType||"")))q=true}catch(e){}if(q)document.documentElement.dataset.intro="quick"})()`;
+const skipScript = `document.addEventListener("click",function(e){var b=e.target&&e.target.closest&&e.target.closest("[data-pre-skip]");if(!b)return;window.__egcSkipEarly=true;var c=document.querySelector("[data-preloader]");if(c){c.style.transition="opacity .25s";c.style.opacity="0";c.style.pointerEvents="none"}b.style.display="none"},true)`;
+// Tooling (scripts/smoke.mjs, make-web-shots.mjs) sets localStorage "egc-intro" to "quick" to skip it.
+const bootScript = `(function(){var q=false;try{var c=navigator.connection;q=!!(c&&c.saveData)}catch(e){}try{q=q||localStorage.getItem("egc-intro")==="quick"}catch(e){}if(q)document.documentElement.dataset.intro="quick"})()`;
 
 const jsonLd = {
   "@context": "https://schema.org",
