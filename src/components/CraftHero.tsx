@@ -189,27 +189,38 @@ function PhotoHero() {
 /* ---------------------------------------------------------------- Vidéo: the cinema screen */
 
 /*
- * Picked for picture quality, measured on every film in public/films (ffmpeg blurdetect on a
- * frame per second, plus resolution and bitrate), then checked by eye:
- *   film-1451  drone take-off      720×1280, 2nd sharpest of all, clear subject
- *   film-1452  the camera operator 720×1280, very sharp close-up, 2.6 Mb/s
- *   sii-invitation                 1280×692, true HD, event colour
- *   film-1440  street dance        720×1280, sharp, lots of movement
- * Left out: Maracana and Archibat (848×480, under 1 Mb/s), AGEF (0.18 Mb/s), film-2585 (a client
- * logo covers the frame), the showreel (soft opening), film-1439 (sharp but just a crowd).
+ * The studio's most striking films, chosen with the owner (picture quality measured on every film
+ * in public/films: resolution, bitrate, ffmpeg blurdetect; then checked by eye):
+ *   film-2002          kente gown, fashion   720×1280, 60 i/s
+ *   mariage-calebasse  wedding ceremony      720×1280, 60 i/s
+ *   sii-invitation     event, true HD        1280×692
+ *   showreel           the studio's montage  720×1280, 3.45 Mb/s (among the highest bitrates)
+ * Left out: street behind-the-scenes clips (sharp but plain), Maracana and Archibat (848×480,
+ * under 1 Mb/s), AGEF (0.18 Mb/s), film-2585 (a client logo covers the frame).
  * The full files are used, not the 854 px loops, and each plays whole in its own proportions.
+ * The showreel is not in `films` (site.ts keeps it apart), so it carries its own title.
  */
 const SCENE_MAX = 9; // seconds of each scene before the next one starts
+const base = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+const SHOWREEL_TITLE = { fr: "Le showreel du studio", en: "The studio showreel" };
 const SCENES = (
   [
-    ["film-1451", 720, 1280],
-    ["film-1452", 720, 1280],
-    ["sii-invitation", 1280, 692],
-    ["film-1440", 720, 1280],
+    ["film-2002", 720, 1280, 60],
+    ["mariage-calebasse", 720, 1280, 60],
+    ["sii-invitation", 1280, 692, 30],
+    ["showreel", 720, 1280, 30],
   ] as const
-).map(([n, w, h]) => {
-  const f = films.find((x) => x.video.endsWith(`/${n}.mp4`))!;
-  return { video: f.video, poster: f.poster, w, h, title: f.title, kind: f.kind };
+).map(([n, w, h, fps]) => {
+  const f = films.find((x) => x.video.endsWith(`/${n}.mp4`));
+  return {
+    video: `${base}/films/${n}.mp4`,
+    poster: `${base}/films/${n}-poster.webp`,
+    w,
+    h,
+    fps,
+    title: f?.title ?? SHOWREEL_TITLE,
+    kind: f?.kind ?? { fr: "Showreel", en: "Showreel" },
+  };
 });
 
 function timecode(seconds: number) {
@@ -305,7 +316,7 @@ function VideoHero() {
                 {h.scene} {pad(i + 1)}
               </span>
               <span className="truncate">
-                {scene.w}×{scene.h} · {t.crafts[1].meta[1]}
+                {scene.w}×{scene.h} · {scene.fps} {lang === "fr" ? "i/s" : "fps"}
               </span>
             </span>
           </div>
